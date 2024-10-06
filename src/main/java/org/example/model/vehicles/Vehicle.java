@@ -1,6 +1,7 @@
 package org.example.model.vehicles;
 
 import jakarta.persistence.*;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 
 @Entity
@@ -61,5 +62,14 @@ public abstract class Vehicle {
 
     public void setArchive(boolean archive) {
         this.archive = archive;
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+                .append("plateNumber", plateNumber)
+                .append("basePrice", basePrice)
+                .append("archive", archive)
+                .toString();
     }
 }

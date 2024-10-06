@@ -4,6 +4,7 @@ import jakarta.persistence.Access;
 import jakarta.persistence.AccessType;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 @Entity
 @Access(AccessType.FIELD)
@@ -31,5 +32,15 @@ public class Car extends MotorVehicle {
     @Override
     public float getActualRentalPrice() {
         return super.getActualRentalPrice() * (1 + segment.ordinal() / 10.0f);
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+                .append("plateNumber", getPlateNumber())
+                .append("engineDisplacement", getEngineDisplacement())
+                .append("segment", segment)
+                .append("actualRentalPrice", getActualRentalPrice())
+                .toString();
     }
 }

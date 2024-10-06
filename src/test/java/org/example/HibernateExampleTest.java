@@ -8,7 +8,6 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.From;
 import org.example.model.vehicles.*;
-import org.hibernate.SessionFactory;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -17,7 +16,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class HibernateExampleTest {
 
-    private SessionFactory sessionFactory;
     private static EntityManagerFactory emf;
     private static EntityManager em;
 
@@ -35,13 +33,15 @@ public class HibernateExampleTest {
     }
     @Test
     public void test() {
-        Vehicle vehicle = em.find(Car.class, Long.valueOf(1));
+        Vehicle vehicle = em.find(Car.class, 1L);
         assertNull(vehicle);
     }
 
     @Test
     public void insertAndSelectVehicle() {
         Vehicle vehicle = new Car("abc123", 150, 1500, Car.Segment.B);
+        Vehicle veh = new Moped("abc123", 150, 1500);
+        System.out.println(veh);
         EntityTransaction transaction = em.getTransaction();
         transaction.begin();
         em.persist(vehicle);
@@ -51,7 +51,6 @@ public class HibernateExampleTest {
         CriteriaQuery<Vehicle> query = cb.createQuery(Vehicle.class);
         From<Vehicle, Vehicle> from = query.from(Vehicle.class);
         query.select(from).where(cb.equal(from.get(Vehicle_.plateNumber), "abc123"));
-//        query.select(from);
         Vehicle found = em.createQuery(query).getSingleResult();
         assertEquals("abc123", found.getPlateNumber());
     }

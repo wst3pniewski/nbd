@@ -1,6 +1,7 @@
 package org.example.model.vehicles;
 
 import jakarta.persistence.*;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 @MappedSuperclass
 @Access(AccessType.FIELD)
@@ -35,5 +36,14 @@ public abstract class MotorVehicle extends Vehicle {
         this.engineDisplacement = engineDisplacement;
     }
 
-
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+                .append("plateNumber", getPlateNumber())
+                .append("basePrice", getBasePrice())
+                .append("actualRentalPrice", getActualRentalPrice())
+                .append("engineDisplacement", engineDisplacement)
+                .append("archive", isArchive())
+                .toString();
+    }
 }
