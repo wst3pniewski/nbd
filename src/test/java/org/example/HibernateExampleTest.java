@@ -9,10 +9,7 @@ import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.From;
 import org.example.model.accounts.BankAccount;
 import org.example.model.accounts.StandardAccount;
-import org.example.model.clients.BusinessClientType;
-import org.example.model.clients.Client;
-import org.example.model.clients.ClientType;
-import org.example.model.clients.Client_;
+import org.example.model.clients.*;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -47,7 +44,8 @@ public class HibernateExampleTest {
     @Test
     public void insertAndSelectClient() {
         ClientType clientType = new BusinessClientType();
-        Client client = new Client("John", "Doe", clientType);
+        Address address = new Address("Aleja", "Lodz", "1");
+        Client client = new Client("John", "Doe", clientType, address);
         BankAccount account = new StandardAccount(client, BigDecimal.valueOf(1000));
         EntityTransaction transaction = em.getTransaction();
         transaction.begin();
@@ -58,7 +56,7 @@ public class HibernateExampleTest {
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Client> query = cb.createQuery(Client.class);
         From<Client, Client> from = query.from(Client.class);
-        query.select(from).where(cb.equal(from.get(Client_.id), "1"));
+        query.select(from).where(cb.equal(from.get(Client_.id), "2"));
         Client found = em.createQuery(query).getSingleResult();
         assertEquals("John", found.getFirstName());
     }
@@ -66,7 +64,8 @@ public class HibernateExampleTest {
     @Test
     public void countClients() {
         ClientType clientType = new BusinessClientType();
-        Client client = new Client("John", "Doe", clientType);
+        Address address = new Address("Ulica", "Warszawa", "2");
+        Client client = new Client("Alex", "Example", clientType, address);
         EntityTransaction transaction = em.getTransaction();
         transaction.begin();
         em.persist(clientType);

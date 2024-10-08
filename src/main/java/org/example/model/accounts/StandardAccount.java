@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 
 @Entity
 @Access(AccessType.FIELD)
-public class StandardAccount extends BankAccount{
+public class StandardAccount extends BankAccount {
     BigDecimal debitLimit;
     BigDecimal debit;
 

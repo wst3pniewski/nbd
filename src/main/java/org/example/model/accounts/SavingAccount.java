@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 
 @Entity
 @Access(AccessType.FIELD)
-public class SavingAccount extends BankAccount{
+public class SavingAccount extends BankAccount {
     BigDecimal interestRate;
 
     public SavingAccount(Client client, BigDecimal interestRate) {

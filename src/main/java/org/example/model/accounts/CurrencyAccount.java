@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 
 @Entity
 @Access(AccessType.FIELD)
-public class CurrencyAccount extends BankAccount{
+public class CurrencyAccount extends BankAccount {
     public enum Currency {
         USD(new BigDecimal("3.8")),
         CHF(new BigDecimal("4.5")),

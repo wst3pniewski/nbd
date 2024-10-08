@@ -1,6 +1,6 @@
 package org.example.model.clients;
 
-public class AdvancedClientType extends ClientType{
+public class AdvancedClientType extends ClientType {
 
 
 }

@@ -15,6 +15,7 @@ public abstract class ClientType {
     public int getMaxActiveAccounts() {
         return maxAccounts;
     }
+
     public String getTypeInfo() {
         return accountType;
     }

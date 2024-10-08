@@ -12,33 +12,32 @@ import java.util.Date;
 @Access(AccessType.FIELD)
 public abstract class BankAccount extends AbstractEntity {
     @Id
-//    @GeneratedValue(strategy = GenerationType.AUTO)
-    @SequenceGenerator(
-            name = "accountIdSequence",
-            initialValue = 1
-    )
+    @SequenceGenerator(name = "accountIdSequence", initialValue = 1)
     @GeneratedValue(generator = "accountIdSequence")
     private long id;
+
     BigDecimal balance;
+
     @ManyToOne
     @JoinColumn(name = "client_id", nullable = false)
     Client client;
 
     Boolean isActive;
-
     Date creationDate;
     Date closeDate;
 
     public BankAccount() {
     }
 
-    public BankAccount(Client client){
+    public BankAccount(Client client) {
         this.client = client;
         this.balance = new BigDecimal(0);
         this.isActive = true;
         this.creationDate = new Date();
     }
+
     public abstract String getAccountType();
+
     public abstract String getAccountInfo();
 
     public Client getClient() {

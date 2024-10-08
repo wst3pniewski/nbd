@@ -23,6 +23,9 @@ public class Client extends AbstractEntity {
     @NotEmpty
     private String lastName;
 
+    @Embedded
+    private Address address;
+
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
 //    @NotNull
@@ -31,10 +34,11 @@ public class Client extends AbstractEntity {
     public Client() {
     }
 
-    public Client(String firstName, String lastName, ClientType clientType) {
+    public Client(String firstName, String lastName, ClientType clientType, Address address) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.clientType = clientType;
+        this.address = address;
     }
 
     public @NotEmpty String getFirstName() {

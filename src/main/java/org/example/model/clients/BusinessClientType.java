@@ -4,7 +4,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.ManyToOne;
 
 @Entity
-public class BusinessClientType extends ClientType{
+public class BusinessClientType extends ClientType {
 
 
 //    private BusinessClientType() {

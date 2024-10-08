@@ -5,7 +5,7 @@ import org.example.model.clients.Client;
 
 @Entity
 @Access(AccessType.FIELD)
-public class JuniorAccount extends BankAccount{
+public class JuniorAccount extends BankAccount {
     @ManyToOne
     @JoinColumn(name = "parent_id", nullable = false)
     Client parent;
