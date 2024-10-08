@@ -1,4 +1,4 @@
 package org.example.model;
 
-public class Rent {
+public class Repository {
 }
