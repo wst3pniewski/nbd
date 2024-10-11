@@ -8,6 +8,8 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.From;
 import org.example.model.accounts.BankAccount;
+//import org.example.model.accounts.BankAccount_;
+import org.example.model.accounts.BankAccount_;
 import org.example.model.accounts.StandardAccount;
 import org.example.model.clients.*;
 import org.junit.jupiter.api.AfterAll;
@@ -43,13 +45,13 @@ public class HibernateExampleTest {
 
     @Test
     public void insertAndSelectClient() {
-        ClientType clientType = new BusinessClientType();
+//        ClientType clientType = new BusinessClientType();
         Address address = new Address("Aleja", "Lodz", "1");
-        Client client = new Client("John", "Doe", clientType, address);
+        Client client = new Client("John", "Doe",14, Client.ClientTypes.BUSINESS, address);
         BankAccount account = new StandardAccount(client, BigDecimal.valueOf(1000));
         EntityTransaction transaction = em.getTransaction();
         transaction.begin();
-        em.persist(clientType);
+//        em.persist(clientType);
         em.persist(client);
         transaction.commit();
 
@@ -63,12 +65,12 @@ public class HibernateExampleTest {
 
     @Test
     public void countClients() {
-        ClientType clientType = new BusinessClientType();
+//        ClientType clientType = new BusinessClientType();
         Address address = new Address("Ulica", "Warszawa", "2");
-        Client client = new Client("Alex", "Example", clientType, address);
+        Client client = new Client("Alex", "Example", 14, Client.ClientTypes.ADVANCED, address);
         EntityTransaction transaction = em.getTransaction();
         transaction.begin();
-        em.persist(clientType);
+//        em.persist(clientType);
         em.persist(client);
         transaction.commit();
 
@@ -76,6 +78,26 @@ public class HibernateExampleTest {
         CriteriaQuery<Long> query = cb.createQuery(Long.class);
         From<Client, Client> from = query.from(Client.class);
         query.select(cb.count(from));
+        System.out.println(em.createQuery(query).getSingleResult());
+    }
+
+    @Test
+    public void isClientHaveAnyAccount() {
+//        ClientType clientType = new BusinessClientType();
+        Address address = new Address("Ulica", "Warszawa", "2");
+        Client client = new Client("Alex", "Example", 14, Client.ClientTypes.BUSINESS, address);
+        BankAccount account = new StandardAccount(client, BigDecimal.valueOf(1000));
+        EntityTransaction transaction = em.getTransaction();
+        transaction.begin();
+//        em.persist(clientType);
+        em.persist(client);
+        em.persist(account);
+        transaction.commit();
+
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Long> query = cb.createQuery(Long.class);
+        From<BankAccount, BankAccount> from = query.from(BankAccount.class);
+        query.select(cb.count(from)).where(cb.equal(from.get(BankAccount_.client), client));
         System.out.println(em.createQuery(query).getSingleResult());
     }
 }

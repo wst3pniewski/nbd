@@ -1,6 +1,7 @@
 package org.example.model.clients;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import org.example.model.AbstractEntity;
@@ -9,6 +10,18 @@ import org.example.model.AbstractEntity;
 @Table(name = "clients")
 @Access(AccessType.FIELD)
 public class Client extends AbstractEntity {
+    public enum ClientTypes {
+        STANDARD(2),
+        ADVANCED(5),
+        BUSINESS(7);
+
+        int maxActiveAccounts;
+
+        private ClientTypes(int maxActiveAccounts){
+            this.maxActiveAccounts = maxActiveAccounts;
+        }
+    }
+
     @Id
     @SequenceGenerator(
             name = "clientIdSequence",
@@ -23,33 +36,53 @@ public class Client extends AbstractEntity {
     @NotEmpty
     private String lastName;
 
+    @NotNull
+    @Min(13)
+    private int age;
+
     @Embedded
     private Address address;
 
 
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+//    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
 //    @NotNull
-    private ClientType clientType;
+//    @JoinColumn(name = "client_type_id", nullable = false)
+    @Enumerated(EnumType.STRING)
+    @Basic(optional = false)
+    private ClientTypes clientType;
 
     public Client() {
     }
 
-    public Client(String firstName, String lastName, ClientType clientType, Address address) {
+    public Client(String firstName, String lastName, int age, ClientTypes clientType, Address address) {
         this.firstName = firstName;
         this.lastName = lastName;
+        this.age = age;
         this.clientType = clientType;
         this.address = address;
     }
 
-    public @NotEmpty String getFirstName() {
+    public int getAge() {
+        return age;
+    }
+
+    public void setAge(@NotEmpty int age) {
+        this.age = age;
+    }
+
+    public String getFirstName() {
         return firstName;
     }
 
-    public @NotEmpty String getLastName() {
+    public String getLastName() {
         return lastName;
     }
 
-    public @NotNull ClientType getClientType() {
+    public ClientTypes getClientType() {
         return clientType;
+    }
+
+    public void setClientType(ClientTypes clientType) {
+        this.clientType = clientType;
     }
 }

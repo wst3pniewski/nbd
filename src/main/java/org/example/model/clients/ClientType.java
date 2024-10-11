@@ -2,6 +2,8 @@ package org.example.model.clients;
 
 import jakarta.persistence.*;
 
+import java.util.List;
+
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @Access(AccessType.FIELD)
@@ -11,6 +13,9 @@ public abstract class ClientType {
     private long id;
     private int maxAccounts;
     private String accountType;
+
+    @OneToMany(mappedBy = "clientType")
+    List<Client> clients;
 
     public int getMaxActiveAccounts() {
         return maxAccounts;

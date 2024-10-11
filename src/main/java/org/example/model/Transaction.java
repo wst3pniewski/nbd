@@ -8,6 +8,12 @@ import java.math.BigDecimal;
 @Entity
 @Access(AccessType.FIELD)
 public class Transaction {
+
+    @Id
+    @SequenceGenerator(name = "transactionIdSequence", initialValue = 1)
+    @GeneratedValue(generator = "transactionIdSequence")
+    private long id;
+
     @OneToMany
     @JoinColumn(name = "source_account_id", nullable = false)
     BankAccount sourceAccount;

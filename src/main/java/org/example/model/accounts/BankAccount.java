@@ -1,6 +1,8 @@
 package org.example.model.accounts;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Digits;
 import org.example.model.AbstractEntity;
 import org.example.model.clients.Client;
 
@@ -16,6 +18,8 @@ public abstract class BankAccount extends AbstractEntity {
     @GeneratedValue(generator = "accountIdSequence")
     private long id;
 
+    @DecimalMin(value = "0.0", inclusive = true)
+    @Digits(integer = 15, fraction = 2)
     BigDecimal balance;
 
     @ManyToOne
@@ -53,6 +57,9 @@ public abstract class BankAccount extends AbstractEntity {
     }
 
     public void setBalance(BigDecimal balance) {
+        if (balance.compareTo(new BigDecimal(0)) < 0) {
+            throw new IllegalArgumentException("Balance cannot be negative");
+        }
         this.balance = balance;
     }
 
