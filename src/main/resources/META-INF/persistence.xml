@@ -5,10 +5,10 @@
              version="3.0">
   <persistence-unit name="POSTGRES_RENT_PU" transaction-type="RESOURCE_LOCAL">
       <class>org.example.model.clients.Client</class>
-      <class>org.example.model.clients.ClientType</class>
-      <class>org.example.model.clients.BusinessClientType</class>
       <class>org.example.model.accounts.BankAccount</class>
       <class>org.example.model.accounts.StandardAccount</class>
+      <class>org.example.model.accounts.SavingAccount</class>
+      <class>org.example.model.accounts.JuniorAccount</class>
       <class>org.example.model.AbstractEntity</class>
       <exclude-unlisted-classes>true</exclude-unlisted-classes>
       <shared-cache-mode>NONE</shared-cache-mode>

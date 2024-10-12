@@ -2,6 +2,7 @@ package org.example.model.repositories;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.LockModeType;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.From;
 import org.example.model.accounts.BankAccount;
@@ -23,7 +24,9 @@ public class AccountRepository implements AccountRepositoryInterface, AutoClosea
     @Override
     public BankAccount addAccount(BankAccount account) {
         try {
-            Repository.inSession(factory, entityManager -> entityManager.persist(account));
+            Repository.inSession(factory, entityManager -> {
+                entityManager.persist(account);
+            });
         } catch (Exception e) {
             return null;
         }
@@ -78,6 +81,23 @@ public class AccountRepository implements AccountRepositoryInterface, AutoClosea
             return null;
         }
         return bankAccount[0];
+    }
+
+    public int countClientActiveAccounts(Long clientId) {
+        final int[] count = new int[1];
+        Repository.inSession(factory, entityManager ->
+        {
+            Client client = entityManager.find(Client.class, clientId, LockModeType.OPTIMISTIC_FORCE_INCREMENT);
+            var builder = factory.getCriteriaBuilder();
+            CriteriaQuery<Long> query = builder.createQuery(Long.class);
+            From<BankAccount, BankAccount> from = query.from(BankAccount.class);
+            query.select(builder.count(from)).where(builder.and(
+                    builder.equal(from.get(BankAccount_.client), client),
+                    builder.equal(from.get(BankAccount_.isActive), true)
+            ));
+            count[0] = entityManager.createQuery(query).getSingleResult().intValue();
+        });
+        return count[0];
     }
 
     @Override

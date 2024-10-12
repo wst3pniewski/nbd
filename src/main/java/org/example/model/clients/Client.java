@@ -5,11 +5,18 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import org.example.model.AbstractEntity;
+import org.example.model.accounts.BankAccount;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 @Entity
 @Table(name = "clients")
 @Access(AccessType.FIELD)
 public class Client extends AbstractEntity {
+
     public enum ClientTypes {
         STANDARD(2),
         ADVANCED(5),
@@ -17,8 +24,12 @@ public class Client extends AbstractEntity {
 
         int maxActiveAccounts;
 
-        private ClientTypes(int maxActiveAccounts){
+        private ClientTypes(int maxActiveAccounts) {
             this.maxActiveAccounts = maxActiveAccounts;
+        }
+
+        public int getMaxActiveAccounts() {
+            return maxActiveAccounts;
         }
     }
 
@@ -37,37 +48,31 @@ public class Client extends AbstractEntity {
     private String lastName;
 
     @NotNull
-    @Min(13)
-    private int age;
+    private LocalDate dateOfBirth;
 
     @Embedded
     private Address address;
 
-
-//    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
-//    @NotNull
-//    @JoinColumn(name = "client_type_id", nullable = false)
     @Enumerated(EnumType.STRING)
     @Basic(optional = false)
     private ClientTypes clientType;
 
+    @OneToMany(mappedBy = "client", fetch = FetchType.LAZY)
+    private List<BankAccount> bankAccounts = new ArrayList<>();
+
     public Client() {
     }
 
-    public Client(String firstName, String lastName, int age, ClientTypes clientType, Address address) {
+    public Client(String firstName, String lastName, LocalDate dateOfBirth, ClientTypes clientType, Address address) {
         this.firstName = firstName;
         this.lastName = lastName;
-        this.age = age;
+        this.dateOfBirth = dateOfBirth;
         this.clientType = clientType;
         this.address = address;
     }
 
-    public int getAge() {
-        return age;
-    }
-
-    public void setAge(@NotEmpty int age) {
-        this.age = age;
+    public LocalDate getDateOfBirth() {
+        return dateOfBirth;
     }
 
     public String getFirstName() {
@@ -84,5 +89,13 @@ public class Client extends AbstractEntity {
 
     public void setClientType(ClientTypes clientType) {
         this.clientType = clientType;
+    }
+
+    public void addAccount(BankAccount account) {
+        bankAccounts.add(account);
+    }
+
+    public long getId() {
+        return id;
     }
 }

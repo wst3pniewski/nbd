@@ -17,6 +17,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -46,8 +47,9 @@ public class HibernateExampleTest {
     @Test
     public void insertAndSelectClient() {
 //        ClientType clientType = new BusinessClientType();
+        LocalDate dateOfBirth = LocalDate.of(2000, 1, 1);
         Address address = new Address("Aleja", "Lodz", "1");
-        Client client = new Client("John", "Doe",14, Client.ClientTypes.BUSINESS, address);
+        Client client = new Client("John", "Doe",dateOfBirth, Client.ClientTypes.BUSINESS, address);
         BankAccount account = new StandardAccount(client, BigDecimal.valueOf(1000));
         EntityTransaction transaction = em.getTransaction();
         transaction.begin();
@@ -65,9 +67,9 @@ public class HibernateExampleTest {
 
     @Test
     public void countClients() {
-//        ClientType clientType = new BusinessClientType();
+        LocalDate dateOfBirth = LocalDate.of(2000, 12, 1);
         Address address = new Address("Ulica", "Warszawa", "2");
-        Client client = new Client("Alex", "Example", 14, Client.ClientTypes.ADVANCED, address);
+        Client client = new Client("Alex", "Example", dateOfBirth, Client.ClientTypes.ADVANCED, address);
         EntityTransaction transaction = em.getTransaction();
         transaction.begin();
 //        em.persist(clientType);
@@ -83,10 +85,11 @@ public class HibernateExampleTest {
 
     @Test
     public void isClientHaveAnyAccount() {
-//        ClientType clientType = new BusinessClientType();
+        LocalDate dateOfBirth = LocalDate.of(1980, 12, 1);
         Address address = new Address("Ulica", "Warszawa", "2");
-        Client client = new Client("Alex", "Example", 14, Client.ClientTypes.BUSINESS, address);
+        Client client = new Client("Alex", "Example", dateOfBirth, Client.ClientTypes.BUSINESS, address);
         BankAccount account = new StandardAccount(client, BigDecimal.valueOf(1000));
+        client.addAccount(account);
         EntityTransaction transaction = em.getTransaction();
         transaction.begin();
 //        em.persist(clientType);

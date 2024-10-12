@@ -8,6 +8,8 @@ import jakarta.validation.constraints.Digits;
 import org.example.model.clients.Client;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 
 @Entity
 @Access(AccessType.FIELD)
@@ -23,8 +25,14 @@ public class StandardAccount extends BankAccount {
 
     public StandardAccount(Client client, BigDecimal debitLimit) {
         super(client);
-        this.debitLimit = debitLimit;
-        this.debit = new BigDecimal(0);
+        LocalDate today = LocalDate.now();
+        long age = ChronoUnit.YEARS.between(client.getDateOfBirth(), today);
+        if (age >= 18) {
+            this.debitLimit = debitLimit;
+            this.debit = new BigDecimal(0);
+        } else {
+            throw new IllegalArgumentException("Client must be at least 18 years old to open a standard account");
+        }
     }
 
     public StandardAccount() {

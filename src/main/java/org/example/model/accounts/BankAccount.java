@@ -7,6 +7,7 @@ import org.example.model.AbstractEntity;
 import org.example.model.clients.Client;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Date;
 
 @Entity
@@ -27,8 +28,8 @@ public abstract class BankAccount extends AbstractEntity {
     Client client;
 
     Boolean isActive;
-    Date creationDate;
-    Date closeDate;
+    LocalDate creationDate;
+    LocalDate closeDate = null;
 
     public BankAccount() {
     }
@@ -37,7 +38,7 @@ public abstract class BankAccount extends AbstractEntity {
         this.client = client;
         this.balance = new BigDecimal(0);
         this.isActive = true;
-        this.creationDate = new Date();
+        this.creationDate = LocalDate.now();
     }
 
     public abstract String getAccountType();
@@ -48,7 +49,7 @@ public abstract class BankAccount extends AbstractEntity {
         return client;
     }
 
-    public Date getCreationDate() {
+    public LocalDate getCreationDate() {
         return creationDate;
     }
 
@@ -71,11 +72,11 @@ public abstract class BankAccount extends AbstractEntity {
         isActive = active;
     }
 
-    public Date getCloseDate() {
+    public LocalDate getCloseDate() {
         return closeDate;
     }
 
-    public void setCloseDate(Date closeDate) {
+    public void setCloseDate(LocalDate closeDate) {
         this.closeDate = closeDate;
     }
 
