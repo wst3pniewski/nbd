@@ -98,4 +98,8 @@ public class Client extends AbstractEntity {
     public long getId() {
         return id;
     }
+
+    public List<BankAccount> getBankAccounts() {
+        return bankAccounts;
+    }
 }

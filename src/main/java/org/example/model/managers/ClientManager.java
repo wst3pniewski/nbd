@@ -1,8 +1,13 @@
 package org.example.model.managers;
 
+import jakarta.persistence.LockModeType;
+import jakarta.persistence.Persistence;
+import jakarta.transaction.Transactional;
+import org.example.model.accounts.BankAccount;
 import org.example.model.clients.Address;
 import org.example.model.clients.Client;
 import org.example.model.repositories.ClientRepository;
+import org.hibernate.annotations.OptimisticLock;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -21,18 +26,25 @@ public class ClientManager {
 
     public Client createClient(String firstName, String lastName, LocalDate dateOfBirth, Client.ClientTypes clientType,
                                String street, String city, String zipCode) {
-        Address address = new Address("street", "city", "zipCode");
+        Address address = new Address(street, city, zipCode);
         Client client = new Client(firstName, lastName, dateOfBirth, clientType, address);
-        return clientRepository.addClient(client);
+        return clientRepository.add(client);
     }
 
     public Client updateClient(Client client) {
-        return clientRepository.updateClient(client);
+        return clientRepository.update(client);
     }
 
+    @Transactional
     public Client deleteClient(Long id) {
-        // TODO: check if client has any accounts
-        return clientRepository.deleteClient(id);
+
+        Client client = clientRepository.findById(id);
+
+        if (client == null) {
+            throw new IllegalArgumentException("Client not found");
+        }
+
+        return clientRepository.delete(id);
     }
 
     public Client findById(Long id) {

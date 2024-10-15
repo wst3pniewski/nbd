@@ -1,85 +1,73 @@
 package org.example.model.repositories;
 
-import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.From;
+import jakarta.transaction.Transactional;
 import org.example.model.clients.Client;
 import org.example.model.clients.Client_;
 
-import static jakarta.persistence.Persistence.createEntityManagerFactory;
-
 import java.util.List;
 
-public class ClientRepository implements ClientRepositoryInterface, AutoCloseable {
 
-    private final EntityManagerFactory factory;
+public class ClientRepository implements RepositoryI<Client>, AutoCloseable {
 
-    public ClientRepository() {
-        this.factory = createEntityManagerFactory("POSTGRES_RENT_PU");
+    private EntityManager em;
+
+    public ClientRepository(EntityManager em) {
+        this.em = em;
     }
 
     @Override
-    public Client addClient(Client client) {
-        try {
-            Repository.inSession(factory, entityManager -> entityManager.persist(client));
-        } catch (Exception e) {
-            return null;
-        }
+    public Client add(Client client) {
+        em.persist(client);
         return client;
     }
 
     @Override
     public List<Client> findAll() {
-        final List<Client>[] clients = new List[1];
-        Repository.inSession(factory, entityManager -> {
-            var builder = factory.getCriteriaBuilder();
-            CriteriaQuery<Client> query = builder.createQuery(Client.class);
-            query.from(Client.class);
-            clients[0] = entityManager.createQuery(query).getResultList();
-        });
-        return clients[0];
+        var builder = em.getCriteriaBuilder();
+        CriteriaQuery<Client> query = builder.createQuery(Client.class);
+        query.from(Client.class);
+        return em.createQuery(query).getResultList();
     }
 
     @Override
     public Client findById(Long id) {
-        final Client[] client = new Client[1];
-        Repository.inSession(factory, entityManager -> {
-            var builder = factory.getCriteriaBuilder();
-            CriteriaQuery<Client> query = builder.createQuery(Client.class);
-            From<Client, Client> from = query.from(Client.class);
-            query.select(from).where(builder.equal(from.get(Client_.id), id));
-            client[0] = entityManager.createQuery(query).getSingleResult();
-        });
-        return client[0];
+//        var builder = em.getCriteriaBuilder();
+//        CriteriaQuery<Client> query = builder.createQuery(Client.class);
+//        From<Client, Client> from = query.from(Client.class);
+//        query.select(from).where(builder.equal(from.get(Client_.id), id));
+//
+//        return em.createQuery(query).getSingleResult();
+        return em.find(Client.class, id);
     }
 
     @Override
-    public Client updateClient(Client client) {
-        try {
-            Repository.inSession(factory, entityManager -> entityManager.merge(client));
-        } catch (Exception e) {
-            return null;
-        }
+    public Client update(Client client) {
+        em.merge(client);
+        return client;
+    }
+
+
+    @Override
+    @Transactional
+    public Client delete(Long id) {
+        Client foundClient = em.find(Client.class, id);
+        em.remove(foundClient);
+        return foundClient;
+    }
+
+    @Override
+    public Client findByIdWithOptimisticLock(Long id) {
+        Client client = em.find(Client.class, id, LockModeType.OPTIMISTIC_FORCE_INCREMENT);
         return client;
     }
 
     @Override
-    public Client deleteClient(Long id) {
-        final Client[] client = new Client[1];
-        try {
-            Repository.inSession(factory, entityManager -> {
-                Client foundClient = entityManager.find(Client.class, id);
-                client[0] = foundClient;
-                entityManager.remove(foundClient);
-            });
-        } catch (Exception e) {
-            return null;
-        }
-        return client[0];
+    public void close() throws Exception {
+        this.em.close();
     }
 
-    @Override
-    public void close() throws Exception {
-        this.factory.close();
-    }
 }

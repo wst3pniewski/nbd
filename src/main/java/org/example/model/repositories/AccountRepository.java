@@ -1,107 +1,89 @@
 package org.example.model.repositories;
 
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.LockModeType;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.From;
 import org.example.model.accounts.BankAccount;
 import org.example.model.accounts.BankAccount_;
-import org.example.model.clients.Client;
+
 
 import java.util.List;
 
-import static jakarta.persistence.Persistence.createEntityManagerFactory;
 
-public class AccountRepository implements AccountRepositoryInterface, AutoCloseable {
+public class AccountRepository implements RepositoryI<BankAccount>, AutoCloseable {
 
-    private final EntityManagerFactory factory;
+    private EntityManager em;
 
-    public AccountRepository() {
-        this.factory = createEntityManagerFactory("POSTGRES_RENT_PU");
+
+    public AccountRepository(EntityManager em) {
+        this.em = em;
     }
 
     @Override
-    public BankAccount addAccount(BankAccount account) {
-        try {
-            Repository.inSession(factory, entityManager -> {
-                entityManager.persist(account);
-            });
-        } catch (Exception e) {
+    public BankAccount add(BankAccount account) {
+        if (account == null) {
             return null;
         }
+        em.persist(account);
         return account;
     }
 
     @Override
     public List<BankAccount> findAll() {
-        final List<BankAccount>[] accounts = new List[1];
-        Repository.inSession(factory, entityManager -> {
-            var builder = factory.getCriteriaBuilder();
-            CriteriaQuery<BankAccount> query = builder.createQuery(BankAccount.class);
-            query.from(BankAccount.class);
-            accounts[0] = entityManager.createQuery(query).getResultList();
-        });
-        return accounts[0];
+        List<BankAccount>[] accounts;
+        var builder = em.getCriteriaBuilder();
+        CriteriaQuery<BankAccount> query = builder.createQuery(BankAccount.class);
+        query.from(BankAccount.class);
+        return em.createQuery(query).getResultList();
+
     }
 
     @Override
     public BankAccount findById(Long id) {
-        final BankAccount[] bankAccount = new BankAccount[1];
-        Repository.inSession(factory, entityManager -> {
-            var builder = factory.getCriteriaBuilder();
-            CriteriaQuery<BankAccount> query = builder.createQuery(BankAccount.class);
-            From<BankAccount, BankAccount> from = query.from(BankAccount.class);
-            query.select(from).where(builder.equal(from.get(BankAccount_.id), id));
-            bankAccount[0] = entityManager.createQuery(query).getSingleResult();
-        });
-        return bankAccount[0];
+        var builder = em.getCriteriaBuilder();
+        CriteriaQuery<BankAccount> query = builder.createQuery(BankAccount.class);
+        From<BankAccount, BankAccount> from = query.from(BankAccount.class);
+        query.select(from).where(builder.equal(from.get(BankAccount_.id), id));
+        return em.createQuery(query).getSingleResult();
     }
 
     @Override
-    public BankAccount updateAccount(BankAccount account) {
-        try {
-            Repository.inSession(factory, entityManager -> entityManager.merge(account));
-        } catch (Exception e) {
-            return null;
-        }
+    public BankAccount update(BankAccount account) {
+        em.merge(account);
         return account;
     }
 
     @Override
-    public BankAccount deleteAccount(Long id) {
-        final BankAccount[] bankAccount = new BankAccount[1];
-        try {
-            Repository.inSession(factory, entityManager -> {
-                BankAccount account = entityManager.find(BankAccount.class, id);
-                bankAccount[0] = account;
-                entityManager.remove(account);
-            });
-        } catch (Exception e) {
-            return null;
-        }
-        return bankAccount[0];
+    public BankAccount delete(Long id) {
+        BankAccount account = em.find(BankAccount.class, id);
+        em.remove(account);
+        return account;
     }
 
-    public int countClientActiveAccounts(Long clientId) {
-        final int[] count = new int[1];
-        Repository.inSession(factory, entityManager ->
-        {
-            Client client = entityManager.find(Client.class, clientId, LockModeType.OPTIMISTIC_FORCE_INCREMENT);
-            var builder = factory.getCriteriaBuilder();
-            CriteriaQuery<Long> query = builder.createQuery(Long.class);
-            From<BankAccount, BankAccount> from = query.from(BankAccount.class);
-            query.select(builder.count(from)).where(builder.and(
-                    builder.equal(from.get(BankAccount_.client), client),
-                    builder.equal(from.get(BankAccount_.isActive), true)
-            ));
-            count[0] = entityManager.createQuery(query).getSingleResult().intValue();
-        });
-        return count[0];
+    @Override
+    public BankAccount findByIdWithOptimisticLock(Long id) {
+        var builder = em.getCriteriaBuilder();
+        CriteriaQuery<BankAccount> query = builder.createQuery(BankAccount.class);
+        From<BankAccount, BankAccount> from = query.from(BankAccount.class);
+        query.select(from).where(builder.equal(from.get(BankAccount_.id), id));
+        return em.createQuery(query)
+                .setLockMode(LockModeType.OPTIMISTIC_FORCE_INCREMENT)
+                .getSingleResult();
+    }
+
+    public List<BankAccount> findByClientId(Long clientId) {
+        var builder = em.getCriteriaBuilder();
+        CriteriaQuery<BankAccount> query = builder.createQuery(BankAccount.class);
+        From<BankAccount, BankAccount> from = query.from(BankAccount.class);
+        query.select(from).where(builder.equal(from.get(BankAccount_.client).get("id"), clientId));
+        return em.createQuery(query)
+                .setLockMode(LockModeType.OPTIMISTIC_FORCE_INCREMENT)
+                .getResultList();
     }
 
     @Override
     public void close() throws Exception {
-        this.factory.close();
+        this.em.close();
     }
 }

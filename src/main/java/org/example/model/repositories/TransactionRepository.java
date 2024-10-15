@@ -1,6 +1,7 @@
 package org.example.model.repositories;
 
-import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.From;
 import org.example.model.Transaction;
@@ -8,78 +9,64 @@ import org.example.model.Transaction_;
 
 import java.util.List;
 
-import static jakarta.persistence.Persistence.createEntityManagerFactory;
 
-public class TransactionRepository implements TransactionRepositoryInterface, AutoCloseable {
+public class TransactionRepository implements RepositoryI<Transaction>, AutoCloseable {
 
-    private final EntityManagerFactory factory;
+    private EntityManager em;
 
-    public TransactionRepository() {
-        this.factory = createEntityManagerFactory("POSTGRES_RENT_PU");
+    public TransactionRepository(EntityManager em) {
+        this.em = em;
     }
 
     @Override
-    public Transaction addTransaction(Transaction transaction) {
-        try {
-            Repository.inSession(factory, entityManager -> entityManager.persist(transaction));
-        } catch (Exception e) {
-            return null;
-        }
+    public Transaction add(Transaction transaction) {
+        em.persist(transaction);
         return transaction;
     }
 
     @Override
     public List<Transaction> findAll() {
-        final List<Transaction>[] transactions = new List[1];
-        Repository.inSession(factory, entityManager -> {
-            var builder = factory.getCriteriaBuilder();
-            CriteriaQuery<Transaction> query = builder.createQuery(Transaction.class);
-            query.from(Transaction.class);
-            transactions[0] = entityManager.createQuery(query).getResultList();
-        });
-        return transactions[0];
+        var builder = em.getCriteriaBuilder();
+        CriteriaQuery<Transaction> query = builder.createQuery(Transaction.class);
+        query.from(Transaction.class);
+        return  em.createQuery(query).getResultList();
     }
 
     @Override
     public Transaction findById(Long id) {
-        final Transaction[] transaction = new Transaction[1];
-        Repository.inSession(factory, entityManager -> {
-            var builder = factory.getCriteriaBuilder();
-            CriteriaQuery<Transaction> query = builder.createQuery(Transaction.class);
-            From<Transaction, Transaction> from = query.from(Transaction.class);
-            query.select(from).where(builder.equal(from.get(Transaction_.id), id));
-            transaction[0] = entityManager.createQuery(query).getSingleResult();
-        });
-        return transaction[0];
+        var builder = em.getCriteriaBuilder();
+        CriteriaQuery<Transaction> query = builder.createQuery(Transaction.class);
+        From<Transaction, Transaction> from = query.from(Transaction.class);
+        query.select(from).where(builder.equal(from.get(Transaction_.id), id));
+        return em.createQuery(query).getSingleResult();
     }
 
     @Override
-    public Transaction updateTransaction(Transaction transaction) {
-        try {
-            Repository.inSession(factory, entityManager -> entityManager.merge(transaction));
-        } catch (Exception e) {
-            return null;
-        }
+    public Transaction update(Transaction transaction) {
+        em.merge(transaction);
         return transaction;
     }
 
     @Override
-    public Transaction deleteTransaction(Long id) {
-        final Transaction[] transaction = new Transaction[1];
-        try {
-            Repository.inSession(factory, entityManager -> {
-                Transaction foundTransaction = entityManager.find(Transaction.class, id);
-                transaction[0] = foundTransaction;
-                entityManager.remove(foundTransaction);
-            });
-        } catch (Exception e) {
-            return null;
-        }
-        return transaction[0];
+    public Transaction delete(Long id) {
+        Transaction foundTransaction = em.find(Transaction.class, id);
+        em.remove(foundTransaction);
+        return foundTransaction;
+    }
+
+    @Override
+    public Transaction findByIdWithOptimisticLock(Long id) {
+        var builder = em.getCriteriaBuilder();
+        CriteriaQuery<Transaction> query = builder.createQuery(Transaction.class);
+        From<Transaction, Transaction> from = query.from(Transaction.class);
+        query.select(from).where(builder.equal(from.get(Transaction_.id), id));
+        return em.createQuery(query)
+                .setLockMode(LockModeType.OPTIMISTIC_FORCE_INCREMENT)
+                .getSingleResult();
     }
 
     @Override
     public void close() throws Exception {
-        this.factory.close();
+        this.em.close();
     }
 }

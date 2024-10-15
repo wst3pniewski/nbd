@@ -1,15 +1,18 @@
 package org.example.model.managers;
 
+import jakarta.persistence.LockModeType;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.From;
 import jakarta.transaction.Transactional;
-import org.example.model.accounts.BankAccount;
-import org.example.model.accounts.JuniorAccount;
-import org.example.model.accounts.SavingAccount;
-import org.example.model.accounts.StandardAccount;
+import org.example.model.accounts.*;
 import org.example.model.clients.Client;
 import org.example.model.repositories.AccountRepository;
 import org.example.model.repositories.Repository;
 
 import java.math.BigDecimal;
+import java.util.List;
+
+import static jakarta.persistence.Persistence.createEntityManagerFactory;
 
 /*
  * Business logic for managing account
@@ -24,29 +27,36 @@ import java.math.BigDecimal;
 public class AccountManager {
     private AccountRepository accountRepository;
 
-    @Transactional
+//    @Transactional
     public BankAccount createStandardAccount(Client client, BigDecimal debitLimit) {
         BankAccount account = new StandardAccount(client, debitLimit);
-        long accountCount = accountRepository.countClientActiveAccounts(client.getId());
-        int maxacc = client.getClientType().getMaxActiveAccounts();
-        if (accountCount >= client.getClientType().getMaxActiveAccounts()) {
-            throw new IllegalStateException("Client cannot have more than " + client.getClientType().getMaxActiveAccounts() + " bank accounts.");
+        List<BankAccount> accounts = accountRepository.findByClientId(client.getId());
+        if (accounts.size() >= client.getClientType().getMaxActiveAccounts()) {
+            throw new IllegalArgumentException("Client exceeded the limit of accounts");
         }
-        BankAccount bAccount = accountRepository.addAccount(account);
+        BankAccount bAccount = accountRepository.add(account);
         return bAccount;
     }
 
     public BankAccount createSavingAccount(Client client, BigDecimal interestRate) {
         BankAccount account = new SavingAccount(client, interestRate);
-        return accountRepository.addAccount(account);
+        List<BankAccount> accounts = accountRepository.findByClientId(client.getId());
+        if (accounts.size() >= client.getClientType().getMaxActiveAccounts()) {
+            throw new IllegalArgumentException("Client exceeded the limit of accounts");
+        }
+        return accountRepository.add(account);
     }
 
     public BankAccount createJuniorAccount(Client client, Client parent) {
         BankAccount account = new JuniorAccount(client, parent);
-        return accountRepository.addAccount(account);
+        List<BankAccount> accounts = accountRepository.findByClientId(client.getId());
+        if (accounts.size() >= client.getClientType().getMaxActiveAccounts()) {
+            throw new IllegalArgumentException("Client exceeded the limit of accounts");
+        }
+        return accountRepository.add(account);
     }
 
-    public AccountManager() {
-        this.accountRepository = new AccountRepository();
+    public AccountManager(AccountRepository accountRepository) {
+        this.accountRepository = accountRepository;
     }
 }
