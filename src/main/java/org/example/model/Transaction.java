@@ -31,6 +31,11 @@ public class Transaction {
         this.amount = amount;
     }
 
+    public void transferMoney() {
+        sourceAccount.setBalance(sourceAccount.getBalance().subtract(amount));
+        destinationAccount.setBalance(destinationAccount.getBalance().add(amount));
+    }
+
     public BankAccount getSourceAccount() {
         return sourceAccount;
     }

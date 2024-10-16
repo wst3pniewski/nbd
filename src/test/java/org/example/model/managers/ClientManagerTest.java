@@ -43,6 +43,7 @@ class ClientManagerTest {
             emf.close();
         }
     }
+
     @Test
     void createClient() {
 

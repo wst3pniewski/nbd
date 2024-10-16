@@ -41,11 +41,7 @@ public class AccountRepository implements RepositoryI<BankAccount>, AutoCloseabl
 
     @Override
     public BankAccount findById(Long id) {
-        var builder = em.getCriteriaBuilder();
-        CriteriaQuery<BankAccount> query = builder.createQuery(BankAccount.class);
-        From<BankAccount, BankAccount> from = query.from(BankAccount.class);
-        query.select(from).where(builder.equal(from.get(BankAccount_.id), id));
-        return em.createQuery(query).getSingleResult();
+        return em.find(BankAccount.class, id);
     }
 
     @Override
@@ -63,13 +59,7 @@ public class AccountRepository implements RepositoryI<BankAccount>, AutoCloseabl
 
     @Override
     public BankAccount findByIdWithOptimisticLock(Long id) {
-        var builder = em.getCriteriaBuilder();
-        CriteriaQuery<BankAccount> query = builder.createQuery(BankAccount.class);
-        From<BankAccount, BankAccount> from = query.from(BankAccount.class);
-        query.select(from).where(builder.equal(from.get(BankAccount_.id), id));
-        return em.createQuery(query)
-                .setLockMode(LockModeType.OPTIMISTIC_FORCE_INCREMENT)
-                .getSingleResult();
+        return em.find(BankAccount.class, id, LockModeType.OPTIMISTIC_FORCE_INCREMENT);
     }
 
     public List<BankAccount> findByClientId(Long clientId) {
@@ -77,9 +67,14 @@ public class AccountRepository implements RepositoryI<BankAccount>, AutoCloseabl
         CriteriaQuery<BankAccount> query = builder.createQuery(BankAccount.class);
         From<BankAccount, BankAccount> from = query.from(BankAccount.class);
         query.select(from).where(builder.equal(from.get(BankAccount_.client).get("id"), clientId));
-        return em.createQuery(query)
-                .setLockMode(LockModeType.OPTIMISTIC_FORCE_INCREMENT)
+//        return em.find(BankAccount.class, clientId, LockModeType.OPTIMISTIC_FORCE_INCREMENT);
+        List<BankAccount> accounts = em.createQuery(query)
+                .setLockMode(LockModeType.OPTIMISTIC)
                 .getResultList();
+        for (BankAccount account : accounts) {
+            account.setActive(account.getActive());
+        }
+        return accounts;
     }
 
     @Override
