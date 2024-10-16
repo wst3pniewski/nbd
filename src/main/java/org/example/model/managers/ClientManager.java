@@ -1,7 +1,6 @@
 package org.example.model.managers;
 
-import jakarta.persistence.LockModeType;
-import jakarta.persistence.Persistence;
+import jakarta.persistence.*;
 import jakarta.transaction.Transactional;
 import org.example.model.accounts.BankAccount;
 import org.example.model.clients.Address;
@@ -11,14 +10,16 @@ import org.hibernate.annotations.OptimisticLock;
 
 import java.time.LocalDate;
 import java.util.List;
+
 /*
-* Business logic for managing clients
-* - it is not possible to delete a client if he has any ACTIVE accounts
-* - while creating a client no NULL values are allowed as for update
-*
-* */
+ * Business logic for managing clients
+ * - it is not possible to delete a client if he has any ACTIVE accounts
+ * - while creating a client no NULL values are allowed as for update
+ *
+ * */
 public class ClientManager {
     private ClientRepository clientRepository;
+    private EntityManagerFactory emf;
 
     public ClientManager(ClientRepository clientRepository) {
         this.clientRepository = clientRepository;
@@ -28,21 +29,21 @@ public class ClientManager {
                                String street, String city, String zipCode) {
         Address address = new Address(street, city, zipCode);
         Client client = new Client(firstName, lastName, dateOfBirth, clientType, address);
-        return clientRepository.add(client);
+        clientRepository.add(client);
+        return client;
     }
 
     public Client updateClient(Client client) {
         return clientRepository.update(client);
     }
 
-    @Transactional
     public Client deleteClient(Long id) {
 
-        Client client = clientRepository.findById(id);
-
+        Client client = clientRepository.findByIdWithOptimisticLock(id);
         if (client == null) {
             throw new IllegalArgumentException("Client not found");
         }
+
 
         return clientRepository.delete(id);
     }

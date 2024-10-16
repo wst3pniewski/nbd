@@ -29,7 +29,7 @@ class AccountRepositoryTest {
     static void beforeAll() {
         emf = Persistence.createEntityManagerFactory("POSTGRES_RENT_PU");
         em = emf.createEntityManager();
-        accountRepository = new AccountRepository(em);
+        accountRepository = new AccountRepository(emf);
     }
 
     @AfterAll

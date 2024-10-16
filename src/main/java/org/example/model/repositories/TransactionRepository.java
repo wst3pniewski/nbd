@@ -1,6 +1,7 @@
 package org.example.model.repositories;
 
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.LockModeType;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.From;
@@ -12,20 +13,26 @@ import java.util.List;
 
 public class TransactionRepository implements RepositoryI<Transaction>, AutoCloseable {
 
-    private EntityManager em;
+    private EntityManagerFactory emf;
 
-    public TransactionRepository(EntityManager em) {
-        this.em = em;
+    public TransactionRepository(EntityManagerFactory emf) {
+        this.emf = emf;
     }
 
     @Override
     public Transaction add(Transaction transaction) {
-        em.persist(transaction);
+        if (transaction == null) {
+            return null;
+        }
+        Repository.inSession(emf, em -> {
+            em.persist(transaction);
+        });
         return transaction;
     }
 
     @Override
     public List<Transaction> findAll() {
+        EntityManager em = emf.createEntityManager();
         var builder = em.getCriteriaBuilder();
         CriteriaQuery<Transaction> query = builder.createQuery(Transaction.class);
         query.from(Transaction.class);
@@ -34,6 +41,7 @@ public class TransactionRepository implements RepositoryI<Transaction>, AutoClos
 
     @Override
     public Transaction findById(Long id) {
+        EntityManager em = emf.createEntityManager();
         var builder = em.getCriteriaBuilder();
         CriteriaQuery<Transaction> query = builder.createQuery(Transaction.class);
         From<Transaction, Transaction> from = query.from(Transaction.class);
@@ -43,19 +51,28 @@ public class TransactionRepository implements RepositoryI<Transaction>, AutoClos
 
     @Override
     public Transaction update(Transaction transaction) {
-        em.merge(transaction);
+        if (transaction == null) {
+            return null;
+        }
+        Repository.inSession(emf, em -> {
+            em.merge(transaction);
+        });
         return transaction;
     }
 
     @Override
     public Transaction delete(Long id) {
-        Transaction foundTransaction = em.find(Transaction.class, id);
-        em.remove(foundTransaction);
-        return foundTransaction;
+        Repository.inSession(emf, em -> {
+            Transaction foundTransaction = em.find(Transaction.class, id, LockModeType.PESSIMISTIC_WRITE);
+            em.remove(foundTransaction);
+        });
+
+        return null;
     }
 
     @Override
     public Transaction findByIdWithOptimisticLock(Long id) {
+        EntityManager em = emf.createEntityManager();
         var builder = em.getCriteriaBuilder();
         CriteriaQuery<Transaction> query = builder.createQuery(Transaction.class);
         From<Transaction, Transaction> from = query.from(Transaction.class);
@@ -67,6 +84,6 @@ public class TransactionRepository implements RepositoryI<Transaction>, AutoClos
 
     @Override
     public void close() throws Exception {
-        this.em.close();
+        this.emf.close();
     }
 }

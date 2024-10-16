@@ -11,6 +11,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -23,7 +24,7 @@ class ClientRepositoryTest {
     static void beforeAll() {
         emf = Persistence.createEntityManagerFactory("POSTGRES_RENT_PU");
         em = emf.createEntityManager();
-        clientRepository = new ClientRepository(em);
+        clientRepository = new ClientRepository(emf);
     }
 
     @AfterAll
@@ -57,10 +58,9 @@ class ClientRepositoryTest {
     void findByIdWithOptimisticLock() {
         EntityTransaction transaction = em.getTransaction();
         Address address = new Address("Ulica", "Lodz", "1");
-        transaction.begin();
+
         clientRepository.add(new Client("John", "Doe",
                 LocalDate.of(1990, 1, 1), Client.ClientTypes.STANDARD, address));
-        transaction.commit();
         transaction.begin();
         clientRepository.findByIdWithOptimisticLock(1L);
         transaction.commit();

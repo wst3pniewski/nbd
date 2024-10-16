@@ -14,11 +14,11 @@ public class Transaction {
     @GeneratedValue(generator = "transactionIdSequence")
     private long id;
 
-    @OneToMany
+    @ManyToOne
     @JoinColumn(name = "source_account_id", nullable = false)
     BankAccount sourceAccount;
 
-    @OneToMany
+    @ManyToOne
     @JoinColumn(name = "destination_account_id", nullable = false)
     BankAccount destinationAccount;
 
@@ -31,9 +31,7 @@ public class Transaction {
         this.amount = amount;
     }
 
-    public void transferMoney() {
-        sourceAccount.setBalance(sourceAccount.getBalance().subtract(amount));
-        destinationAccount.setBalance(destinationAccount.getBalance().add(amount));
+    public Transaction() {
     }
 
     public BankAccount getSourceAccount() {
