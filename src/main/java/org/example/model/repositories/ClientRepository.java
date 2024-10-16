@@ -35,12 +35,6 @@ public class ClientRepository implements RepositoryI<Client>, AutoCloseable {
 
     @Override
     public Client findById(Long id) {
-//        var builder = em.getCriteriaBuilder();
-//        CriteriaQuery<Client> query = builder.createQuery(Client.class);
-//        From<Client, Client> from = query.from(Client.class);
-//        query.select(from).where(builder.equal(from.get(Client_.id), id));
-//
-//        return em.createQuery(query).getSingleResult();
         return em.find(Client.class, id);
     }
 

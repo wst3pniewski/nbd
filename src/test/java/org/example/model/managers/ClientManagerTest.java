@@ -33,8 +33,6 @@ class ClientManagerTest {
         em = emf.createEntityManager();
         ClientRepository clientRepository = new ClientRepository(em);
         clientManager = new ClientManager(clientRepository);
-
-
     }
 
     @AfterAll

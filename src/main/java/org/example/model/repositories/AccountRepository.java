@@ -69,7 +69,7 @@ public class AccountRepository implements RepositoryI<BankAccount>, AutoCloseabl
         query.select(from).where(builder.equal(from.get(BankAccount_.client).get("id"), clientId));
 //        return em.find(BankAccount.class, clientId, LockModeType.OPTIMISTIC_FORCE_INCREMENT);
         List<BankAccount> accounts = em.createQuery(query)
-                .setLockMode(LockModeType.OPTIMISTIC)
+                .setLockMode(LockModeType.OPTIMISTIC_FORCE_INCREMENT)
                 .getResultList();
         for (BankAccount account : accounts) {
             account.setActive(account.getActive());
