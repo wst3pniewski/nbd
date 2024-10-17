@@ -2,13 +2,10 @@ package org.example.model.managers;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
-import jakarta.transaction.Transactional;
 import org.example.model.accounts.*;
 import org.example.model.clients.Client;
 import org.example.model.repositories.AccountRepository;
 import org.example.model.repositories.ClientRepository;
-import org.example.model.repositories.Repository;
-import jakarta.persistence.EntityManagerFactory;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -27,18 +24,17 @@ import java.util.List;
 public class AccountManager {
     private AccountRepository accountRepository;
     private ClientRepository clientRepository;
-    private EntityManagerFactory emf;
+    private EntityManager em;
 
-    public AccountManager(AccountRepository accountRepository, ClientRepository clientRepository, EntityManagerFactory emf) {
-        this.accountRepository = accountRepository;
-        this.clientRepository = clientRepository;
-        this.emf = emf;
+    public AccountManager(EntityManager em) {
+        this.accountRepository = new AccountRepository(em);
+        this.clientRepository = new ClientRepository(em);
+        this.em = em;
     }
 
     public BankAccount createStandardAccount(long clientId, BigDecimal debitLimit) {
         BankAccount account = null;
-        EntityManager em = emf.createEntityManager();
-        EntityTransaction tx = em.getTransaction();  // Start a transaction manually
+        EntityTransaction tx = em.getTransaction();
         try {
             tx.begin();
             Client client = clientRepository.findByIdWithOptimisticLock(clientId);
@@ -54,8 +50,6 @@ public class AccountManager {
                 tx.rollback();
             }
             throw e;
-        } finally {
-            em.close();
         }
 
         return account;
@@ -63,8 +57,7 @@ public class AccountManager {
 
     public BankAccount createSavingAccount(long clientId, BigDecimal interestRate) {
         BankAccount account = null;
-        EntityManager em = emf.createEntityManager();
-        EntityTransaction tx = em.getTransaction();  // Start a transaction manually
+        EntityTransaction tx = em.getTransaction();
         try {
             tx.begin();
             Client client = clientRepository.findByIdWithOptimisticLock(clientId);
@@ -80,17 +73,13 @@ public class AccountManager {
                 tx.rollback();
             }
             throw e;
-        } finally {
-            em.close();
         }
-
         return account;
     }
 
     public BankAccount createJuniorAccount(long clientId, long parentId) {
         BankAccount account = null;
-        EntityManager em = emf.createEntityManager();
-        EntityTransaction tx = em.getTransaction();  // Start a transaction manually
+        EntityTransaction tx = em.getTransaction();
         try {
             tx.begin();
             Client client = clientRepository.findByIdWithOptimisticLock(clientId);
@@ -114,8 +103,6 @@ public class AccountManager {
                 tx.rollback();
             }
             throw e;
-        } finally {
-            em.close();
         }
 
         return account;
@@ -123,8 +110,7 @@ public class AccountManager {
 
     public BankAccount depositMoney(Long accountId, BigDecimal amount) {
         BankAccount account = null;
-        EntityManager em = emf.createEntityManager();
-        EntityTransaction tx = em.getTransaction();  // Start a transaction manually
+        EntityTransaction tx = em.getTransaction();
         try {
             tx.begin();
             account = accountRepository.findByIdWithOptimisticLock(accountId);
@@ -136,8 +122,87 @@ public class AccountManager {
                 tx.rollback();
             }
             throw e;
-        } finally {
-            em.close();
+        }
+
+        return account;
+    }
+
+    public BankAccount withdrawMoney(Long accountId, BigDecimal amount) {
+        BankAccount account = null;
+        EntityTransaction tx = em.getTransaction();
+        try {
+            tx.begin();
+            account = accountRepository.findByIdWithOptimisticLock(accountId);
+            BigDecimal balance = account.getBalance();
+            if (balance.compareTo(amount) < 0) {
+                throw new IllegalArgumentException("Insufficient balance");
+            }
+            account.setBalance(balance.subtract(amount));
+            accountRepository.update(account);
+            tx.commit();
+        } catch (Exception e) {
+            if (tx.isActive()) {
+                tx.rollback();
+            }
+            throw e;
+        }
+
+        return account;
+    }
+
+    public BankAccount interestCalculation(Long accountId){
+        BankAccount account = null;
+        EntityTransaction tx = em.getTransaction();
+        try {
+            tx.begin();
+            account = accountRepository.findByIdWithOptimisticLock(accountId);
+            if (account instanceof SavingAccount) {
+                BigDecimal interestRate = ((SavingAccount) account).getInterestRate();
+                BigDecimal balance = account.getBalance();
+                BigDecimal interest = balance.multiply(interestRate);
+                account.setBalance(balance.add(interest));
+                accountRepository.update(account);
+            } else {
+                tx.rollback();
+                throw new IllegalArgumentException("Account is not a saving account");
+            }
+            tx.commit();
+        } catch (Exception e) {
+            if (tx.isActive()) {
+                tx.rollback();
+            }
+            throw e;
+        }
+
+        return account;
+    }
+
+    public BankAccount payDebt(Long accountId, BigDecimal amount) {
+        BankAccount account = null;
+        EntityTransaction tx = em.getTransaction();
+        try {
+            tx.begin();
+            account = accountRepository.findByIdWithOptimisticLock(accountId);
+            if (account instanceof StandardAccount) {
+                BigDecimal debit = ((StandardAccount) account).getDebit();
+                BigDecimal amountDebitSubtract = amount.subtract(debit);
+                if (amountDebitSubtract.compareTo(BigDecimal.ZERO) >= 0) {
+                    account.setBalance(account.getBalance().add(amountDebitSubtract));
+                    ((StandardAccount) account).setDebit(BigDecimal.ZERO);
+                } else {
+                    ((StandardAccount) account).setDebit(debit.subtract(amount));
+                }
+                accountRepository.update(account);
+            } else {
+                tx.rollback();
+                throw new IllegalArgumentException("Account is not a standard account");
+            }
+            tx.commit();
+        } catch (Exception e) {
+            if (tx.isActive()) {
+                tx.rollback();
+            }
+            throw e;
         }
 
         return account;
@@ -153,11 +218,6 @@ public class AccountManager {
 
     public BankAccount update(BankAccount account) {
         return accountRepository.update(account);
-    }
-
-    public BankAccount delete(Long id) {
-        BankAccount account = accountRepository.findById(id);
-        return accountRepository.delete(id);
     }
 
     public BankAccount findByIdWithOptimisticLock(Long id) {

@@ -31,12 +31,9 @@ class TransactionManagerTest {
     static void beforeAll() {
         emf = Persistence.createEntityManagerFactory("POSTGRES_RENT_PU");
         em = emf.createEntityManager();
-        TransactionRepository transactionRepository = new TransactionRepository(emf);
-        AccountRepository accountRepository = new AccountRepository(emf);
-        ClientRepository clientRepository = new ClientRepository(emf);
-        accountManager = new AccountManager(accountRepository, clientRepository, emf);
-        clientManager = new ClientManager(clientRepository);
-        transactionManager = new TransactionManager(transactionRepository, accountRepository, emf);
+        accountManager = new AccountManager(em);
+        clientManager = new ClientManager(em);
+        transactionManager = new TransactionManager(em);
     }
 
     @AfterAll
@@ -47,11 +44,11 @@ class TransactionManagerTest {
     }
 
     @Test
-    void standardAccountTransactionWithDebt() {
+    void StandardAccountTransactionWithDebt() {
         LocalDate dateOfBirth = LocalDate.of(2000, 1, 1);
 
-        Client client = clientManager.createClient("Add", "Account", dateOfBirth,
-                Client.ClientTypes.STANDARD, "Ulica", "Lodz", "1");
+        Client client = clientManager.createClient("John", "Doe", dateOfBirth,
+                Client.ClientTypes.STANDARD, "street", "city", "1");
         BankAccount account1 = accountManager.createStandardAccount(client.getId(), BigDecimal.valueOf(1000));
         BankAccount account2 = accountManager.createStandardAccount(client.getId(), BigDecimal.valueOf(1000));
         accountManager.depositMoney(account1.getAccountId(), BigDecimal.valueOf(100));
@@ -61,17 +58,17 @@ class TransactionManagerTest {
         account1 = accountManager.findById(account1.getAccountId());
         account2 = accountManager.findById(account2.getAccountId());
 
-        assertEquals(BigDecimal.valueOf(0.0).setScale(2), account1.getBalance());
-        assertEquals(BigDecimal.valueOf(1000.0).setScale(2), ((StandardAccount) account1).getDebit());
-        assertEquals(BigDecimal.valueOf(1100.0).setScale(2), account2.getBalance());
+        assertEquals(BigDecimal.valueOf(0), account1.getBalance());
+        assertEquals(BigDecimal.valueOf(1000), ((StandardAccount) account1).getDebit());
+        assertEquals(BigDecimal.valueOf(1100), account2.getBalance());
     }
 
     @Test
-    void standardAccountTransaction() {
+    void StandardAccountTransactionPositive() {
         LocalDate dateOfBirth = LocalDate.of(2000, 1, 1);
 
-        Client client = clientManager.createClient("Add", "Account", dateOfBirth,
-                Client.ClientTypes.STANDARD, "Ulica", "Lodz", "1");
+        Client client = clientManager.createClient("John", "Doe", dateOfBirth,
+                Client.ClientTypes.STANDARD, "street", "city", "1");
         BankAccount account1 = accountManager.createStandardAccount(client.getId(), BigDecimal.valueOf(1000));
         BankAccount account2 = accountManager.createStandardAccount(client.getId(), BigDecimal.valueOf(1000));
         accountManager.depositMoney(account1.getAccountId(), BigDecimal.valueOf(100));
@@ -81,17 +78,61 @@ class TransactionManagerTest {
         account1 = accountManager.findById(account1.getAccountId());
         account2 = accountManager.findById(account2.getAccountId());
 
-        assertEquals(BigDecimal.valueOf(0.0).setScale(2), account1.getBalance());
-        assertEquals(BigDecimal.valueOf(0.0).setScale(2), ((StandardAccount) account1).getDebit());
-        assertEquals(BigDecimal.valueOf(100.0).setScale(2), account2.getBalance());
+        assertEquals(BigDecimal.valueOf(0), account1.getBalance());
+        assertEquals(BigDecimal.valueOf(0), ((StandardAccount) account1).getDebit());
+        assertEquals(BigDecimal.valueOf(100), account2.getBalance());
     }
 
     @Test
-    void standardAccountTransactionBalanceExceeded() {
+    void StandardAccountTransactionInActiveAccount() {
         LocalDate dateOfBirth = LocalDate.of(2000, 1, 1);
 
-        Client client = clientManager.createClient("Add", "Account", dateOfBirth,
-                Client.ClientTypes.STANDARD, "Ulica", "Lodz", "1");
+        Client client = clientManager.createClient("John", "Doe", dateOfBirth,
+                Client.ClientTypes.STANDARD, "street", "city", "1");
+        BankAccount account1 = accountManager.createStandardAccount(client.getId(), BigDecimal.valueOf(1000));
+        BankAccount account2 = accountManager.createStandardAccount(client.getId(), BigDecimal.valueOf(1000));
+        accountManager.depositMoney(account1.getAccountId(), BigDecimal.valueOf(100));
+        account1.setActive(false);
+        accountManager.update(account1);
+        assertThrows(IllegalArgumentException.class, () -> transactionManager
+                .createStandardTransaction(account1.getAccountId(), account2.getAccountId(), BigDecimal.valueOf(100)));
+    }
+
+    @Test
+    void StandardOtherTypeAccountTransaction() {
+        LocalDate dateOfBirth = LocalDate.of(2000, 1, 1);
+
+        Client client = clientManager.createClient("John", "Doe", dateOfBirth,
+                Client.ClientTypes.STANDARD, "street", "city", "1");
+        BankAccount account1 = accountManager.createStandardAccount(client.getId(), BigDecimal.valueOf(1000));
+        BankAccount account2 = accountManager.createSavingAccount(client.getId(), BigDecimal.valueOf(0.1));
+        accountManager.depositMoney(account1.getAccountId(), BigDecimal.valueOf(100));
+        transactionManager.createStandardTransaction(account1.getAccountId(), account2.getAccountId(), BigDecimal.valueOf(100));
+
+        assertEquals(BigDecimal.valueOf(0), account1.getBalance());
+        assertEquals(BigDecimal.valueOf(0), ((StandardAccount) account1).getDebit());
+        assertEquals(BigDecimal.valueOf(100), account2.getBalance());
+    }
+
+    @Test
+    void OtherToStandardAccountTransaction() {
+        LocalDate dateOfBirth = LocalDate.of(2000, 1, 1);
+
+        Client client = clientManager.createClient("John", "Doe", dateOfBirth,
+                Client.ClientTypes.STANDARD, "street", "city", "1");
+        BankAccount account1 = accountManager.createStandardAccount(client.getId(), BigDecimal.valueOf(1000));
+        BankAccount account2 = accountManager.createSavingAccount(client.getId(), BigDecimal.valueOf(0.1));
+        accountManager.depositMoney(account1.getAccountId(), BigDecimal.valueOf(100));
+        assertThrows(IllegalArgumentException.class, () -> transactionManager
+                .createStandardTransaction(account2.getAccountId(), account1.getAccountId(), BigDecimal.valueOf(100)));
+    }
+
+    @Test
+    void StandardAccountTransactionBalanceExceeded() {
+        LocalDate dateOfBirth = LocalDate.of(2000, 1, 1);
+
+        Client client = clientManager.createClient("John", "Doe", dateOfBirth,
+                Client.ClientTypes.STANDARD, "street", "city", "1");
         BankAccount account1 = accountManager.createStandardAccount(client.getId(), BigDecimal.valueOf(1000));
         BankAccount account2 = accountManager.createStandardAccount(client.getId(), BigDecimal.valueOf(1000));
         accountManager.depositMoney(account1.getAccountId(), BigDecimal.valueOf(100));
@@ -101,11 +142,11 @@ class TransactionManagerTest {
     }
 
     @Test
-    void standardAccountTransactionNegativeAmount() {
+    void StandardAccountTransactionNegativeAmount() {
         LocalDate dateOfBirth = LocalDate.of(2000, 1, 1);
 
-        Client client = clientManager.createClient("Add", "Account", dateOfBirth,
-                Client.ClientTypes.STANDARD, "Ulica", "Lodz", "1");
+        Client client = clientManager.createClient("John", "Doe", dateOfBirth,
+                Client.ClientTypes.STANDARD, "street", "city", "1");
         BankAccount account1 = accountManager.createStandardAccount(client.getId(), BigDecimal.valueOf(1000));
         BankAccount account2 = accountManager.createStandardAccount(client.getId(), BigDecimal.valueOf(1000));
         accountManager.depositMoney(account1.getAccountId(), BigDecimal.valueOf(100));
@@ -113,4 +154,149 @@ class TransactionManagerTest {
                 .createStandardTransaction(account1.getAccountId(), account2.getAccountId(), BigDecimal.valueOf(-10_000)));
 
     }
+
+    @Test
+    void SavingAccountTransactionPositive() {
+        LocalDate dateOfBirth = LocalDate.of(2000, 1, 1);
+
+        Client client = clientManager.createClient("John", "Doe", dateOfBirth,
+                Client.ClientTypes.STANDARD, "street", "city", "1");
+        BankAccount account1 = accountManager.createSavingAccount(client.getId(), BigDecimal.valueOf(0.1));
+        BankAccount account2 = accountManager.createSavingAccount(client.getId(), BigDecimal.valueOf(0.1));
+        accountManager.depositMoney(account1.getAccountId(), BigDecimal.valueOf(100));
+        transactionManager.createJuniorOrSavingTransaction(account1.getAccountId(), account2.getAccountId(), BigDecimal.valueOf(100));
+        assertEquals(BigDecimal.valueOf(0), account1.getBalance());
+        assertEquals(BigDecimal.valueOf(100), account2.getBalance());
+    }
+
+    @Test
+    void JuniorAccountTransactionPositive() {
+        LocalDate dateOfBirthChild = LocalDate.of(2010, 1, 1);
+        LocalDate dateOfBirthParent = LocalDate.of(1990, 1, 1);
+
+        Client child = clientManager.createClient("Child", "Child", dateOfBirthChild,
+                Client.ClientTypes.STANDARD, "street", "city", "1");
+        Client parent = clientManager.createClient("Parent", "Parent", dateOfBirthParent,
+                Client.ClientTypes.STANDARD, "street", "city", "1");
+        BankAccount account1 = accountManager.createJuniorAccount(child.getId(), parent.getId());
+        BankAccount account2 = accountManager.createJuniorAccount(child.getId(), parent.getId());
+        accountManager.depositMoney(account1.getAccountId(), BigDecimal.valueOf(100));
+        transactionManager.createJuniorOrSavingTransaction(account1.getAccountId(), account2.getAccountId(), BigDecimal.valueOf(100));
+        assertEquals(BigDecimal.valueOf(0), account1.getBalance());
+        assertEquals(BigDecimal.valueOf(100), account2.getBalance());
+    }
+
+    @Test
+    void JuniorSavingAccountTransactionPositive() {
+        LocalDate dateOfBirthChild = LocalDate.of(2010, 1, 1);
+        LocalDate dateOfBirthParent = LocalDate.of(1990, 1, 1);
+
+        Client child = clientManager.createClient("Child", "Child", dateOfBirthChild,
+                Client.ClientTypes.STANDARD, "street", "city", "1");
+        Client parent = clientManager.createClient("Parent", "Parent", dateOfBirthParent,
+                Client.ClientTypes.STANDARD, "street", "city", "1");
+        BankAccount account1 = accountManager.createJuniorAccount(child.getId(), parent.getId());
+        BankAccount account2 = accountManager.createSavingAccount(parent.getId(), BigDecimal.valueOf(0.1));
+        accountManager.depositMoney(account1.getAccountId(), BigDecimal.valueOf(100));
+        transactionManager.createJuniorOrSavingTransaction(account1.getAccountId(), account2.getAccountId(), BigDecimal.valueOf(100));
+        assertEquals(BigDecimal.valueOf(0), account1.getBalance());
+        assertEquals(BigDecimal.valueOf(100), account2.getBalance());
+    }
+
+    @Test
+    void JuniorSavingAccountTransactionInsufficientBalance() {
+        LocalDate dateOfBirthChild = LocalDate.of(2010, 1, 1);
+        LocalDate dateOfBirthParent = LocalDate.of(1990, 1, 1);
+
+        Client child = clientManager.createClient("Child", "Child", dateOfBirthChild,
+                Client.ClientTypes.STANDARD, "street", "city", "1");
+        Client parent = clientManager.createClient("Parent", "Parent", dateOfBirthParent,
+                Client.ClientTypes.STANDARD, "street", "city", "1");
+        BankAccount account1 = accountManager.createJuniorAccount(child.getId(), parent.getId());
+        BankAccount account2 = accountManager.createSavingAccount(parent.getId(), BigDecimal.valueOf(0.1));
+        assertThrows(IllegalArgumentException.class, () -> transactionManager
+                .createJuniorOrSavingTransaction(account1.getAccountId(), account2.getAccountId(), BigDecimal.valueOf(100)));
+    }
+
+    @Test
+    void JuniorSavingAccountTransactionNegativeAmount() {
+        LocalDate dateOfBirthChild = LocalDate.of(2010, 1, 1);
+        LocalDate dateOfBirthParent = LocalDate.of(1990, 1, 1);
+
+        Client child = clientManager.createClient("Child", "Child", dateOfBirthChild,
+                Client.ClientTypes.STANDARD, "street", "city", "1");
+        Client parent = clientManager.createClient("Parent", "Parent", dateOfBirthParent,
+                Client.ClientTypes.STANDARD, "street", "city", "1");
+        BankAccount account1 = accountManager.createJuniorAccount(child.getId(), parent.getId());
+        BankAccount account2 = accountManager.createSavingAccount(parent.getId(), BigDecimal.valueOf(0.1));
+        accountManager.depositMoney(account1.getAccountId(), BigDecimal.valueOf(100));
+        assertThrows(IllegalArgumentException.class, () -> transactionManager
+                .createJuniorOrSavingTransaction(account1.getAccountId(), account2.getAccountId(), BigDecimal.valueOf(-100)));
+    }
+
+    @Test
+    void JuniorNotExistingAccountTransaction() {
+        LocalDate dateOfBirthChild = LocalDate.of(2010, 1, 1);
+        LocalDate dateOfBirthParent = LocalDate.of(1990, 1, 1);
+
+        Client child = clientManager.createClient("Child", "Child", dateOfBirthChild,
+                Client.ClientTypes.STANDARD, "street", "city", "1");
+        Client parent = clientManager.createClient("Parent", "Parent", dateOfBirthParent,
+                Client.ClientTypes.STANDARD, "street", "city", "1");
+        BankAccount account1 = accountManager.createJuniorAccount(child.getId(), parent.getId());
+        accountManager.depositMoney(account1.getAccountId(), BigDecimal.valueOf(100));
+        assertThrows(IllegalArgumentException.class, () -> transactionManager
+                .createJuniorOrSavingTransaction(account1.getAccountId(), 1000L, BigDecimal.valueOf(100)));
+    }
+
+    @Test
+    void JuniorStandardAccountTransaction() {
+        LocalDate dateOfBirthChild = LocalDate.of(2010, 1, 1);
+        LocalDate dateOfBirthParent = LocalDate.of(1990, 1, 1);
+
+        Client child = clientManager.createClient("Child", "Child", dateOfBirthChild,
+                Client.ClientTypes.STANDARD, "street", "city", "1");
+        Client parent = clientManager.createClient("Parent", "Parent", dateOfBirthParent,
+                Client.ClientTypes.STANDARD, "street", "city", "1");
+        BankAccount account1 = accountManager.createJuniorAccount(child.getId(), parent.getId());
+        BankAccount account2 = accountManager.createStandardAccount(parent.getId(), BigDecimal.valueOf(1000));
+        accountManager.depositMoney(account1.getAccountId(), BigDecimal.valueOf(100));
+        transactionManager.createJuniorOrSavingTransaction(account1.getAccountId(), account2.getAccountId(), BigDecimal.valueOf(100));
+        assertEquals(BigDecimal.valueOf(0), account1.getBalance());
+        assertEquals(BigDecimal.valueOf(100), account2.getBalance());
+    }
+
+    @Test
+    void StandardJuniorAccountTransaction() {
+        LocalDate dateOfBirthChild = LocalDate.of(2010, 1, 1);
+        LocalDate dateOfBirthParent = LocalDate.of(1990, 1, 1);
+
+        Client child = clientManager.createClient("Child", "Child", dateOfBirthChild,
+                Client.ClientTypes.STANDARD, "street", "city", "1");
+        Client parent = clientManager.createClient("Parent", "Parent", dateOfBirthParent,
+                Client.ClientTypes.STANDARD, "street", "city", "1");
+        BankAccount account1 = accountManager.createJuniorAccount(child.getId(), parent.getId());
+        BankAccount account2 = accountManager.createStandardAccount(parent.getId(), BigDecimal.valueOf(1000));
+        accountManager.depositMoney(account1.getAccountId(), BigDecimal.valueOf(100));
+        assertThrows(IllegalArgumentException.class, () -> transactionManager
+                .createJuniorOrSavingTransaction(account2.getAccountId(), account1.getAccountId(), BigDecimal.valueOf(100)));
+    }
+
+    @Test
+    void JuniorSavingAccountTransactionInActiveAccount() {
+        LocalDate dateOfBirthChild = LocalDate.of(2010, 1, 1);
+        LocalDate dateOfBirthParent = LocalDate.of(1990, 1, 1);
+
+        Client child = clientManager.createClient("Child", "Child", dateOfBirthChild,
+                Client.ClientTypes.STANDARD, "street", "city", "1");
+        Client parent = clientManager.createClient("Parent", "Parent", dateOfBirthParent,
+                Client.ClientTypes.STANDARD, "street", "city", "1");
+        BankAccount account1 = accountManager.createJuniorAccount(child.getId(), parent.getId());
+        account1.setActive(false);
+        accountManager.update(account1);
+        BankAccount account2 = accountManager.createSavingAccount(parent.getId(), BigDecimal.valueOf(0.1));
+        assertThrows(IllegalArgumentException.class, () -> transactionManager
+                .createJuniorOrSavingTransaction(account1.getAccountId(), account2.getAccountId(), BigDecimal.valueOf(100)));
+    }
+
 }

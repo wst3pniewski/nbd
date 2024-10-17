@@ -29,7 +29,7 @@ class AccountRepositoryTest {
     static void beforeAll() {
         emf = Persistence.createEntityManagerFactory("POSTGRES_RENT_PU");
         em = emf.createEntityManager();
-        accountRepository = new AccountRepository(emf);
+        accountRepository = new AccountRepository(em);
     }
 
     @AfterAll
@@ -50,6 +50,10 @@ class AccountRepositoryTest {
         em.persist(client);
         accountRepository.add(account);
         transaction.commit();
+
+        BankAccount foundAccount = accountRepository.findById(account.getAccountId());
+
+        assertEquals(account.getAccountId(), foundAccount.getAccountId());
     }
 
     @Test
@@ -98,12 +102,15 @@ class AccountRepositoryTest {
         transaction.commit();
 
         account.setBalance(BigDecimal.valueOf(2000));
+        transaction.begin();
         BankAccount updatedAccount = accountRepository.update(account);
-        assertNotNull(updatedAccount);
+        transaction.commit();
+        BankAccount foundAccount = accountRepository.findById(account.getAccountId());
+        assertEquals(BigDecimal.valueOf(2000), foundAccount.getBalance());
     }
 
     @Test
-    void deleteAccount() {
+    void countActiveByClientId() {
         LocalDate dateOfBirth = LocalDate.of(2000, 1, 1);
         Address address = new Address("Aleja", "Lodz", "1");
         Client client = new Client("John", "Doe", dateOfBirth, Client.ClientTypes.BUSINESS, address);
@@ -113,24 +120,24 @@ class AccountRepositoryTest {
         em.persist(client);
         em.persist(account);
         transaction.commit();
-        BankAccount deletedAccount = accountRepository.delete(account.getAccountId());
-        assertEquals(account.getAccountId(), deletedAccount.getAccountId());
+        long count = accountRepository.countActiveByClientId(client.getId());
+        assertEquals(1, count);
     }
 
-//    @Test
-//    void countClientActiveAccounts() {
-//        LocalDate dateOfBirth = LocalDate.of(2000, 1, 1);
-//        Address address = new Address("Aleja", "Lodz", "1");
-//        Client client = new Client("John", "Doe", dateOfBirth, Client.ClientTypes.BUSINESS, address);
-//        BankAccount account1 = new StandardAccount(client, BigDecimal.valueOf(1000));
-//        BankAccount account2 = new SavingAccount(client, BigDecimal.valueOf(10_000));
-//        EntityTransaction transaction = em.getTransaction();
-//        transaction.begin();
-//        em.persist(client);
-//        em.persist(account1);
-//        em.persist(account2);
-//        transaction.commit();
-//        long accountsCount = accountRepository.countClientActiveAccounts(client.getId());
-//        assertEquals(2, accountsCount);
-//    }
+    @Test
+    void getAccountsByClientId() {
+        LocalDate dateOfBirth = LocalDate.of(2000, 1, 1);
+        Address address = new Address("Aleja", "Lodz", "1");
+        Client client = new Client("John", "Doe", dateOfBirth, Client.ClientTypes.BUSINESS, address);
+        BankAccount account = new StandardAccount(client, BigDecimal.valueOf(1000));
+        EntityTransaction transaction = em.getTransaction();
+        transaction.begin();
+        em.persist(client);
+        em.persist(account);
+        transaction.commit();
+        List<BankAccount> accounts = accountRepository.getAccountsByClientId(client.getId());
+        assertEquals(1, accounts.size());
+        assertEquals(account.getAccountId(), accounts.get(0).getAccountId());
+    }
+
 }

@@ -41,10 +41,6 @@ public abstract class BankAccount extends AbstractEntity {
         this.creationDate = LocalDate.now();
     }
 
-    public abstract String getAccountType();
-
-    public abstract String getAccountInfo();
-
     public Client getClient() {
         return client;
     }
@@ -78,6 +74,7 @@ public abstract class BankAccount extends AbstractEntity {
 
     public void setCloseDate(LocalDate closeDate) {
         this.closeDate = closeDate;
+        this.isActive = false;
     }
 
     public long getAccountId() {

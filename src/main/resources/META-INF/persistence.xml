@@ -23,6 +23,7 @@
             <!--HIBERNATE-->
             <property name="hibernate.connection.driver_class" value="org.postgresql.Driver"/>
             <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect"/>
+            <!--Isolation-->
             <property name="hibernate.connection.isolation" value="2"/>
             <property name="hibernate.show_sql" value="true"/>
             <property name="hibernate.format_sql" value="true"/>

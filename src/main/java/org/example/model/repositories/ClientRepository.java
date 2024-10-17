@@ -1,35 +1,29 @@
 package org.example.model.repositories;
 
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.EntityTransaction;
 import jakarta.persistence.LockModeType;
 import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.From;
-import jakarta.transaction.Transactional;
 import org.example.model.clients.Client;
-import org.example.model.clients.Client_;
 
 import java.util.List;
 
 
-public class ClientRepository implements RepositoryI<Client>, AutoCloseable {
+public class ClientRepository implements Repository<Client>, ClientRepositoryInterface, AutoCloseable {
 
-    private EntityManagerFactory emf;
+    private EntityManager em;
 
-    public ClientRepository(EntityManagerFactory emf) {
-        this.emf = emf;
+    public ClientRepository(EntityManager em) {
+        this.em = em;
     }
 
     @Override
     public Client add(Client client) {
-        Repository.inSession(emf, em -> em.persist(client));
+        em.persist(client);
         return client;
     }
 
     @Override
     public List<Client> findAll() {
-        EntityManager em = emf.createEntityManager();
         var builder = em.getCriteriaBuilder();
         CriteriaQuery<Client> query = builder.createQuery(Client.class);
         query.from(Client.class);
@@ -39,49 +33,33 @@ public class ClientRepository implements RepositoryI<Client>, AutoCloseable {
 
     @Override
     public Client findById(Long id) {
-        EntityManager em = emf.createEntityManager();
         return em.find(Client.class, id);
     }
 
     @Override
     public Client update(Client client) {
-        Repository.inSession(emf, em -> em.merge(client));
-        return client;
-    }
-
-
-    @Override
-    public Client delete(Long id) {
-        // TODO: implement delete
-        EntityManager em = emf.createEntityManager();
-        Client foundClient = em.find(Client.class, id);
-        em.remove(foundClient);
-        return foundClient;
+        return em.merge(client);
     }
 
     @Override
     public Client findByIdWithOptimisticLock(Long id) {
-        Client client = null;
-        EntityManager em = emf.createEntityManager();
-        EntityTransaction tx = em.getTransaction();
+        return em.find(Client.class, id, LockModeType.OPTIMISTIC_FORCE_INCREMENT);
+    }
+
+    @Override
+    public Client delete(Long id) {
+        Client foundClient = em.find(Client.class, id);
         try {
-            tx.begin();
-            client = em.find(Client.class, id, LockModeType.OPTIMISTIC_FORCE_INCREMENT);
-            tx.commit();
+            em.remove(foundClient);
         } catch (Exception e) {
-            if (tx.isActive()) {
-                tx.rollback();
-            }
-            throw e;
-        } finally {
-            em.close();
+            System.out.println("Error deleting client: " + e.getMessage());
         }
-        return client;
+        return foundClient;
     }
 
     @Override
     public void close() throws Exception {
-        this.emf.close();
+        this.em.close();
     }
 
 }

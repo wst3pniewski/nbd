@@ -53,14 +53,4 @@ public class StandardAccount extends BankAccount {
     public void setDebit(BigDecimal debit) {
         this.debit = debit;
     }
-
-    @Override
-    public String getAccountType() {
-        return "standard";
-    }
-
-    @Override
-    public String getAccountInfo() {
-        return "";
-    }
 }

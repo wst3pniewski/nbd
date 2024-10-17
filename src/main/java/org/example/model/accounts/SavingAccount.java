@@ -33,13 +33,11 @@ public class SavingAccount extends BankAccount {
     public SavingAccount() {
     }
 
-    @Override
-    public String getAccountType() {
-        return "saving";
+    public BigDecimal getInterestRate() {
+        return interestRate;
     }
 
-    @Override
-    public String getAccountInfo() {
-        return "";
+    public void setInterestRate(BigDecimal interestRate) {
+        this.interestRate = interestRate;
     }
 }

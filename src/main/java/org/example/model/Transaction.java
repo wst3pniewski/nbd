@@ -45,4 +45,8 @@ public class Transaction {
     public BigDecimal getAmount() {
         return amount;
     }
+
+    public long getId() {
+        return id;
+    }
 }

@@ -27,13 +27,7 @@ public class JuniorAccount extends BankAccount {
     public JuniorAccount() {
     }
 
-    @Override
-    public String getAccountType() {
-        return "";
-    }
-
-    @Override
-    public String getAccountInfo() {
-        return "";
+    public Client getParent() {
+        return parent;
     }
 }

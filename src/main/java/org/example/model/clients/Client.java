@@ -57,9 +57,6 @@ public class Client extends AbstractEntity {
     @Basic(optional = false)
     private ClientTypes clientType;
 
-    @OneToMany(mappedBy = "client", fetch = FetchType.LAZY)
-    private List<BankAccount> bankAccounts = new ArrayList<>();
-
     public Client() {
     }
 
@@ -91,15 +88,9 @@ public class Client extends AbstractEntity {
         this.clientType = clientType;
     }
 
-    public void addAccount(BankAccount account) {
-        bankAccounts.add(account);
-    }
 
     public long getId() {
         return id;
     }
 
-    public List<BankAccount> getBankAccounts() {
-        return bankAccounts;
-    }
 }

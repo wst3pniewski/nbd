@@ -2,7 +2,9 @@ package org.example.model.managers;
 
 import jakarta.persistence.*;
 import jakarta.transaction.Transactional;
+import jakarta.validation.ConstraintViolationException;
 import org.example.model.accounts.BankAccount;
+import org.example.model.accounts.StandardAccount;
 import org.example.model.clients.Address;
 import org.example.model.clients.Client;
 import org.example.model.repositories.ClientRepository;
@@ -19,17 +21,29 @@ import java.util.List;
  * */
 public class ClientManager {
     private ClientRepository clientRepository;
-    private EntityManagerFactory emf;
+    private EntityManager em;
 
-    public ClientManager(ClientRepository clientRepository) {
-        this.clientRepository = clientRepository;
+    public ClientManager(EntityManager em) {
+        this.clientRepository = new ClientRepository(em);
+        this.em = em;
     }
 
     public Client createClient(String firstName, String lastName, LocalDate dateOfBirth, Client.ClientTypes clientType,
                                String street, String city, String zipCode) {
         Address address = new Address(street, city, zipCode);
         Client client = new Client(firstName, lastName, dateOfBirth, clientType, address);
-        clientRepository.add(client);
+        EntityTransaction tx = em.getTransaction();
+        try {
+            tx.begin();
+            clientRepository.add(client);
+            tx.commit();
+        } catch (Exception e) {
+            if (tx.isActive()) {
+                tx.rollback();
+            }
+            throw e;
+        }
+
         return client;
     }
 
@@ -38,14 +52,23 @@ public class ClientManager {
     }
 
     public Client deleteClient(Long id) {
-
-        Client client = clientRepository.findByIdWithOptimisticLock(id);
-        if (client == null) {
-            throw new IllegalArgumentException("Client not found");
+        EntityTransaction tx = em.getTransaction();
+        try {
+            tx.begin();
+            Client client = clientRepository.findByIdWithOptimisticLock(id);
+            if (client == null) {
+                throw new IllegalArgumentException("Client not found");
+            }
+            clientRepository.delete(id);
+            tx.commit();
+        } catch (Exception e) {
+            if (tx.isActive()) {
+                tx.rollback();
+            }
+            System.out.println("It is not possible to delete a client if he has any accounts." + e.getMessage());
         }
 
-
-        return clientRepository.delete(id);
+        return null;
     }
 
     public Client findById(Long id) {
