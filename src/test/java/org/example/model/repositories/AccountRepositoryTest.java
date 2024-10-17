@@ -5,7 +5,6 @@ import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.EntityTransaction;
 import jakarta.persistence.Persistence;
 import org.example.model.accounts.BankAccount;
-import org.example.model.accounts.SavingAccount;
 import org.example.model.accounts.StandardAccount;
 import org.example.model.clients.Address;
 import org.example.model.clients.Client;

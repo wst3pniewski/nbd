@@ -1,24 +1,15 @@
 package org.example.model.managers;
 
 import jakarta.persistence.*;
-import jakarta.transaction.Transactional;
-import jakarta.validation.ConstraintViolationException;
-import org.example.model.accounts.BankAccount;
-import org.example.model.accounts.StandardAccount;
 import org.example.model.clients.Address;
 import org.example.model.clients.Client;
 import org.example.model.repositories.ClientRepository;
-import org.hibernate.annotations.OptimisticLock;
+
 
 import java.time.LocalDate;
 import java.util.List;
 
-/*
- * Business logic for managing clients
- * - it is not possible to delete a client if he has any ACTIVE accounts
- * - while creating a client no NULL values are allowed as for update
- *
- * */
+
 public class ClientManager {
     private ClientRepository clientRepository;
     private EntityManager em;

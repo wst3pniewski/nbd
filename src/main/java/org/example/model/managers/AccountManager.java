@@ -10,17 +10,6 @@ import org.example.model.repositories.ClientRepository;
 import java.math.BigDecimal;
 import java.util.List;
 
-
-/*
- * Business logic for managing account
- * - It is not possible to delete an account -> only set it to INACTIVE
- * - It is not possible to set an account to INACTIVE if it has any balance or debit
- * - It is not possible to create an account for a client who exceeded the limit of accounts
- * - It is not possible to create an account with a negative balance (constructor fulfilled)
- * - It is not possible to create an account with a negative debit   (constructor fulfilled)
- * - It is not possible to create a junior account for a client who is not a child (constructor fulfilled)
- * - It is not possible to create any other account for a client who is a child (constructor fulfilled)
- */
 public class AccountManager {
     private AccountRepository accountRepository;
     private ClientRepository clientRepository;
