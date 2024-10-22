@@ -1,9 +1,5 @@
 package org.example.model.repositories;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.EntityTransaction;
-import jakarta.persistence.Persistence;
 import org.example.model.accounts.BankAccount;
 import org.example.model.accounts.StandardAccount;
 import org.example.model.clients.Address;
@@ -21,21 +17,14 @@ import static org.junit.jupiter.api.Assertions.*;
 class AccountRepositoryTest {
 
     private static AccountRepository accountRepository;
-    private static EntityManagerFactory emf;
-    private static EntityManager em;
 
     @BeforeAll
     static void beforeAll() {
-        emf = Persistence.createEntityManagerFactory("POSTGRES_RENT_PU");
-        em = emf.createEntityManager();
-        accountRepository = new AccountRepository(em);
+        accountRepository = new AccountRepository();
     }
 
     @AfterAll
     static void afterAll() {
-        if (emf != null) {
-            emf.close();
-        }
     }
 
     @Test
@@ -44,11 +33,10 @@ class AccountRepositoryTest {
         Address address = new Address("Ulica", "Lodz", "1");
         Client client = new Client("Add", "Account", dateOfBirth, Client.ClientTypes.BUSINESS, address);
         BankAccount account = new StandardAccount(client, BigDecimal.valueOf(1000));
-        EntityTransaction transaction = em.getTransaction();
-        transaction.begin();
-        em.persist(client);
+
+        //transaction
         accountRepository.add(account);
-        transaction.commit();
+        //end
 
         BankAccount foundAccount = accountRepository.findById(account.getAccountId());
 
@@ -61,11 +49,10 @@ class AccountRepositoryTest {
         Address address = new Address("Aleja", "Lodz", "1");
         Client client = new Client("John", "Doe", dateOfBirth, Client.ClientTypes.BUSINESS, address);
         BankAccount account = new StandardAccount(client, BigDecimal.valueOf(1000));
-        EntityTransaction transaction = em.getTransaction();
-        transaction.begin();
-        em.persist(client);
-        em.persist(account);
-        transaction.commit();
+        //transaction
+//        em.persist(client);
+//        em.persist(account);
+        //end
 
         List<BankAccount> bankAccountList = accountRepository.findAll();
         assert (bankAccountList.isEmpty() == false);
@@ -77,11 +64,10 @@ class AccountRepositoryTest {
         Address address = new Address("Aleja", "Lodz", "1");
         Client client = new Client("John", "Doe", dateOfBirth, Client.ClientTypes.BUSINESS, address);
         BankAccount account = new StandardAccount(client, BigDecimal.valueOf(1000));
-        EntityTransaction transaction = em.getTransaction();
-        transaction.begin();
-        em.persist(client);
-        em.persist(account);
-        transaction.commit();
+        //transaction
+//        em.persist(client);
+//        em.persist(account);
+        //end
 
         BankAccount foundAccount = accountRepository.findById(account.getAccountId());
 
@@ -94,16 +80,15 @@ class AccountRepositoryTest {
         Address address = new Address("Aleja", "Lodz", "1");
         Client client = new Client("John", "Doe", dateOfBirth, Client.ClientTypes.BUSINESS, address);
         BankAccount account = new StandardAccount(client, BigDecimal.valueOf(1000));
-        EntityTransaction transaction = em.getTransaction();
-        transaction.begin();
-        em.persist(client);
-        em.persist(account);
-        transaction.commit();
+        //transaction
+//        em.persist(client);
+//        em.persist(account);
+        //end
 
         account.setBalance(BigDecimal.valueOf(2000));
-        transaction.begin();
+        //transaction
         BankAccount updatedAccount = accountRepository.update(account);
-        transaction.commit();
+        //end
         BankAccount foundAccount = accountRepository.findById(account.getAccountId());
         assertEquals(BigDecimal.valueOf(2000), foundAccount.getBalance());
     }
@@ -114,11 +99,10 @@ class AccountRepositoryTest {
         Address address = new Address("Aleja", "Lodz", "1");
         Client client = new Client("John", "Doe", dateOfBirth, Client.ClientTypes.BUSINESS, address);
         BankAccount account = new StandardAccount(client, BigDecimal.valueOf(1000));
-        EntityTransaction transaction = em.getTransaction();
-        transaction.begin();
-        em.persist(client);
-        em.persist(account);
-        transaction.commit();
+        //transaction
+//        em.persist(client);
+//        em.persist(account);
+        //end
         long count = accountRepository.countActiveByClientId(client.getId());
         assertEquals(1, count);
     }
@@ -129,11 +113,10 @@ class AccountRepositoryTest {
         Address address = new Address("Aleja", "Lodz", "1");
         Client client = new Client("John", "Doe", dateOfBirth, Client.ClientTypes.BUSINESS, address);
         BankAccount account = new StandardAccount(client, BigDecimal.valueOf(1000));
-        EntityTransaction transaction = em.getTransaction();
-        transaction.begin();
-        em.persist(client);
-        em.persist(account);
-        transaction.commit();
+        //transaction;
+//        em.persist(client);
+//        em.persist(account);
+        //end
         List<BankAccount> accounts = accountRepository.getAccountsByClientId(client.getId());
         assertEquals(1, accounts.size());
         assertEquals(account.getAccountId(), accounts.get(0).getAccountId());

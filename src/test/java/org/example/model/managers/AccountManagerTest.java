@@ -15,25 +15,19 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 class AccountManagerTest {
-    private static EntityManagerFactory emf;
-    private static EntityManager em;
     private static AccountManager accountManager;
     private static ClientManager clientManager;
 
 
     @BeforeAll
     static void beforeAll() {
-        emf = Persistence.createEntityManagerFactory("POSTGRES_RENT_PU");
-        em = emf.createEntityManager();
-        clientManager = new ClientManager(em);
-        accountManager = new AccountManager(em);
+        clientManager = new ClientManager();
+        accountManager = new AccountManager();
     }
 
     @AfterAll
     static void afterAll() {
-        if (emf != null) {
-            emf.close();
-        }
+
     }
 
     @Test

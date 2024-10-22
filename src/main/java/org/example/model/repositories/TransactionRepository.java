@@ -12,10 +12,9 @@ import java.util.List;
 
 public class TransactionRepository implements Repository<Transaction>, AutoCloseable {
 
-    private EntityManager em;
 
-    public TransactionRepository(EntityManager em) {
-        this.em = em;
+    public TransactionRepository() {
+
     }
 
     @Override
@@ -23,40 +22,43 @@ public class TransactionRepository implements Repository<Transaction>, AutoClose
         if (transaction == null) {
             return null;
         }
-        em.persist(transaction);
+//        em.persist(transaction);
         return transaction;
     }
 
     @Override
     public List<Transaction> findAll() {
-        var builder = em.getCriteriaBuilder();
-        CriteriaQuery<Transaction> query = builder.createQuery(Transaction.class);
-        query.from(Transaction.class);
-        return em.createQuery(query).getResultList();
+//        var builder = em.getCriteriaBuilder();
+//        CriteriaQuery<Transaction> query = builder.createQuery(Transaction.class);
+//        query.from(Transaction.class);
+//        return em.createQuery(query).getResultList();
+        return null;
     }
 
     @Override
     public Transaction findById(Long id) {
-        var builder = em.getCriteriaBuilder();
-        CriteriaQuery<Transaction> query = builder.createQuery(Transaction.class);
-        From<Transaction, Transaction> from = query.from(Transaction.class);
-        query.select(from).where(builder.equal(from.get(Transaction_.id), id));
-        return em.createQuery(query).getSingleResult();
+//        var builder = em.getCriteriaBuilder();
+//        CriteriaQuery<Transaction> query = builder.createQuery(Transaction.class);
+//        From<Transaction, Transaction> from = query.from(Transaction.class);
+//        query.select(from).where(builder.equal(from.get(Transaction_.id), id));
+//        return em.createQuery(query).getSingleResult();
+        return null;
     }
 
     @Override
     public Transaction findByIdWithOptimisticLock(Long id) {
-        var builder = em.getCriteriaBuilder();
-        CriteriaQuery<Transaction> query = builder.createQuery(Transaction.class);
-        From<Transaction, Transaction> from = query.from(Transaction.class);
-        query.select(from).where(builder.equal(from.get(Transaction_.id), id));
-        return em.createQuery(query)
-                .setLockMode(LockModeType.OPTIMISTIC_FORCE_INCREMENT)
-                .getSingleResult();
+//        var builder = em.getCriteriaBuilder();
+//        CriteriaQuery<Transaction> query = builder.createQuery(Transaction.class);
+//        From<Transaction, Transaction> from = query.from(Transaction.class);
+//        query.select(from).where(builder.equal(from.get(Transaction_.id), id));
+//        return em.createQuery(query)
+//                .setLockMode(LockModeType.OPTIMISTIC_FORCE_INCREMENT)
+//                .getSingleResult();
+        return null;
     }
 
     @Override
     public void close() throws Exception {
-        this.em.close();
+//        this.em.close();
     }
 }

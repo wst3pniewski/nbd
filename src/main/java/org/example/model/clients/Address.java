@@ -1,12 +1,5 @@
 package org.example.model.clients;
 
-import jakarta.persistence.Access;
-import jakarta.persistence.AccessType;
-import jakarta.persistence.Embeddable;
-
-
-@Embeddable
-@Access(AccessType.FIELD)
 public class Address {
     private String street;
     private String city;

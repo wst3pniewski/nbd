@@ -13,23 +13,16 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ClientManagerTest {
-    private static EntityManagerFactory emf;
-    private static EntityManager em;
     private static ClientManager clientManager;
 
 
     @BeforeAll
     static void beforeAll() {
-        emf = Persistence.createEntityManagerFactory("POSTGRES_RENT_PU");
-        em = emf.createEntityManager();;
-        clientManager = new ClientManager(em);
+        clientManager = new ClientManager();
     }
 
     @AfterAll
     static void afterAll() {
-        if (emf != null) {
-            emf.close();
-        }
     }
 
     @Test
@@ -62,7 +55,7 @@ class ClientManagerTest {
     void deleteClientWithAccountsNotPossible() {
         Client client = clientManager.createClient("John", "Doe", LocalDate.of(1990, 1, 1), Client.ClientTypes.STANDARD,
                 "Street", "City", "12345");
-        AccountManager accountManager = new AccountManager(em);
+        AccountManager accountManager = new AccountManager();
         accountManager.createStandardAccount(client.getId(), BigDecimal.valueOf(1000));
         clientManager.deleteClient(1L);
         Client foundClient = clientManager.findById(client.getId());
@@ -79,7 +72,6 @@ class ClientManagerTest {
 
     @Test
     void findAll() {
-        EntityTransaction transaction = em.getTransaction();
         Client client = clientManager.createClient("John", "Doe", LocalDate.of(1990, 1, 1), Client.ClientTypes.STANDARD,
                 "Street", "City", "12345");
 

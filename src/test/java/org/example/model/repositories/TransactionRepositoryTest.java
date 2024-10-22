@@ -1,8 +1,5 @@
 package org.example.model.repositories;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.Persistence;
 import org.example.model.Transaction;
 import org.example.model.accounts.BankAccount;
 import org.example.model.clients.Client;
@@ -20,8 +17,6 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 class TransactionRepositoryTest {
-    private static EntityManagerFactory emf;
-    private static EntityManager em;
     private static TransactionRepository transactionRepository;
     private static TransactionManager transactionManager;
     private static ClientManager clientManager;
@@ -29,18 +24,13 @@ class TransactionRepositoryTest {
 
     @BeforeAll
     static void beforeAll() {
-        emf = Persistence.createEntityManagerFactory("POSTGRES_RENT_PU");
-        em = emf.createEntityManager();
-        transactionRepository = new TransactionRepository(em);
-        clientManager = new ClientManager(em);
-        accountManager = new AccountManager(em);
+        transactionRepository = new TransactionRepository();
+        clientManager = new ClientManager();
+        accountManager = new AccountManager();
     }
 
     @AfterAll
     static void afterAll() {
-        if (emf != null) {
-            emf.close();
-        }
     }
 
     @Test
@@ -53,9 +43,9 @@ class TransactionRepositoryTest {
         BankAccount account2 = accountManager.createStandardAccount(client.getId(), BigDecimal.valueOf(1000));
         accountManager.depositMoney(account1.getAccountId(), BigDecimal.valueOf(100));
         Transaction transaction = new Transaction(account1, account2, BigDecimal.valueOf(100));
-        em.getTransaction().begin();
+        //transaction
         transactionRepository.add(transaction);
-        em.getTransaction().commit();
+        //end
         Transaction fountTransaction = transactionRepository.findById(transaction.getId());
 
         assertEquals(transaction.getId(), fountTransaction.getId());
@@ -73,10 +63,10 @@ class TransactionRepositoryTest {
 
         Transaction transaction = new Transaction(account1, account2, BigDecimal.valueOf(100));
         Transaction transaction2 = new Transaction(account1, account2, BigDecimal.valueOf(100));
-        em.getTransaction().begin();
+        //transaction
         transactionRepository.add(transaction);
         transactionRepository.add(transaction2);
-        em.getTransaction().commit();
+        //end
 
         List<Transaction> transactions = transactionRepository.findAll();
         assertTrue(transactions.size() > 0);
@@ -93,9 +83,9 @@ class TransactionRepositoryTest {
         accountManager.depositMoney(account1.getAccountId(), BigDecimal.valueOf(100));
 
         Transaction transaction = new Transaction(account1, account2, BigDecimal.valueOf(100));
-        em.getTransaction().begin();
+        //transaction
         transactionRepository.add(transaction);
-        em.getTransaction().commit();
+        //end
 
         Transaction fountTransaction = transactionRepository.findById(transaction.getId());
         assertEquals(transaction.getId(), fountTransaction.getId());

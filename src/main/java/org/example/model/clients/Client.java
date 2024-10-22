@@ -1,15 +1,9 @@
 package org.example.model.clients;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import org.example.model.AbstractEntity;
 
 import java.time.LocalDate;
 
-@Entity
-@Table(name = "clients")
-@Access(AccessType.FIELD)
 public class Client extends AbstractEntity {
 
     public enum ClientTypes {
@@ -28,28 +22,17 @@ public class Client extends AbstractEntity {
         }
     }
 
-    @Id
-    @SequenceGenerator(
-            name = "clientIdSequence",
-            initialValue = 1
-    )
-    @GeneratedValue(generator = "clientIdSequence")
     private long id;
 
-    @NotEmpty
+
     private String firstName;
 
-    @NotEmpty
     private String lastName;
 
-    @NotNull
     private LocalDate dateOfBirth;
 
-    @Embedded
     private Address address;
 
-    @Enumerated(EnumType.STRING)
-    @Basic(optional = false)
     private ClientTypes clientType;
 
     public Client() {

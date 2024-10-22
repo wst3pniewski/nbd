@@ -1,16 +1,14 @@
 package org.example.model.accounts;
 
-import jakarta.persistence.*;
+
 import org.example.model.clients.Client;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
-@Entity
-@Access(AccessType.FIELD)
+
 public class JuniorAccount extends BankAccount {
-    @ManyToOne
-    @JoinColumn(name = "parent_id", nullable = false)
+
     Client parent;
 
     public JuniorAccount(Client client, Client parent) {

@@ -25,18 +25,13 @@ class TransactionManagerTest {
 
     @BeforeAll
     static void beforeAll() {
-        emf = Persistence.createEntityManagerFactory("POSTGRES_RENT_PU");
-        em = emf.createEntityManager();
-        accountManager = new AccountManager(em);
-        clientManager = new ClientManager(em);
-        transactionManager = new TransactionManager(em);
+        accountManager = new AccountManager();
+        clientManager = new ClientManager();
+        transactionManager = new TransactionManager();
     }
 
     @AfterAll
     static void afterAll() {
-        if (emf != null) {
-            emf.close();
-        }
     }
 
     @Test

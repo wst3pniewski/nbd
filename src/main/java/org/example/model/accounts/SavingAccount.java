@@ -11,12 +11,9 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
-@Entity
-@Access(AccessType.FIELD)
+
 public class SavingAccount extends BankAccount {
 
-    @DecimalMin(value = "0.0", inclusive = true)
-    @Digits(integer = 15, fraction = 2)
     BigDecimal interestRate;
 
     public SavingAccount(Client client, BigDecimal interestRate) {

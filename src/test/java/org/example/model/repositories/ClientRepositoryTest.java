@@ -1,9 +1,5 @@
 package org.example.model.repositories;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.EntityTransaction;
-import jakarta.persistence.Persistence;
 import org.example.model.clients.Address;
 import org.example.model.clients.Client;
 import org.junit.jupiter.api.AfterAll;
@@ -17,21 +13,14 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class ClientRepositoryTest {
     private static ClientRepository clientRepository;
-    private static EntityManagerFactory emf;
-    private static EntityManager em;
 
     @BeforeAll
     static void beforeAll() {
-        emf = Persistence.createEntityManagerFactory("POSTGRES_RENT_PU");
-        em = emf.createEntityManager();
-        clientRepository = new ClientRepository(em);
+        clientRepository = new ClientRepository();
     }
 
     @AfterAll
     static void afterAll() {
-        if (emf != null) {
-            emf.close();
-        }
     }
 
     @Test
@@ -39,10 +28,9 @@ class ClientRepositoryTest {
         LocalDate dateOfBirth = LocalDate.of(2000, 1, 1);
         Address address = new Address("Aleja", "Lodz", "1");
         Client client = new Client("John", "Doe", dateOfBirth, Client.ClientTypes.BUSINESS, address);
-        EntityTransaction transaction = em.getTransaction();
-        transaction.begin();
+        //transaction
         clientRepository.add(client);
-        transaction.commit();
+        //end
         Client foundClient = clientRepository.findById(client.getId());
 
         assertEquals(client.getId(), foundClient.getId());
@@ -53,10 +41,9 @@ class ClientRepositoryTest {
         LocalDate dateOfBirth = LocalDate.of(2000, 1, 1);
         Address address = new Address("Aleja", "Lodz", "1");
         Client client = new Client("John", "Doe", dateOfBirth, Client.ClientTypes.BUSINESS, address);
-        EntityTransaction transaction = em.getTransaction();
-        transaction.begin();
-        em.persist(client);
-        transaction.commit();
+        //transaction
+//        em.persist(client);
+        //end
         List<Client> clients = clientRepository.findAll();
 
         assertTrue(clients.size() > 0);
@@ -67,10 +54,9 @@ class ClientRepositoryTest {
         LocalDate dateOfBirth = LocalDate.of(2000, 1, 1);
         Address address = new Address("Aleja", "Lodz", "1");
         Client client = new Client("John", "Doe", dateOfBirth, Client.ClientTypes.BUSINESS, address);
-        EntityTransaction transaction = em.getTransaction();
-        transaction.begin();
-        em.persist(client);
-        transaction.commit();
+        //transaction
+//        em.persist(client);
+        //end
         Client foundClient = clientRepository.findById(client.getId());
         assertEquals(client.getId(), foundClient.getId());
     }
@@ -86,14 +72,14 @@ class ClientRepositoryTest {
         LocalDate dateOfBirth = LocalDate.of(2000, 1, 1);
         Address address = new Address("Aleja", "Lodz", "1");
         Client client = new Client("John", "Doe", dateOfBirth, Client.ClientTypes.BUSINESS, address);
-        EntityTransaction transaction = em.getTransaction();
-        transaction.begin();
-        em.persist(client);
-        transaction.commit();
+        //transaction
+//        em.persist(client);
+        //end
+
         client.setClientType(Client.ClientTypes.STANDARD);
-        transaction.begin();
+        //transaction
         clientRepository.update(client);
-        transaction.commit();
+        //end
 
         Client foundClient = clientRepository.findById(client.getId());
 
@@ -105,14 +91,13 @@ class ClientRepositoryTest {
         LocalDate dateOfBirth = LocalDate.of(2000, 1, 1);
         Address address = new Address("Aleja", "Lodz", "1");
         Client client = new Client("John", "Doe", dateOfBirth, Client.ClientTypes.BUSINESS, address);
-        EntityTransaction transaction = em.getTransaction();
-        transaction.begin();
-        em.persist(client);
-        transaction.commit();
+        //transaction
+//        em.persist(client);
+        //end
         client.setClientType(Client.ClientTypes.STANDARD);
-        transaction.begin();
+        //transaction
         clientRepository.delete(client.getId());
-        transaction.commit();
+        //end
         Client foundClient = clientRepository.findById(client.getId());
 
         assertNull(foundClient);
@@ -123,14 +108,13 @@ class ClientRepositoryTest {
         LocalDate dateOfBirth = LocalDate.of(2000, 1, 1);
         Address address = new Address("Aleja", "Lodz", "1");
         Client client = new Client("John", "Doe", dateOfBirth, Client.ClientTypes.BUSINESS, address);
-        EntityTransaction transaction = em.getTransaction();
-        transaction.begin();
-        em.persist(client);
-        transaction.commit();
+        //transaction
+//        em.persist(client);
+        //end
         client.setClientType(Client.ClientTypes.STANDARD);
-        transaction.begin();
+        //transaction
         clientRepository.delete(client.getId());
-        transaction.commit();
+        //end
         assertDoesNotThrow(() -> clientRepository.findById(1000L));
     }
 }

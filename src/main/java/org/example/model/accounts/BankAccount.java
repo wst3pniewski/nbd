@@ -1,29 +1,21 @@
 package org.example.model.accounts;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.Digits;
+
 import org.example.model.AbstractEntity;
 import org.example.model.clients.Client;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-@Entity
-@Inheritance(strategy = InheritanceType.JOINED)
-@Access(AccessType.FIELD)
+
 public abstract class BankAccount extends AbstractEntity {
-    @Id
-    @SequenceGenerator(name = "accountIdSequence", initialValue = 1)
-    @GeneratedValue(generator = "accountIdSequence")
+
     private long id;
 
-    @DecimalMin(value = "0.0", inclusive = true)
-    @Digits(integer = 15, fraction = 2)
+
     BigDecimal balance;
 
-    @ManyToOne
-    @JoinColumn(name = "client_id", nullable = false)
+
     Client client;
 
     Boolean isActive;
