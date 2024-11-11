@@ -1,17 +1,24 @@
 package org.example.model.clients;
 
-public class Address {
-    private String street;
-    private String city;
-    private String number;
+import org.bson.codecs.pojo.annotations.BsonCreator;
+import org.bson.codecs.pojo.annotations.BsonProperty;
 
-    public Address(String street, String city, String number) {
+public class Address {
+    @BsonProperty("street")
+    private String street;
+
+    @BsonProperty("city")
+    private String city;
+
+    @BsonProperty("number")
+    private String number;
+    @BsonCreator
+    public Address(@BsonProperty("street") String street,
+                   @BsonProperty("city") String city,
+                   @BsonProperty("number") String number) {
         this.street = street;
         this.city = city;
         this.number = number;
-    }
-
-    public Address() {
     }
 
     public String getStreet() {

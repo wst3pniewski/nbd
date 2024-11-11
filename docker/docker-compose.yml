@@ -1,4 +1,5 @@
 version: '3.8'
+name: mongodb-replica-set-nbd
 
 services:
   mongo_1:
@@ -15,12 +16,13 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: adminpassword
     command: --config /etc/mongod.conf --port 27017
     healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
       interval: 10s
       timeout: 2s
       retries: 5
-    # volumes:
-    #   - mongo1-data:/data/db
+    volumes:
+      - mongo-db-data-1:/data/db
+      - mongo-configdb-data-1:/data/configdb
     
 
   mongo_2:
@@ -37,10 +39,13 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: adminpassword
     command: --config /etc/mongod.conf --port 27018
     healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      test: [ "CMD", "mongosh","--port", "27018", "--eval", "db.adminCommand('ping')" ]
       interval: 10s
       timeout: 2s
       retries: 5
+    volumes:
+      - mongo-db-data-2:/data/db
+      - mongo-configdb-data-2:/data/configdb
 
   mongo_3:
     build: .
@@ -56,10 +61,13 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: adminpassword
     command: --config /etc/mongod.conf --port 27019
     healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      test: [ "CMD", "mongosh","--port", "27019", "--eval", "db.adminCommand('ping')" ]
       interval: 10s
       timeout: 2s
       retries: 5
+    volumes:
+      - mongo-db-data-3:/data/db
+      - mongo-configdb-data-3:/data/configdb
   
   mongoinit:
     build: .
@@ -88,10 +96,20 @@ services:
           ]
         });
       '
-# volumes:
-#   mongo1-data:
-#   mongo2-data:
-#   mongo3-data:
+    volumes:
+      - mongo-db-data-init:/data/db
+      - mongo-configdb-data-init:/data/configdb
 
+
+volumes:
+  mongo-db-data-1:
+  mongo-configdb-data-1:
+  mongo-db-data-2:
+  mongo-configdb-data-2:
+  mongo-db-data-3:
+  mongo-configdb-data-3:
+  mongo-db-data-init:
+  mongo-configdb-data-init:
+  
 networks:
   mongonet: { }

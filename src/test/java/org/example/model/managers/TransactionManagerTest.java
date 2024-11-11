@@ -1,8 +1,6 @@
 package org.example.model.managers;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.Persistence;
+
 import org.example.model.accounts.BankAccount;
 import org.example.model.accounts.StandardAccount;
 import org.example.model.clients.Client;
@@ -16,8 +14,6 @@ import java.time.LocalDate;
 import static org.junit.jupiter.api.Assertions.*;
 
 class TransactionManagerTest {
-    private static EntityManagerFactory emf;
-    private static EntityManager em;
     private static TransactionManager transactionManager;
     private static AccountManager accountManager;
     private static ClientManager clientManager;

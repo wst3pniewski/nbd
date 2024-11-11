@@ -1,6 +1,8 @@
 package org.example.model.accounts;
 
 
+import org.bson.codecs.pojo.annotations.BsonCreator;
+import org.bson.codecs.pojo.annotations.BsonProperty;
 import org.example.model.clients.Client;
 
 import java.time.LocalDate;
@@ -9,10 +11,14 @@ import java.time.temporal.ChronoUnit;
 
 public class JuniorAccount extends BankAccount {
 
+    @BsonProperty("parent")
     Client parent;
 
-    public JuniorAccount(Client client, Client parent) {
-        super(client);
+    @BsonCreator
+    public JuniorAccount(@BsonProperty("_id") long id,
+                         @BsonProperty("client") Client client,
+                         @BsonProperty("parent") Client parent) {
+        super(id, client);
         LocalDate today = LocalDate.now();
         long age = ChronoUnit.YEARS.between(client.getDateOfBirth(), today);
         if (age < 18) {
@@ -20,9 +26,6 @@ public class JuniorAccount extends BankAccount {
         } else {
             throw new IllegalArgumentException("Client must be under 18 years old to open a junior account");
         }
-    }
-
-    public JuniorAccount() {
     }
 
     public Client getParent() {

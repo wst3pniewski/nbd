@@ -1,6 +1,8 @@
 package org.example.model.accounts;
 
 
+import org.bson.codecs.pojo.annotations.BsonCreator;
+import org.bson.codecs.pojo.annotations.BsonProperty;
 import org.example.model.AbstractEntity;
 import org.example.model.clients.Client;
 
@@ -10,22 +12,25 @@ import java.time.LocalDate;
 
 public abstract class BankAccount extends AbstractEntity {
 
-    private long id;
-
-
+    @BsonProperty("balance")
     BigDecimal balance;
 
-
+    @BsonProperty("client")
     Client client;
 
+    @BsonProperty("isActive")
     Boolean isActive;
+
+    @BsonProperty("creationDate")
     LocalDate creationDate;
+
+    @BsonProperty("closeDate")
     LocalDate closeDate = null;
 
-    public BankAccount() {
-    }
-
-    public BankAccount(Client client) {
+    @BsonCreator
+    public BankAccount(@BsonProperty("_id") long id,
+                       @BsonProperty("client") Client client) {
+        super(id);
         this.client = client;
         this.balance = new BigDecimal(0);
         this.isActive = true;
@@ -69,6 +74,6 @@ public abstract class BankAccount extends AbstractEntity {
     }
 
     public long getAccountId() {
-        return id;
+        return getEntityId();
     }
 }
