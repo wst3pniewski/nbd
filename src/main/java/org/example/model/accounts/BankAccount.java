@@ -2,6 +2,7 @@ package org.example.model.accounts;
 
 
 import org.bson.codecs.pojo.annotations.BsonCreator;
+import org.bson.codecs.pojo.annotations.BsonDiscriminator;
 import org.bson.codecs.pojo.annotations.BsonProperty;
 import org.example.model.AbstractEntity;
 import org.example.model.clients.Client;
@@ -9,7 +10,7 @@ import org.example.model.clients.Client;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-
+@BsonDiscriminator(key = "_clazz", value = "BankAccount")
 public abstract class BankAccount extends AbstractEntity {
 
     @BsonProperty("balance")
@@ -18,7 +19,7 @@ public abstract class BankAccount extends AbstractEntity {
     @BsonProperty("client")
     Client client;
 
-    @BsonProperty("isActive")
+    @BsonProperty("active")
     Boolean isActive;
 
     @BsonProperty("creationDate")
@@ -29,12 +30,26 @@ public abstract class BankAccount extends AbstractEntity {
 
     @BsonCreator
     public BankAccount(@BsonProperty("_id") long id,
-                       @BsonProperty("client") Client client) {
+                       @BsonProperty("balance") BigDecimal balance,
+                       @BsonProperty("client") Client client,
+                       @BsonProperty("active") Boolean isActive,
+                       @BsonProperty("creationDate") LocalDate creationDate,
+                       @BsonProperty("closeDate") LocalDate closeDate) {
+        super(id);
+        this.balance = balance;
+        this.client = client;
+        this.isActive = isActive;
+        this.creationDate = creationDate;
+        this.closeDate = closeDate;
+    }
+
+    public BankAccount(long id, Client client) {
         super(id);
         this.client = client;
         this.balance = new BigDecimal(0);
         this.isActive = true;
         this.creationDate = LocalDate.now();
+        this.closeDate = null;
     }
 
     public Client getClient() {
@@ -61,7 +76,13 @@ public abstract class BankAccount extends AbstractEntity {
     }
 
     public void setActive(Boolean active) {
-        isActive = active;
+        if (this.isActive == true) {
+            this.isActive = false;
+            this.closeDate = LocalDate.now();
+        } else {
+            this.isActive = true;
+            this.closeDate = null;
+        }
     }
 
     public LocalDate getCloseDate() {

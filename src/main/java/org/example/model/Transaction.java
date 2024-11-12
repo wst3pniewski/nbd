@@ -1,37 +1,33 @@
 package org.example.model;
 
-import jakarta.persistence.*;
+
+import org.bson.codecs.pojo.annotations.BsonCreator;
+import org.bson.codecs.pojo.annotations.BsonProperty;
 import org.example.model.accounts.BankAccount;
 
 import java.math.BigDecimal;
 
-@Entity
-@Access(AccessType.FIELD)
-public class Transaction {
 
-    @Id
-    @SequenceGenerator(name = "transactionIdSequence", initialValue = 1)
-    @GeneratedValue(generator = "transactionIdSequence")
-    private long id;
+public class Transaction extends AbstractEntity {
 
-    @ManyToOne
-    @JoinColumn(name = "source_account_id", nullable = false)
+    @BsonProperty("sourceAccount")
     BankAccount sourceAccount;
 
-    @ManyToOne
-    @JoinColumn(name = "destination_account_id", nullable = false)
+    @BsonProperty("destinationAccount")
     BankAccount destinationAccount;
 
-    @Column(name = "amount", nullable = false, precision = 10, scale = 2)
+    @BsonProperty("amount")
     BigDecimal amount;
 
-    public Transaction(BankAccount sourceAccount, BankAccount destinationAccount, BigDecimal amount) {
+    @BsonCreator
+    public Transaction(@BsonProperty("_id") long id,
+                       @BsonProperty("sourceAccount") BankAccount sourceAccount,
+                       @BsonProperty("destinationAccount") BankAccount destinationAccount,
+                       @BsonProperty("amount") BigDecimal amount) {
+        super(id);
         this.sourceAccount = sourceAccount;
         this.destinationAccount = destinationAccount;
         this.amount = amount;
-    }
-
-    public Transaction() {
     }
 
     public BankAccount getSourceAccount() {
@@ -47,6 +43,6 @@ public class Transaction {
     }
 
     public long getId() {
-        return id;
+        return getEntityId();
     }
 }

@@ -1,63 +1,44 @@
 package org.example.model.repositories;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.LockModeType;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.From;
-import org.example.model.Transaction;
-import org.example.model.Transaction_;
 
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.model.Filters;
+import org.bson.conversions.Bson;
+import org.example.model.Transaction;
+import org.example.model.accounts.BankAccount;
+
+
+import java.util.ArrayList;
 import java.util.List;
 
 
-public class TransactionRepository implements Repository<Transaction>, AutoCloseable {
+public class TransactionRepository extends AbstractMongoRepository {
 
+    private MongoCollection<Transaction> transactions;
 
     public TransactionRepository() {
-
+        super();
+        initDbConnection();
+        this.transactions = bankSystemDB.getCollection("transactions", Transaction.class);
     }
 
-    @Override
     public Transaction add(Transaction transaction) {
         if (transaction == null) {
             return null;
         }
-//        em.persist(transaction);
+        transactions.insertOne(transaction);
         return transaction;
     }
 
-    @Override
     public List<Transaction> findAll() {
-//        var builder = em.getCriteriaBuilder();
-//        CriteriaQuery<Transaction> query = builder.createQuery(Transaction.class);
-//        query.from(Transaction.class);
-//        return em.createQuery(query).getResultList();
-        return null;
+        return transactions.find().into(new ArrayList<>());
     }
 
-    @Override
     public Transaction findById(Long id) {
-//        var builder = em.getCriteriaBuilder();
-//        CriteriaQuery<Transaction> query = builder.createQuery(Transaction.class);
-//        From<Transaction, Transaction> from = query.from(Transaction.class);
-//        query.select(from).where(builder.equal(from.get(Transaction_.id), id));
-//        return em.createQuery(query).getSingleResult();
-        return null;
+        Bson filter = Filters.eq("_id", id);
+        return transactions.find(filter).first();
     }
 
-    @Override
-    public Transaction findByIdWithOptimisticLock(Long id) {
-//        var builder = em.getCriteriaBuilder();
-//        CriteriaQuery<Transaction> query = builder.createQuery(Transaction.class);
-//        From<Transaction, Transaction> from = query.from(Transaction.class);
-//        query.select(from).where(builder.equal(from.get(Transaction_.id), id));
-//        return em.createQuery(query)
-//                .setLockMode(LockModeType.OPTIMISTIC_FORCE_INCREMENT)
-//                .getSingleResult();
-        return null;
-    }
-
-    @Override
     public void close() throws Exception {
 //        this.em.close();
     }

@@ -1,84 +1,99 @@
 package org.example.model.repositories;
 
 
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Updates;
+import org.bson.conversions.Bson;
 import org.example.model.accounts.BankAccount;
+import org.example.model.accounts.JuniorAccount;
+import org.example.model.accounts.SavingAccount;
+import org.example.model.accounts.StandardAccount;
+import org.example.model.clients.Client;
 
 
+import java.util.ArrayList;
 import java.util.List;
 
 
-public class AccountRepository implements Repository<BankAccount>, AccountRepositoryInterface, AutoCloseable {
+public class AccountRepository extends AbstractMongoRepository {
 
-
+    private MongoCollection<BankAccount> bankAccounts;
 
     public AccountRepository() {
+        super();
+        initDbConnection();
+        this.bankAccounts = bankSystemDB.getCollection("bankAccounts", BankAccount.class);
     }
 
-    @Override
     public BankAccount add(BankAccount account) {
         if (account == null) {
             return null;
         }
-//        em.persist(account);
+        bankAccounts.insertOne(account);
         return account;
     }
 
-    @Override
     public List<BankAccount> findAll() {
-        List<BankAccount>[] accounts;
-//        var builder = em.getCriteriaBuilder();
-//        CriteriaQuery<BankAccount> query = builder.createQuery(BankAccount.class);
-//        query.from(BankAccount.class);
-//        return em.createQuery(query).getResultList();
-        return null;
+        return bankAccounts.find().into(new ArrayList<>());
     }
 
-    @Override
+
     public BankAccount findById(Long id) {
-//        return em.find(BankAccount.class, id);
-        return null;
+        Bson filter = Filters.eq("_id", id);
+        BankAccount bankAccount = bankAccounts.find(filter).first();
+        return bankAccount;
     }
 
-    @Override
+
     public BankAccount update(BankAccount account) {
         if (account == null) {
             return null;
         }
-//        em.merge(account);
+        Bson filter = Filters.eq("_id", account.getAccountId());
+        Bson setUpdate = null;
+        if (account instanceof StandardAccount) {
+            setUpdate = Updates.combine(
+                    Updates.set("balance", account.getBalance()),
+                    Updates.set("active", account.getActive()),
+                    Updates.set("closeDate", account.getCloseDate()),
+                    Updates.set("debit", ((StandardAccount) account).getDebit()),
+                    Updates.set("debitLimit", ((StandardAccount) account).getDebitLimit())
+            );
+        } else if (account instanceof SavingAccount) {
+            setUpdate = Updates.combine(
+                    Updates.set("balance", account.getBalance()),
+                    Updates.set("active", account.getActive()),
+                    Updates.set("closeDate", account.getCloseDate()),
+                    Updates.set("interestRate", ((SavingAccount) account).getInterestRate())
+            );
+        } else if (account instanceof JuniorAccount) {
+            setUpdate = Updates.combine(
+                    Updates.set("balance", account.getBalance()),
+                    Updates.set("active", account.getActive()),
+                    Updates.set("closeDate", account.getCloseDate())
+            );
+        }
+
+        bankAccounts.updateOne(filter, setUpdate);
         return account;
     }
 
-    @Override
-    public BankAccount findByIdWithOptimisticLock(Long id) {
-//        return em.find(BankAccount.class, id, LockModeType.OPTIMISTIC_FORCE_INCREMENT);
-        return null;
-    }
-
-    @Override
     public List<BankAccount> getAccountsByClientId(Long clientId) {
-//        var builder = em.getCriteriaBuilder();
-//        CriteriaQuery<BankAccount> query = builder.createQuery(BankAccount.class);
-//        From<BankAccount, BankAccount> from = query.from(BankAccount.class);
-//        query.select(from).where(builder.equal(from.get(BankAccount_.client).get("id"), clientId));
-//        return em.createQuery(query).getResultList();
-        return null;
+        Bson filter = Filters.eq("client._id", clientId);
+        return bankAccounts.find(filter).into(new ArrayList<>());
     }
 
-    @Override
+
     public long countActiveByClientId(Long clientId) {
-//        CriteriaBuilder builder = em.getCriteriaBuilder();
-//        CriteriaQuery<Long> query = builder.createQuery(Long.class);
-//        Root<BankAccount> root = query.from(BankAccount.class);
-//        query.select(builder.count(root))
-//                .where(builder.and(
-//                        builder.equal(root.get("client").get("id"), clientId),
-//                        builder.isTrue(root.get("isActive"))
-//                ));
-//        return em.createQuery(query).getSingleResult();
-        return 0L;
+        Bson filter = Filters.and(
+                Filters.eq("client._id", clientId),
+                Filters.eq("active", true)
+        );
+        return bankAccounts.countDocuments(filter);
     }
 
-    @Override
+
     public void close() throws Exception {
 //        this.em.close();
     }

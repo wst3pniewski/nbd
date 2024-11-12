@@ -1,68 +1,74 @@
 package org.example.model.repositories;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.LockModeType;
-import jakarta.persistence.criteria.CriteriaQuery;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Updates;
+import org.bson.conversions.Bson;
 import org.example.model.clients.Client;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
-public class ClientRepository implements Repository<Client>, ClientRepositoryInterface, AutoCloseable {
+public class ClientRepository extends AbstractMongoRepository {
 
+    private MongoCollection<Client> clients;
 
     public ClientRepository() {
-
+        super();
+        initDbConnection();
+        this.clients = bankSystemDB.getCollection("clients", Client.class);
     }
 
-    @Override
     public Client add(Client client) {
-//        em.persist(client);
+        if (client == null) {
+            return null;
+        }
+        clients.insertOne(client);
         return client;
     }
 
-    @Override
     public List<Client> findAll() {
-//        var builder = em.getCriteriaBuilder();
-//        CriteriaQuery<Client> query = builder.createQuery(Client.class);
-//        query.from(Client.class);
-//        return em.createQuery(query).getResultList();
-        return null;
+        return clients.find().into(new ArrayList<>());
     }
 
-    @Override
     public Client findById(Long id) {
-//        return em.find(Client.class, id);
-        return null;
+        Bson filter = Filters.eq("_id", id);
+        Client client = clients.find(filter).first();
+        return client;
     }
 
-    @Override
     public Client update(Client client) {
-//        return em.merge(client);
-        return null;
+        if (client == null) {
+            return null;
+        }
+        Bson filter = Filters.eq("_id", client.getId());
+        Bson setUpdate = Updates.combine(
+                Updates.set("firstName", client.getFirstName()),
+                Updates.set("lastName", client.getLastName()),
+                Updates.set("dateOfBirth", client.getDateOfBirth()),
+                Updates.set("clientType", client.getClientType()),
+                Updates.set("city", client.getCity()),
+                Updates.set("street", client.getStreet()),
+                Updates.set("streetNumber", client.getStreetNumber())
+//                Updates.set("address", client.getAddress())
+        );
+
+        clients.updateOne(filter, setUpdate);
+
+        return client;
     }
 
-    @Override
-    public Client findByIdWithOptimisticLock(Long id) {
-//        return em.find(Client.class, id, LockModeType.OPTIMISTIC_FORCE_INCREMENT);
-        return null;
-    }
 
-    @Override
     public Client delete(Long id) {
-//        Client foundClient = em.find(Client.class, id);
-//        try {
-//            em.remove(foundClient);
-//        } catch (Exception e) {
-//            System.out.println("Error deleting client: " + e.getMessage());
-//        }
-//        return foundClient;
+        Bson filter = Filters.eq("_id", id);
+
+        clients.deleteOne(filter);
         return null;
     }
 
     @Override
     public void close() throws Exception {
-//        this.em.close();
     }
 
 }

@@ -2,13 +2,14 @@ package org.example.model.accounts;
 
 
 import org.bson.codecs.pojo.annotations.BsonCreator;
+import org.bson.codecs.pojo.annotations.BsonDiscriminator;
 import org.bson.codecs.pojo.annotations.BsonProperty;
 import org.example.model.clients.Client;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
-
+@BsonDiscriminator(key = "_clazz", value = "junior")
 public class JuniorAccount extends BankAccount {
 
     @BsonProperty("parent")

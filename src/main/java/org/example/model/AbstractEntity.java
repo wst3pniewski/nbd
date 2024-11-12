@@ -8,7 +8,7 @@ import java.io.Serializable;
 public abstract class AbstractEntity implements Serializable {
 
     @BsonProperty("_id")
-    private final long entityId;
+    private long entityId;
 
     public long getEntityId() {
         return entityId;

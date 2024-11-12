@@ -33,11 +33,20 @@ public class Client extends AbstractEntity {
     @BsonProperty("dateOfBirth")
     private LocalDate dateOfBirth;
 
-    @BsonProperty("address")
-    private Address address;
+//    @BsonProperty("address")
+//    private Address address;
 
     @BsonProperty("clientType")
     private ClientTypes clientType;
+
+    @BsonProperty("street")
+    private String street;
+
+    @BsonProperty("city")
+    private String city;
+
+    @BsonProperty("streetNumber")
+    private String number;
 
     @BsonCreator
     public Client(@BsonProperty("_id") long id,
@@ -45,13 +54,19 @@ public class Client extends AbstractEntity {
                   @BsonProperty("lastName") String lastName,
                   @BsonProperty("dateOfBirth") LocalDate dateOfBirth,
                   @BsonProperty("clientType") ClientTypes clientType,
-                  @BsonProperty("address") Address address) {
+//                  @BsonProperty("address") Address address
+                  @BsonProperty("street") String street,
+                  @BsonProperty("city") String city,
+                  @BsonProperty("number") String number) {
         super(id);
         this.firstName = firstName;
         this.lastName = lastName;
         this.dateOfBirth = dateOfBirth;
         this.clientType = clientType;
-        this.address = address;
+        this.street = street;
+        this.city = city;
+        this.number = number;
+//        this.address = address;
     }
 
     public LocalDate getDateOfBirth() {
@@ -72,6 +87,18 @@ public class Client extends AbstractEntity {
 
     public void setClientType(ClientTypes clientType) {
         this.clientType = clientType;
+    }
+
+    public String getStreet() {
+        return street;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public String getStreetNumber() {
+        return number;
     }
 
     public long getId() {

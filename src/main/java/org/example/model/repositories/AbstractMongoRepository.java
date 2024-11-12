@@ -24,10 +24,10 @@ public abstract class AbstractMongoRepository implements AutoCloseable {
                     .automatic(true)
                     .conventions(List.of(Conventions.ANNOTATION_CONVENTION))
                     .build());
-    private MongoClient mongoClient;
-    private MongoDatabase bankSystemDB;
+    protected MongoClient mongoClient;
+    protected MongoDatabase bankSystemDB;
 
-    private void initDbConnection() {
+    protected void initDbConnection() {
         MongoClientSettings settings = MongoClientSettings.builder()
                 .credential(credentials)
                 .applyConnectionString(connectionString)

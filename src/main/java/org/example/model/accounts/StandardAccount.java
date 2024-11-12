@@ -1,6 +1,7 @@
 package org.example.model.accounts;
 
 import org.bson.codecs.pojo.annotations.BsonCreator;
+import org.bson.codecs.pojo.annotations.BsonDiscriminator;
 import org.bson.codecs.pojo.annotations.BsonProperty;
 import org.example.model.clients.Client;
 
@@ -8,7 +9,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
-
+@BsonDiscriminator(key = "_clazz", value = "standard")
 public class StandardAccount extends BankAccount {
 
     @BsonProperty("debitLimit")
@@ -19,8 +20,19 @@ public class StandardAccount extends BankAccount {
 
     @BsonCreator
     public StandardAccount(@BsonProperty("_id") long id,
+                           @BsonProperty("balance") BigDecimal balance,
                            @BsonProperty("client") Client client,
-                           @BsonProperty("debitLimit") BigDecimal debitLimit) {
+                           @BsonProperty("active") Boolean isActive,
+                           @BsonProperty("creationDate") LocalDate creationDate,
+                           @BsonProperty("closeDate") LocalDate closeDate,
+                           @BsonProperty("debitLimit") BigDecimal debitLimit,
+                           @BsonProperty("debit") BigDecimal debit) {
+        super(id, balance, client, isActive, creationDate, closeDate);
+        this.debitLimit = debitLimit;
+        this.debit = debit;
+    }
+
+    public StandardAccount(long id, Client client, BigDecimal debitLimit) {
         super(id, client);
         LocalDate today = LocalDate.now();
         long age = ChronoUnit.YEARS.between(client.getDateOfBirth(), today);
@@ -31,6 +43,7 @@ public class StandardAccount extends BankAccount {
             throw new IllegalArgumentException("Client must be at least 18 years old to open a standard account");
         }
     }
+
 
     public BigDecimal getDebitLimit() {
         return debitLimit;
