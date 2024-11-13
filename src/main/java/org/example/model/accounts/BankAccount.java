@@ -1,11 +1,5 @@
 package org.example.model.accounts;
 
-
-import com.mongodb.lang.Nullable;
-import org.bson.BsonNull;
-import org.bson.codecs.pojo.annotations.BsonCreator;
-import org.bson.codecs.pojo.annotations.BsonDiscriminator;
-import org.bson.codecs.pojo.annotations.BsonProperty;
 import org.example.model.AbstractEntity;
 import org.example.model.clients.Client;
 
@@ -13,48 +7,44 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
 
-@BsonDiscriminator(key = "_clazz", value = "BankAccount")
 public abstract class BankAccount extends AbstractEntity {
 
-    @BsonProperty("balance")
     BigDecimal balance;
 
-    @BsonProperty("client")
     Client client;
 
-    @BsonProperty("active")
     Boolean isActive;
 
-    @BsonProperty("creationDate")
     LocalDate creationDate;
 
-    @Nullable
-    @BsonProperty("closeDate")
     LocalDate closeDate;
 
-    @BsonCreator
-    public BankAccount(@BsonProperty("_id") UUID id,
-                       @BsonProperty("balance") BigDecimal balance,
-                       @BsonProperty("client") Client client,
-                       @BsonProperty("active") Boolean isActive,
-                       @BsonProperty("creationDate") LocalDate creationDate,
-                       @BsonProperty("closeDate") LocalDate closeDate) {
-        super(id);
-        this.balance = balance;
-        this.client = client;
-        this.isActive = isActive;
-        this.creationDate = creationDate;
-        this.closeDate = closeDate;
-    }
 
     public BankAccount(Client client) {
-//        super(id);
         super();
         this.client = client;
         this.balance = new BigDecimal(0);
         this.isActive = true;
         this.creationDate = LocalDate.now();
         this.closeDate = null;
+    }
+
+    public BankAccount(UUID id, Client client) {
+        super(id);
+        this.client = client;
+        this.balance = new BigDecimal(0);
+        this.isActive = true;
+        this.creationDate = LocalDate.now();
+        this.closeDate = null;
+    }
+
+    public BankAccount(UUID id, BigDecimal balance, Client client, Boolean isActive, LocalDate creationDate, LocalDate closeDate) {
+        super(id);
+        this.balance = balance;
+        this.client = client;
+        this.isActive = isActive;
+        this.creationDate = creationDate;
+        this.closeDate = closeDate;
     }
 
     public Client getClient() {
@@ -99,9 +89,6 @@ public abstract class BankAccount extends AbstractEntity {
         this.isActive = false;
     }
 
-    //    public long getAccountId() {
-//        return getEntityId();
-//    }
     public UUID getId() {
         return getEntityId();
     }

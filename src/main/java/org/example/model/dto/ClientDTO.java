@@ -18,9 +18,6 @@ public class ClientDTO extends AbstractEntity {
     @BsonProperty("dateOfBirth")
     private LocalDate dateOfBirth;
 
-//    @BsonProperty("address")
-//    private Address address;
-
     @BsonProperty("clientType")
     private Client.ClientTypes clientType;
 
@@ -31,7 +28,7 @@ public class ClientDTO extends AbstractEntity {
     private String city;
 
     @BsonProperty("streetNumber")
-    private String number;
+    private String streetNumber;
 
     @BsonCreator
     public ClientDTO(@BsonProperty("_id") UUID id,
@@ -41,7 +38,7 @@ public class ClientDTO extends AbstractEntity {
                   @BsonProperty("clientType") Client.ClientTypes clientType,
                   @BsonProperty("street") String street,
                   @BsonProperty("city") String city,
-                  @BsonProperty("number") String number) {
+                  @BsonProperty("number") String streetNumber) {
         super(id);
         this.firstName = firstName;
         this.lastName = lastName;
@@ -49,6 +46,66 @@ public class ClientDTO extends AbstractEntity {
         this.clientType = clientType;
         this.street = street;
         this.city = city;
-        this.number = number;
+        this.streetNumber = streetNumber;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public LocalDate getDateOfBirth() {
+        return dateOfBirth;
+    }
+
+    public Client.ClientTypes getClientType() {
+        return clientType;
+    }
+
+    public String getStreet() {
+        return street;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public String getStreetNumber() {
+        return streetNumber;
+    }
+
+    public UUID getId() {
+        return super.getEntityId();
+    }
+
+    public void setClientType(Client.ClientTypes clientType) {
+        this.clientType = clientType;
+    }
+
+    public void setStreet(String street) {
+        this.street = street;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    public void setStreetNumber(String number) {
+        this.streetNumber = number;
+    }
+
+    public void setDateOfBirth(LocalDate dateOfBirth) {
+        this.dateOfBirth = dateOfBirth;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
     }
 }

@@ -17,6 +17,10 @@ import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.Conventions;
 import org.bson.codecs.pojo.PojoCodecProvider;
 import org.example.model.codecs.UUIDCodec;
+import org.example.model.dto.BankAccountDTO;
+import org.example.model.dto.JuniorAccountDTO;
+import org.example.model.dto.SavingAccountDTO;
+import org.example.model.dto.StandardAccountDTO;
 
 import java.util.List;
 
@@ -25,8 +29,10 @@ public abstract class AbstractMongoRepository implements AutoCloseable {
             "mongodb2:27018, mongodb3:27019/?replicaSet=replica_set_single");
     private MongoCredential credentials = MongoCredential.createCredential("admin",
             "admin", "adminpassword".toCharArray());
-    private CodecRegistry pojoCodecRegistry = CodecRegistries.fromProviders(
+    protected CodecRegistry pojoCodecRegistry = CodecRegistries.fromProviders(
             PojoCodecProvider.builder()
+//                    .register("org.example.model.dto.BankAccountDTO")
+                    .register(BankAccountDTO.class, StandardAccountDTO.class, SavingAccountDTO.class, JuniorAccountDTO.class)
                     .automatic(true)
                     .conventions(List.of(Conventions.ANNOTATION_CONVENTION))
                     .build());

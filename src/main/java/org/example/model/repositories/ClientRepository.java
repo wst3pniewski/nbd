@@ -5,6 +5,8 @@ import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Updates;
 import org.bson.conversions.Bson;
 import org.example.model.clients.Client;
+import org.example.model.dto.ClientDTO;
+import org.example.model.mappers.ClientDTOMapper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,30 +15,30 @@ import java.util.UUID;
 
 public class ClientRepository extends AbstractMongoRepository {
 
-    private MongoCollection<Client> clients;
+    private MongoCollection<ClientDTO> clients;
 
     public ClientRepository() {
         super();
         initDbConnection();
-        this.clients = bankSystemDB.getCollection("clients", Client.class);
+        this.clients = bankSystemDB.getCollection("clients", ClientDTO.class);
     }
 
     public Client add(Client client) {
         if (client == null) {
             return null;
         }
-        clients.insertOne(client);
+        clients.insertOne(ClientDTOMapper.toDTO(client));
         return client;
     }
 
     public List<Client> findAll() {
-        return clients.find().into(new ArrayList<>());
+        return clients.find().into(new ArrayList<>()).stream().map(ClientDTOMapper::fromDTO).toList();
     }
 
     public Client findById(UUID id) {
         Bson filter = Filters.eq("_id", id);
-        Client client = clients.find(filter).first();
-        return client;
+        ClientDTO client = clients.find(filter).first();
+        return ClientDTOMapper.fromDTO(client);
     }
 
     public Client update(Client client) {
@@ -62,7 +64,8 @@ public class ClientRepository extends AbstractMongoRepository {
 
 
     public Client delete(UUID id) {
-        Bson filter = Filters.eq("_id", id);
+        System.out.println(id.toString());
+        Bson filter = Filters.eq("_id", id.toString());
 
         clients.deleteOne(filter);
         return null;

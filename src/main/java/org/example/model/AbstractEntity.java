@@ -18,7 +18,7 @@ public abstract class AbstractEntity implements Serializable {
 //    public AbstractEntity(long entityId) {
 //        this.entityId = entityId;
 //    }
-//    @BsonId
+
     @BsonId
     @BsonProperty("_id")
     private UUID entityId;

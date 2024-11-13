@@ -11,6 +11,11 @@ import org.example.model.accounts.JuniorAccount;
 import org.example.model.accounts.SavingAccount;
 import org.example.model.accounts.StandardAccount;
 import org.example.model.clients.Client;
+import org.example.model.dto.BankAccountDTO;
+import org.example.model.dto.JuniorAccountDTO;
+import org.example.model.dto.SavingAccountDTO;
+import org.example.model.dto.StandardAccountDTO;
+import org.example.model.mappers.BankAccountDTOMapper;
 
 
 import java.util.ArrayList;
@@ -20,36 +25,35 @@ import java.util.UUID;
 
 public class AccountRepository extends AbstractMongoRepository {
 
-    private MongoCollection<BankAccount> bankAccounts;
+    private MongoCollection<BankAccountDTO> bankAccounts;
 
     public AccountRepository() {
         super();
         initDbConnection();
 //        createBankAccountsCollection();
-        this.bankAccounts = bankSystemDB.getCollection("bankAccounts", BankAccount.class);
+        this.bankAccounts = bankSystemDB.getCollection("bankAccounts", BankAccountDTO.class);
     }
 
     public BankAccount add(BankAccount account) {
         if (account == null) {
             return null;
         }
-        bankAccounts.insertOne(account);
+        bankAccounts.insertOne(BankAccountDTOMapper.toDTO(account));
 
-        Bson filter = Filters.eq("_id", account.getId());
-        Bson setUpdate = Updates.set("closeDate", BsonNull.VALUE);
-        bankAccounts.updateOne(filter, setUpdate);
+//        Bson filter = Filters.eq("_id", account.getId());
+//        Bson setUpdate = Updates.set("closeDate", BsonNull.VALUE);
+//        bankAccounts.updateOne(filter, setUpdate);
         return account;
     }
 
     public List<BankAccount> findAll() {
-        return bankAccounts.find().into(new ArrayList<>());
+        return bankAccounts.find().into(new ArrayList<>()).stream().map(BankAccountDTOMapper::fromDTO).toList();
     }
 
 
     public BankAccount findById(UUID id) {
         Bson filter = Filters.eq("_id", id);
-        BankAccount bankAccount = bankAccounts.find(filter).first();
-        return bankAccount;
+        return BankAccountDTOMapper.fromDTO(bankAccounts.find(filter).first());
     }
 
 
@@ -57,9 +61,10 @@ public class AccountRepository extends AbstractMongoRepository {
         if (account == null) {
             return null;
         }
+        BankAccountDTO accountDTO = BankAccountDTOMapper.toDTO(account);
         Bson filter = Filters.eq("_id", account.getId());
         Bson setUpdate = null;
-        if (account instanceof StandardAccount) {
+        if (accountDTO instanceof StandardAccountDTO) {
             setUpdate = Updates.combine(
                     Updates.set("balance", account.getBalance()),
                     Updates.set("active", account.getActive()),
@@ -67,14 +72,14 @@ public class AccountRepository extends AbstractMongoRepository {
                     Updates.set("debit", ((StandardAccount) account).getDebit()),
                     Updates.set("debitLimit", ((StandardAccount) account).getDebitLimit())
             );
-        } else if (account instanceof SavingAccount) {
+        } else if (accountDTO instanceof SavingAccountDTO) {
             setUpdate = Updates.combine(
                     Updates.set("balance", account.getBalance()),
                     Updates.set("active", account.getActive()),
                     Updates.set("closeDate", account.getCloseDate()),
                     Updates.set("interestRate", ((SavingAccount) account).getInterestRate())
             );
-        } else if (account instanceof JuniorAccount) {
+        } else if (accountDTO instanceof JuniorAccountDTO) {
             setUpdate = Updates.combine(
                     Updates.set("balance", account.getBalance()),
                     Updates.set("active", account.getActive()),
@@ -88,7 +93,7 @@ public class AccountRepository extends AbstractMongoRepository {
 
     public List<BankAccount> getAccountsByClientId(UUID clientId) {
         Bson filter = Filters.eq("client._id", clientId);
-        return bankAccounts.find(filter).into(new ArrayList<>());
+        return bankAccounts.find(filter).into(new ArrayList<>()).stream().map(BankAccountDTOMapper::fromDTO).toList();
     }
 
 

@@ -8,6 +8,7 @@ import com.mongodb.session.ClientSession;
 import org.example.model.MongoDBConnection;
 import org.example.model.accounts.*;
 import org.example.model.clients.Client;
+import org.example.model.dto.BankAccountDTO;
 import org.example.model.repositories.AbstractMongoRepository;
 import org.example.model.repositories.AccountRepository;
 import org.example.model.repositories.ClientRepository;

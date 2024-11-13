@@ -1,9 +1,11 @@
 package org.example.model.repositories;
 
 import org.example.model.accounts.BankAccount;
+import org.example.model.accounts.SavingAccount;
 import org.example.model.accounts.StandardAccount;
 import org.example.model.clients.Address;
 import org.example.model.clients.Client;
+import org.example.model.dto.BankAccountDTO;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -46,10 +48,10 @@ class AccountRepositoryTest {
         LocalDate dateOfBirth = LocalDate.of(2000, 1, 1);
 //        Address address = new Address("Aleja", "Lodz", "1");
         Client client = new Client( "John", "Doe", dateOfBirth, Client.ClientTypes.BUSINESS, "Aleja", "Lodz", "1");
-        BankAccount account = new StandardAccount(client, BigDecimal.valueOf(1000));
-
+        BankAccount account = new SavingAccount(client, BigDecimal.valueOf(1000));
+        BankAccount account2 = new SavingAccount(client, BigDecimal.valueOf(0.1));
         accountRepository.add(account);
-
+        accountRepository.add(account2);
         List<BankAccount> bankAccountList = accountRepository.findAll();
         assert (bankAccountList.isEmpty() == false);
     }

@@ -1,8 +1,6 @@
 package org.example.model.accounts;
 
-
 import org.bson.codecs.pojo.annotations.BsonCreator;
-import org.bson.codecs.pojo.annotations.BsonDiscriminator;
 import org.bson.codecs.pojo.annotations.BsonProperty;
 import org.example.model.clients.Client;
 
@@ -11,21 +9,20 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
-@BsonDiscriminator(key = "_clazz", value = "junior")
+
 public class JuniorAccount extends BankAccount {
 
-    @BsonProperty("parent")
     Client parent;
 
-    @BsonCreator
-    public JuniorAccount(@BsonProperty("_id") UUID id,
-                         @BsonProperty("balance") BigDecimal balance,
-                         @BsonProperty("client") Client client,
-                         @BsonProperty("active") Boolean isActive,
-                         @BsonProperty("creationDate") LocalDate creationDate,
-                         @BsonProperty("closeDate") LocalDate closeDate,
-                         @BsonProperty("parent") Client parent) {
-        super(id, balance, client, isActive, creationDate, closeDate);
+    public JuniorAccount(Client client, Client parent) {
+        super(client);
+        if (client == null) {
+            throw new IllegalArgumentException("Client cannot be null");
+        }
+        if (parent == null) {
+            throw new IllegalArgumentException("Parent cannot be null");
+        }
+        this.parent = parent;
         LocalDate today = LocalDate.now();
         long age = ChronoUnit.YEARS.between(client.getDateOfBirth(), today);
         if (age < 18) {
@@ -35,8 +32,15 @@ public class JuniorAccount extends BankAccount {
         }
     }
 
-    public JuniorAccount(Client client, Client parent) {
-        super(client);
+
+    public JuniorAccount(UUID id,
+                         BigDecimal balance,
+                         Client client,
+                         Boolean isActive,
+                         LocalDate creationDate,
+                         LocalDate closeDate,
+                         Client parent) {
+        super(id, balance, client, isActive, creationDate, closeDate);
         this.parent = parent;
     }
 
