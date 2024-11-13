@@ -55,12 +55,10 @@ public class Client extends AbstractEntity {
                   @BsonProperty("lastName") String lastName,
                   @BsonProperty("dateOfBirth") LocalDate dateOfBirth,
                   @BsonProperty("clientType") ClientTypes clientType,
-//                  @BsonProperty("address") Address address
                   @BsonProperty("street") String street,
                   @BsonProperty("city") String city,
                   @BsonProperty("number") String number) {
         super(id);
-//        super();
         this.firstName = firstName;
         this.lastName = lastName;
         this.dateOfBirth = dateOfBirth;
@@ -68,7 +66,6 @@ public class Client extends AbstractEntity {
         this.street = street;
         this.city = city;
         this.number = number;
-//        this.address = address;
     }
 
     public Client(String firstName,
