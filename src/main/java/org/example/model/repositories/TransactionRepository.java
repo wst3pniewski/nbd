@@ -10,6 +10,7 @@ import org.example.model.accounts.BankAccount;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 
 public class TransactionRepository extends AbstractMongoRepository {
@@ -34,7 +35,7 @@ public class TransactionRepository extends AbstractMongoRepository {
         return transactions.find().into(new ArrayList<>());
     }
 
-    public Transaction findById(Long id) {
+    public Transaction findById(UUID id) {
         Bson filter = Filters.eq("_id", id);
         return transactions.find(filter).first();
     }

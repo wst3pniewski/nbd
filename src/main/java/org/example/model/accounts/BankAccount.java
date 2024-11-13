@@ -1,6 +1,8 @@
 package org.example.model.accounts;
 
 
+import com.mongodb.lang.Nullable;
+import org.bson.BsonNull;
 import org.bson.codecs.pojo.annotations.BsonCreator;
 import org.bson.codecs.pojo.annotations.BsonDiscriminator;
 import org.bson.codecs.pojo.annotations.BsonProperty;
@@ -9,6 +11,7 @@ import org.example.model.clients.Client;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.UUID;
 
 @BsonDiscriminator(key = "_clazz", value = "BankAccount")
 public abstract class BankAccount extends AbstractEntity {
@@ -25,11 +28,12 @@ public abstract class BankAccount extends AbstractEntity {
     @BsonProperty("creationDate")
     LocalDate creationDate;
 
+    @Nullable
     @BsonProperty("closeDate")
-    LocalDate closeDate = null;
+    LocalDate closeDate;
 
     @BsonCreator
-    public BankAccount(@BsonProperty("_id") long id,
+    public BankAccount(@BsonProperty("_id") UUID id,
                        @BsonProperty("balance") BigDecimal balance,
                        @BsonProperty("client") Client client,
                        @BsonProperty("active") Boolean isActive,
@@ -43,8 +47,9 @@ public abstract class BankAccount extends AbstractEntity {
         this.closeDate = closeDate;
     }
 
-    public BankAccount(long id, Client client) {
-        super(id);
+    public BankAccount(Client client) {
+//        super(id);
+        super();
         this.client = client;
         this.balance = new BigDecimal(0);
         this.isActive = true;
@@ -94,7 +99,10 @@ public abstract class BankAccount extends AbstractEntity {
         this.isActive = false;
     }
 
-    public long getAccountId() {
+    //    public long getAccountId() {
+//        return getEntityId();
+//    }
+    public UUID getId() {
         return getEntityId();
     }
 }

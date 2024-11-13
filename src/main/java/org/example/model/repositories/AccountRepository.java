@@ -4,6 +4,7 @@ package org.example.model.repositories;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Updates;
+import org.bson.BsonNull;
 import org.bson.conversions.Bson;
 import org.example.model.accounts.BankAccount;
 import org.example.model.accounts.JuniorAccount;
@@ -14,6 +15,7 @@ import org.example.model.clients.Client;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 
 public class AccountRepository extends AbstractMongoRepository {
@@ -23,6 +25,7 @@ public class AccountRepository extends AbstractMongoRepository {
     public AccountRepository() {
         super();
         initDbConnection();
+//        createBankAccountsCollection();
         this.bankAccounts = bankSystemDB.getCollection("bankAccounts", BankAccount.class);
     }
 
@@ -31,6 +34,10 @@ public class AccountRepository extends AbstractMongoRepository {
             return null;
         }
         bankAccounts.insertOne(account);
+
+        Bson filter = Filters.eq("_id", account.getId());
+        Bson setUpdate = Updates.set("closeDate", BsonNull.VALUE);
+        bankAccounts.updateOne(filter, setUpdate);
         return account;
     }
 
@@ -39,7 +46,7 @@ public class AccountRepository extends AbstractMongoRepository {
     }
 
 
-    public BankAccount findById(Long id) {
+    public BankAccount findById(UUID id) {
         Bson filter = Filters.eq("_id", id);
         BankAccount bankAccount = bankAccounts.find(filter).first();
         return bankAccount;
@@ -50,7 +57,7 @@ public class AccountRepository extends AbstractMongoRepository {
         if (account == null) {
             return null;
         }
-        Bson filter = Filters.eq("_id", account.getAccountId());
+        Bson filter = Filters.eq("_id", account.getId());
         Bson setUpdate = null;
         if (account instanceof StandardAccount) {
             setUpdate = Updates.combine(
@@ -79,13 +86,13 @@ public class AccountRepository extends AbstractMongoRepository {
         return account;
     }
 
-    public List<BankAccount> getAccountsByClientId(Long clientId) {
+    public List<BankAccount> getAccountsByClientId(UUID clientId) {
         Bson filter = Filters.eq("client._id", clientId);
         return bankAccounts.find(filter).into(new ArrayList<>());
     }
 
 
-    public long countActiveByClientId(Long clientId) {
+    public long countActiveByClientId(UUID clientId) {
         Bson filter = Filters.and(
                 Filters.eq("client._id", clientId),
                 Filters.eq("active", true)

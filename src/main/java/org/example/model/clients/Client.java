@@ -5,6 +5,7 @@ import org.bson.codecs.pojo.annotations.BsonProperty;
 import org.example.model.AbstractEntity;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 public class Client extends AbstractEntity {
 
@@ -49,7 +50,7 @@ public class Client extends AbstractEntity {
     private String number;
 
     @BsonCreator
-    public Client(@BsonProperty("_id") long id,
+    public Client(@BsonProperty("_id") UUID id,
                   @BsonProperty("firstName") String firstName,
                   @BsonProperty("lastName") String lastName,
                   @BsonProperty("dateOfBirth") LocalDate dateOfBirth,
@@ -59,6 +60,7 @@ public class Client extends AbstractEntity {
                   @BsonProperty("city") String city,
                   @BsonProperty("number") String number) {
         super(id);
+//        super();
         this.firstName = firstName;
         this.lastName = lastName;
         this.dateOfBirth = dateOfBirth;
@@ -67,6 +69,23 @@ public class Client extends AbstractEntity {
         this.city = city;
         this.number = number;
 //        this.address = address;
+    }
+
+    public Client(String firstName,
+                  String lastName,
+                  LocalDate dateOfBirth,
+                  ClientTypes clientType,
+                  String street,
+                  String city,
+                  String number) {
+        super();
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.dateOfBirth = dateOfBirth;
+        this.clientType = clientType;
+        this.street = street;
+        this.city = city;
+        this.number = number;
     }
 
     public LocalDate getDateOfBirth() {
@@ -101,7 +120,11 @@ public class Client extends AbstractEntity {
         return number;
     }
 
-    public long getId() {
+//    public long getId() {
+//        return getEntityId();
+//    }
+
+    public UUID getId() {
         return getEntityId();
     }
 

@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -27,7 +28,7 @@ class ClientRepositoryTest {
     void add() {
         LocalDate dateOfBirth = LocalDate.of(2000, 1, 1);
 //        Address address = new Address("Aleja", "Lodz", "1");
-        Client client = new Client(1L, "John", "Doe", dateOfBirth, Client.ClientTypes.BUSINESS, "Aleja", "Lodz", "1");
+        Client client = new Client("John", "Doe", dateOfBirth, Client.ClientTypes.BUSINESS, "Aleja", "Lodz", "1");
 
         clientRepository.add(client);
 
@@ -42,7 +43,7 @@ class ClientRepositoryTest {
     void findAll() {
         LocalDate dateOfBirth = LocalDate.of(2000, 1, 1);
 //        Address address = new Address("Aleja", "Lodz", "1");
-        Client client = new Client(2, "John", "Doe", dateOfBirth, Client.ClientTypes.BUSINESS, "Aleja", "Lodz", "1");
+        Client client = new Client( "John", "Doe", dateOfBirth, Client.ClientTypes.BUSINESS, "Aleja", "Lodz", "1");
 
         clientRepository.add(client);
         List<Client> clients = clientRepository.findAll();
@@ -56,7 +57,7 @@ class ClientRepositoryTest {
     void findById() {
         LocalDate dateOfBirth = LocalDate.of(2000, 1, 1);
 //        Address address = new Address("Aleja", "Lodz", "1");
-        Client client = new Client(4, "John", "Doe", dateOfBirth, Client.ClientTypes.BUSINESS, "Aleja", "Lodz", "1");
+        Client client = new Client("John", "Doe", dateOfBirth, Client.ClientTypes.BUSINESS, "Aleja", "Lodz", "1");
 
         clientRepository.add(client);
 
@@ -68,15 +69,15 @@ class ClientRepositoryTest {
 
     @Test
     void findNotExistingClient() {
-        assertNull(clientRepository.findById(1000L));
-        assertDoesNotThrow(() -> clientRepository.findById(1000L));
+        assertNull(clientRepository.findById(UUID.randomUUID()));
+        assertDoesNotThrow(() -> clientRepository.findById(UUID.randomUUID()));
     }
 
     @Test
     void update() {
         LocalDate dateOfBirth = LocalDate.of(2000, 1, 1);
 //        Address address = new Address("Aleja", "Lodz", "1");
-        Client client = new Client(4, "John", "Doe", dateOfBirth, Client.ClientTypes.BUSINESS, "Aleja", "Lodz", "1");
+        Client client = new Client("John", "Doe", dateOfBirth, Client.ClientTypes.BUSINESS, "Aleja", "Lodz", "1");
 
         clientRepository.add(client);
 
@@ -95,7 +96,7 @@ class ClientRepositoryTest {
     void delete() {
         LocalDate dateOfBirth = LocalDate.of(2000, 1, 1);
 //        Address address = new Address("Aleja", "Lodz", "1");
-        Client client = new Client(7, "John", "Doe", dateOfBirth, Client.ClientTypes.BUSINESS, "Aleja", "Lodz", "1");
+        Client client = new Client("John", "Doe", dateOfBirth, Client.ClientTypes.BUSINESS, "Aleja", "Lodz", "1");
 
         clientRepository.add(client);
 
@@ -110,6 +111,6 @@ class ClientRepositoryTest {
 
     @Test
     void deleteNotExistingClient() {
-        assertDoesNotThrow(() -> clientRepository.delete(1000L));
+        assertDoesNotThrow(() -> clientRepository.delete(UUID.randomUUID()));
     }
 }

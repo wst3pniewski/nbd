@@ -5,7 +5,6 @@ import org.example.model.accounts.BankAccount;
 import org.example.model.clients.Client;
 import org.example.model.managers.AccountManager;
 import org.example.model.managers.ClientManager;
-import org.example.model.managers.TransactionManager;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -18,9 +17,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class TransactionRepositoryTest {
     private static TransactionRepository transactionRepository;
-//    private static TransactionManager transactionManager;
-//    private static ClientManager clientManager;
-//    private static AccountManager accountManager;
+    private static ClientManager clientManager;
+    private static AccountManager accountManager;
 
     @BeforeAll
     static void beforeAll() {
@@ -41,11 +39,11 @@ class TransactionRepositoryTest {
                 Client.ClientTypes.STANDARD, "Ulica", "Lodz", "1");
         BankAccount account1 = accountManager.createStandardAccount(client.getId(), BigDecimal.valueOf(1000));
         BankAccount account2 = accountManager.createStandardAccount(client.getId(), BigDecimal.valueOf(1000));
-        accountManager.depositMoney(account1.getAccountId(), BigDecimal.valueOf(100));
+        accountManager.depositMoney(account1.getId(), BigDecimal.valueOf(100));
         Transaction transaction = new Transaction(account1, account2, BigDecimal.valueOf(100));
-        //transaction
+
         transactionRepository.add(transaction);
-        //end
+
         Transaction fountTransaction = transactionRepository.findById(transaction.getId());
 
         assertEquals(transaction.getId(), fountTransaction.getId());
@@ -53,42 +51,40 @@ class TransactionRepositoryTest {
 
     @Test
     void findAll() {
-//        LocalDate dateOfBirth = LocalDate.of(2000, 1, 1);
-//        Client client = clientManager.createClient("Add", "Account", dateOfBirth,
-//                Client.ClientTypes.STANDARD, "Ulica", "Lodz", "1");
-//
-//        BankAccount account1 = accountManager.createStandardAccount(client.getId(), BigDecimal.valueOf(1000));
-//        BankAccount account2 = accountManager.createStandardAccount(client.getId(), BigDecimal.valueOf(1000));
-//        accountManager.depositMoney(account1.getAccountId(), BigDecimal.valueOf(100));
-//
-//        Transaction transaction = new Transaction(account1, account2, BigDecimal.valueOf(100));
-//        Transaction transaction2 = new Transaction(account1, account2, BigDecimal.valueOf(100));
-//        //transaction
-//        transactionRepository.add(transaction);
-//        transactionRepository.add(transaction2);
-//        //end
-//
-//        List<Transaction> transactions = transactionRepository.findAll();
-//        assertTrue(transactions.size() > 0);
+        LocalDate dateOfBirth = LocalDate.of(2000, 1, 1);
+        Client client = clientManager.createClient("Add", "Account", dateOfBirth,
+                Client.ClientTypes.STANDARD, "Ulica", "Lodz", "1");
+
+        BankAccount account1 = accountManager.createStandardAccount(client.getId(), BigDecimal.valueOf(1000));
+        BankAccount account2 = accountManager.createStandardAccount(client.getId(), BigDecimal.valueOf(1000));
+        accountManager.depositMoney(account1.getId(), BigDecimal.valueOf(100));
+
+        Transaction transaction = new Transaction(account1, account2, BigDecimal.valueOf(100));
+        Transaction transaction2 = new Transaction(account1, account2, BigDecimal.valueOf(100));
+
+        transactionRepository.add(transaction);
+        transactionRepository.add(transaction2);
+
+        List<Transaction> transactions = transactionRepository.findAll();
+        assertTrue(transactions.size() > 0);
     }
 
     @Test
     void findById() {
-//        LocalDate dateOfBirth = LocalDate.of(2000, 1, 1);
-//        Client client = clientManager.createClient("Add", "Account", dateOfBirth,
-//                Client.ClientTypes.STANDARD, "Ulica", "Lodz", "1");
-//
-//        BankAccount account1 = accountManager.createStandardAccount(client.getId(), BigDecimal.valueOf(1000));
-//        BankAccount account2 = accountManager.createStandardAccount(client.getId(), BigDecimal.valueOf(1000));
-//        accountManager.depositMoney(account1.getAccountId(), BigDecimal.valueOf(100));
-//
-//        Transaction transaction = new Transaction(account1, account2, BigDecimal.valueOf(100));
-//        //transaction
-//        transactionRepository.add(transaction);
-//        //end
-//
-//        Transaction fountTransaction = transactionRepository.findById(transaction.getId());
-//        assertEquals(transaction.getId(), fountTransaction.getId());
+        LocalDate dateOfBirth = LocalDate.of(2000, 1, 1);
+        Client client = clientManager.createClient("Add", "Account", dateOfBirth,
+                Client.ClientTypes.STANDARD, "Ulica", "Lodz", "1");
+
+        BankAccount account1 = accountManager.createStandardAccount(client.getId(), BigDecimal.valueOf(1000));
+        BankAccount account2 = accountManager.createStandardAccount(client.getId(), BigDecimal.valueOf(1000));
+        accountManager.depositMoney(account1.getId(), BigDecimal.valueOf(100));
+
+        Transaction transaction = new Transaction(account1, account2, BigDecimal.valueOf(100));
+
+        transactionRepository.add(transaction);
+
+        Transaction fountTransaction = transactionRepository.findById(transaction.getId());
+        assertEquals(transaction.getId(), fountTransaction.getId());
     }
 
 }

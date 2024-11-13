@@ -8,6 +8,7 @@ import org.example.model.clients.Client;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.UUID;
 
 @BsonDiscriminator(key = "_clazz", value = "saving")
 public class SavingAccount extends BankAccount {
@@ -16,10 +17,17 @@ public class SavingAccount extends BankAccount {
     BigDecimal interestRate;
 
     @BsonCreator
-    public SavingAccount(@BsonProperty("_id") long id,
+    public SavingAccount(@BsonProperty("_id") UUID id,
+                         @BsonProperty("balance") BigDecimal balance,
                          @BsonProperty("client") Client client,
+                         @BsonProperty("active") Boolean isActive,
+                         @BsonProperty("creationDate") LocalDate creationDate,
+                         @BsonProperty("closeDate") LocalDate closeDate,
                          @BsonProperty("interestRate") BigDecimal interestRate) {
-        super(id, client);
+        super(id, balance, client, isActive, creationDate, closeDate);
+    }
+    public SavingAccount(Client client, BigDecimal interestRate) {
+        super(client);
         LocalDate today = LocalDate.now();
         long age = ChronoUnit.YEARS.between(client.getDateOfBirth(), today);
         if (age >= 18) {

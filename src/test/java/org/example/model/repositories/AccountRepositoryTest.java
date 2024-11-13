@@ -31,22 +31,22 @@ class AccountRepositoryTest {
     void addAccount() {
         LocalDate dateOfBirth = LocalDate.of(2000, 1, 1);
 //        Address address = new Address("Ulica", "Lodz", "1");
-        Client client = new Client(1L, "Add", "Account", dateOfBirth, Client.ClientTypes.BUSINESS, "Ulica", "Lodz", "1");
-        BankAccount account = new StandardAccount(1L, client, BigDecimal.valueOf(1000));
+        Client client = new Client( "Add", "Account", dateOfBirth, Client.ClientTypes.BUSINESS, "Ulica", "Lodz", "1");
+        BankAccount account = new StandardAccount(client, BigDecimal.valueOf(1000));
 
         accountRepository.add(account);
 
-        BankAccount foundAccount = accountRepository.findById(account.getAccountId());
+        BankAccount foundAccount = accountRepository.findById(account.getId());
 
-        assertEquals(account.getAccountId(), foundAccount.getAccountId());
+        assertEquals(account.getId(), foundAccount.getId());
     }
 
     @Test
     void findAll() {
         LocalDate dateOfBirth = LocalDate.of(2000, 1, 1);
 //        Address address = new Address("Aleja", "Lodz", "1");
-        Client client = new Client(2L, "John", "Doe", dateOfBirth, Client.ClientTypes.BUSINESS, "Aleja", "Lodz", "1");
-        BankAccount account = new StandardAccount(2L, client, BigDecimal.valueOf(1000));
+        Client client = new Client( "John", "Doe", dateOfBirth, Client.ClientTypes.BUSINESS, "Aleja", "Lodz", "1");
+        BankAccount account = new StandardAccount(client, BigDecimal.valueOf(1000));
 
         accountRepository.add(account);
 
@@ -58,22 +58,22 @@ class AccountRepositoryTest {
     void findById() {
         LocalDate dateOfBirth = LocalDate.of(2000, 1, 1);
         Address address = new Address("Aleja", "Lodz", "1");
-        Client client = new Client(3L, "John", "Doe", dateOfBirth, Client.ClientTypes.BUSINESS, "Aleja", "Lodz", "1");
-        BankAccount account = new StandardAccount(3L, client, BigDecimal.valueOf(1000));
+        Client client = new Client( "John", "Doe", dateOfBirth, Client.ClientTypes.BUSINESS, "Aleja", "Lodz", "1");
+        BankAccount account = new StandardAccount(client, BigDecimal.valueOf(1000));
 
         accountRepository.add(account);
 
-        BankAccount foundAccount = accountRepository.findById(account.getAccountId());
+        BankAccount foundAccount = accountRepository.findById(account.getId());
 
-        assertEquals(account.getAccountId(), foundAccount.getAccountId());
+        assertEquals(account.getId(), foundAccount.getId());
     }
 
     @Test
     void updateAccount() {
         LocalDate dateOfBirth = LocalDate.of(2000, 1, 1);
 //        Address address = new Address("Aleja", "Lodz", "1");
-        Client client = new Client(4L, "John", "Doe", dateOfBirth, Client.ClientTypes.BUSINESS, "Aleja", "Lodz", "1");
-        BankAccount account = new StandardAccount(4L, client, BigDecimal.valueOf(1000));
+        Client client = new Client( "John", "Doe", dateOfBirth, Client.ClientTypes.BUSINESS, "Aleja", "Lodz", "1");
+        BankAccount account = new StandardAccount(client, BigDecimal.valueOf(1000));
 
         accountRepository.add(account);
 
@@ -81,7 +81,7 @@ class AccountRepositoryTest {
         account.setActive(false);
         BankAccount updatedAccount = accountRepository.update(account);
 
-        BankAccount foundAccount = accountRepository.findById(account.getAccountId());
+        BankAccount foundAccount = accountRepository.findById(account.getId());
         assertEquals(BigDecimal.valueOf(2000), foundAccount.getBalance());
     }
 
@@ -89,12 +89,12 @@ class AccountRepositoryTest {
     void countActiveByClientId() {
         LocalDate dateOfBirth = LocalDate.of(2000, 1, 1);
 //        Address address = new Address("Aleja", "Lodz", "1");
-        Client client = new Client(5L, "John", "Doe", dateOfBirth, Client.ClientTypes.BUSINESS, "Aleja", "Lodz", "1");
-        BankAccount account = new StandardAccount(5L, client, BigDecimal.valueOf(1000));
+        Client client = new Client( "John", "Doe", dateOfBirth, Client.ClientTypes.BUSINESS, "Aleja", "Lodz", "1");
+        BankAccount account = new StandardAccount(client, BigDecimal.valueOf(1000));
 
         accountRepository.add(account);
 
-        BankAccount account2 = new StandardAccount(6L, client, BigDecimal.valueOf(1000));
+        BankAccount account2 = new StandardAccount(client, BigDecimal.valueOf(1000));
         account2.setActive(false);
 
         accountRepository.add(account2);
@@ -107,14 +107,14 @@ class AccountRepositoryTest {
     void getAccountsByClientId() {
         LocalDate dateOfBirth = LocalDate.of(2000, 1, 1);
 //        Address address = new Address("Aleja", "Lodz", "1");
-        Client client = new Client(7L, "John", "Doe", dateOfBirth, Client.ClientTypes.BUSINESS, "Aleja", "Lodz", "1");
-        BankAccount account = new StandardAccount(7L, client, BigDecimal.valueOf(1000));
+        Client client = new Client("John", "Doe", dateOfBirth, Client.ClientTypes.BUSINESS, "Aleja", "Lodz", "1");
+        BankAccount account = new StandardAccount(client, BigDecimal.valueOf(1000));
 
         accountRepository.add(account);
 
         List<BankAccount> accounts = accountRepository.getAccountsByClientId(client.getId());
         assertEquals(1, accounts.size());
-        assertEquals(account.getAccountId(), accounts.get(0).getAccountId());
+        assertEquals(account.getId(), accounts.get(0).getId());
     }
 
 }

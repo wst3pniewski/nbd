@@ -8,6 +8,7 @@ import org.example.model.clients.Client;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 
 public class ClientRepository extends AbstractMongoRepository {
@@ -32,7 +33,7 @@ public class ClientRepository extends AbstractMongoRepository {
         return clients.find().into(new ArrayList<>());
     }
 
-    public Client findById(Long id) {
+    public Client findById(UUID id) {
         Bson filter = Filters.eq("_id", id);
         Client client = clients.find(filter).first();
         return client;
@@ -60,7 +61,7 @@ public class ClientRepository extends AbstractMongoRepository {
     }
 
 
-    public Client delete(Long id) {
+    public Client delete(UUID id) {
         Bson filter = Filters.eq("_id", id);
 
         clients.deleteOne(filter);

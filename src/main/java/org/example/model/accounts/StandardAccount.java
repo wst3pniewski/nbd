@@ -8,6 +8,7 @@ import org.example.model.clients.Client;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.UUID;
 
 @BsonDiscriminator(key = "_clazz", value = "standard")
 public class StandardAccount extends BankAccount {
@@ -19,7 +20,7 @@ public class StandardAccount extends BankAccount {
     BigDecimal debit;
 
     @BsonCreator
-    public StandardAccount(@BsonProperty("_id") long id,
+    public StandardAccount(@BsonProperty("_id") UUID id,
                            @BsonProperty("balance") BigDecimal balance,
                            @BsonProperty("client") Client client,
                            @BsonProperty("active") Boolean isActive,
@@ -32,8 +33,8 @@ public class StandardAccount extends BankAccount {
         this.debit = debit;
     }
 
-    public StandardAccount(long id, Client client, BigDecimal debitLimit) {
-        super(id, client);
+    public StandardAccount(Client client, BigDecimal debitLimit) {
+        super(client);
         LocalDate today = LocalDate.now();
         long age = ChronoUnit.YEARS.between(client.getDateOfBirth(), today);
         if (age >= 18) {
