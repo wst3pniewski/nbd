@@ -40,13 +40,13 @@ class TransactionRepositoryTest {
         BankAccount account1 = accountManager.createStandardAccount(client.getId(), BigDecimal.valueOf(1000));
         BankAccount account2 = accountManager.createStandardAccount(client.getId(), BigDecimal.valueOf(1000));
         accountManager.depositMoney(account1.getId(), BigDecimal.valueOf(100));
-        Transaction transaction = new Transaction(account1, account2, BigDecimal.valueOf(100));
+        Transaction transaction = new Transaction(account1.getId(), account2.getId(), BigDecimal.valueOf(100));
 
         transactionRepository.add(transaction);
 
-        Transaction fountTransaction = transactionRepository.findById(transaction.getId());
+        Transaction foundTransaction = transactionRepository.findById(transaction.getId());
 
-        assertEquals(transaction.getId(), fountTransaction.getId());
+        assertEquals(transaction.getId(), foundTransaction.getId());
     }
 
     @Test
@@ -59,8 +59,8 @@ class TransactionRepositoryTest {
         BankAccount account2 = accountManager.createStandardAccount(client.getId(), BigDecimal.valueOf(1000));
         accountManager.depositMoney(account1.getId(), BigDecimal.valueOf(100));
 
-        Transaction transaction = new Transaction(account1, account2, BigDecimal.valueOf(100));
-        Transaction transaction2 = new Transaction(account1, account2, BigDecimal.valueOf(100));
+        Transaction transaction = new Transaction(account1.getId(), account2.getId(), BigDecimal.valueOf(100));
+        Transaction transaction2 = new Transaction(account1.getId(), account2.getId(), BigDecimal.valueOf(100));
 
         transactionRepository.add(transaction);
         transactionRepository.add(transaction2);
@@ -77,9 +77,9 @@ class TransactionRepositoryTest {
 
         BankAccount account1 = accountManager.createStandardAccount(client.getId(), BigDecimal.valueOf(1000));
         BankAccount account2 = accountManager.createStandardAccount(client.getId(), BigDecimal.valueOf(1000));
-        accountManager.depositMoney(account1.getId(), BigDecimal.valueOf(100));
+        account1 = accountManager.depositMoney(account1.getId(), BigDecimal.valueOf(100));
 
-        Transaction transaction = new Transaction(account1, account2, BigDecimal.valueOf(100));
+        Transaction transaction = new Transaction(account1.getId(), account2.getId(), BigDecimal.valueOf(100));
 
         transactionRepository.add(transaction);
 

@@ -17,10 +17,7 @@ import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.Conventions;
 import org.bson.codecs.pojo.PojoCodecProvider;
 import org.example.model.codecs.UUIDCodec;
-import org.example.model.dto.BankAccountDTO;
-import org.example.model.dto.JuniorAccountDTO;
-import org.example.model.dto.SavingAccountDTO;
-import org.example.model.dto.StandardAccountDTO;
+import org.example.model.dto.*;
 
 import java.util.List;
 
@@ -33,6 +30,7 @@ public abstract class AbstractMongoRepository implements AutoCloseable {
             PojoCodecProvider.builder()
 //                    .register("org.example.model.dto.BankAccountDTO")
                     .register(BankAccountDTO.class, StandardAccountDTO.class, SavingAccountDTO.class, JuniorAccountDTO.class)
+                    .register(TransactionDTO.class)
                     .automatic(true)
                     .conventions(List.of(Conventions.ANNOTATION_CONVENTION))
                     .build());
@@ -45,6 +43,7 @@ public abstract class AbstractMongoRepository implements AutoCloseable {
                 .applyConnectionString(connectionString)
                 .uuidRepresentation(UuidRepresentation.STANDARD)
                 .codecRegistry(CodecRegistries.fromRegistries(
+//                        CodecRegistries.fromCodecs(new CustomBankAccountDTOCodec(pojoCodecRegistry)),
                         CodecRegistries.fromCodecs(new UUIDCodec()),
                         MongoClientSettings.getDefaultCodecRegistry(),
                         pojoCodecRegistry
@@ -59,40 +58,14 @@ public abstract class AbstractMongoRepository implements AutoCloseable {
                         {
                          $jsonSchema: {
                             bsonType: "object",
-                            required: ["balance", "client", "active", "creationDate"],
+                            required: ["balance", "client", "active", "creationDate", "closeDate"],
                             properties: {
-                                _clazz: {
-                                            enum: ["StandardAccount", "SavingAccount", "JuniorAccount"]
-                                        },
-                                        debitLimit: {
-                                            bsonType: "decimal",
-                                            description: "must be a decimal and is required if _clazz is StandardAccount"
-                                        },
-                                        interestRate: {
-                                            bsonType: "decimal",
-                                            description: "must be a decimal and is required if _clazz is SavingAccount"
-                                        },
-                                        parent: {
-                                            bsonType: "object",
-                                            description: "must be an objectId and is required if _clazz is JuniorAccount"
-                                        },
-                                        balance: {
-                                            bsonType: "decimal",
-                                            description: "must be a decimal and is required"
-                                        }
+                                closeDate: {
+                                    bsonType: ["date", "null"],
+                                    description: "can be a date or null"
                                 },
-                                if: { properties: { _clazz: { const: "StandardAccount" } } },
-                                    then: { required: ["debitLimit"] },
-                                    else: {
-                                        if: { properties: { _clazz: { const: "SavingAccount" } } },
-                                        then: { required: ["interestRate"] },
-                                        else: {
-                                            if: { properties: { _clazz: { const: "JuniorAccount" } } },
-                                            then: { required: ["parentId"] }
-                                        }
-                                    }
-                                }
-                            } 
+                            }
+                         }
                         }
                         """
                 )

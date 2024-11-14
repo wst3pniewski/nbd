@@ -26,17 +26,17 @@ public abstract class BankAccountDTO extends AbstractEntity {
     @BsonProperty("creationDate")
     LocalDate creationDate;
 
-    @Nullable
     @BsonProperty("closeDate")
     LocalDate closeDate;
 
     @BsonCreator
     public BankAccountDTO(@BsonProperty("_id") UUID id,
-                       @BsonProperty("balance") BigDecimal balance,
-                       @BsonProperty("client") ClientDTO client,
-                       @BsonProperty("active") Boolean isActive,
-                       @BsonProperty("creationDate") LocalDate creationDate,
-                       @BsonProperty("closeDate") LocalDate closeDate) {
+                          @BsonProperty("balance") BigDecimal balance,
+                          @BsonProperty("client") ClientDTO client,
+                          @BsonProperty("active") Boolean isActive,
+                          @BsonProperty("creationDate") LocalDate creationDate,
+                          @BsonProperty("closeDate") LocalDate closeDate
+    ) {
         super(id);
         this.balance = balance;
         this.client = client;

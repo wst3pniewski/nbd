@@ -8,15 +8,15 @@ import java.util.UUID;
 
 public class Transaction extends AbstractEntity {
 
-    BankAccount sourceAccount;
+    UUID sourceAccount;
 
-    BankAccount destinationAccount;
+    UUID destinationAccount;
 
     BigDecimal amount;
 
 
-    public Transaction(BankAccount sourceAccount,
-                       BankAccount destinationAccount,
+    public Transaction(UUID sourceAccount,
+                       UUID destinationAccount,
                        BigDecimal amount) {
         super();
         this.sourceAccount = sourceAccount;
@@ -24,11 +24,21 @@ public class Transaction extends AbstractEntity {
         this.amount = amount;
     }
 
-    public BankAccount getSourceAccount() {
+    public Transaction(UUID id,
+                       UUID sourceAccount,
+                       UUID destinationAccount,
+                       BigDecimal amount) {
+        super(id);
+        this.sourceAccount = sourceAccount;
+        this.destinationAccount = destinationAccount;
+        this.amount = amount;
+    }
+
+    public UUID getSourceAccount() {
         return sourceAccount;
     }
 
-    public BankAccount getDestinationAccount() {
+    public UUID getDestinationAccount() {
         return destinationAccount;
     }
 

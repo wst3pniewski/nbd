@@ -53,7 +53,7 @@ public class TransactionManager {
         destinationAccount.setBalance(destinationAccount.getBalance().add(amount));
         accountRepository.update(sourceAccount);
         accountRepository.update(destinationAccount);
-        transaction = new Transaction(sourceAccount, destinationAccount, amount);
+        transaction = new Transaction(sourceAccount.getId(), destinationAccount.getId(), amount);
         transactionRepository.add(transaction);
 
         return transaction;
@@ -89,7 +89,7 @@ public class TransactionManager {
         destinationAccount.setBalance(destinationAccount.getBalance().add(amount));
         accountRepository.update(sourceAccount);
         accountRepository.update(destinationAccount);
-        transaction = new Transaction(sourceAccount, destinationAccount, amount);
+        transaction = new Transaction(sourceAccount.getId(), destinationAccount.getId(), amount);
         transactionRepository.add(transaction);
 
         return transaction;
