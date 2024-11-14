@@ -1,7 +1,5 @@
 package org.example.model;
 
-import org.example.model.accounts.BankAccount;
-
 import java.math.BigDecimal;
 import java.util.UUID;
 

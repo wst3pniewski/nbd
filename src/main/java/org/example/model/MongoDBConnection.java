@@ -14,9 +14,6 @@ import org.example.model.codecs.UUIDCodec;
 
 import java.util.List;
 
-import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
-import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
-
 public class MongoDBConnection {
     public static MongoClient createMongoClient() {
         ConnectionString connectionString = new ConnectionString("mongodb://mongodb1:27017," +

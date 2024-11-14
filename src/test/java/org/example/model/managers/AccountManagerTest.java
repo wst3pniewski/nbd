@@ -50,6 +50,7 @@ class AccountManagerTest {
         BankAccount bankAccount = accountManager.createStandardAccount(client.getId(), BigDecimal.valueOf(1000));
         List<BankAccount> activeAccountsL = accountManager.getAccountsByClientId(client.getId());
 
+
         assertEquals(1, activeAccountsL.size());
         assertEquals(bankAccount.getId(), activeAccountsL.getFirst().getId());
     }
@@ -167,4 +168,22 @@ class AccountManagerTest {
         accountManager.depositMoney(bankAccount.getId(), BigDecimal.valueOf(500));
         assertThrows(IllegalArgumentException.class, () -> accountManager.withdrawMoney(bankAccount.getId(), BigDecimal.valueOf(1000)));
     }
+
+    @Test
+    void clientUpdate(){
+        Client client = clientManager.createClient("Joe", "Junior",
+                LocalDate.of(2000, 1, 1),
+                Client.ClientTypes.STANDARD, "street", "city", "1");
+        BankAccount bankAccount = accountManager.createStandardAccount(client.getId(), BigDecimal.valueOf(1000));
+
+        assertEquals(bankAccount.getClient().getClientType(), Client.ClientTypes.STANDARD);
+
+        client.setClientType(Client.ClientTypes.BUSINESS);
+        clientManager.updateClient(client);
+
+        BankAccount updatedAccount = accountManager.findById(bankAccount.getId());
+        assertEquals(updatedAccount.getClient().getClientType(), Client.ClientTypes.BUSINESS);
+    }
+
+
 }

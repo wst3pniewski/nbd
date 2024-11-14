@@ -18,7 +18,8 @@ public class ClientDTOMapper {
                 client.getClientType(),
                 client.getStreet(),
                 client.getCity(),
-                client.getStreetNumber()
+                client.getStreetNumber(),
+                client.getActiveAccounts()
         );
     }
 
@@ -34,7 +35,8 @@ public class ClientDTOMapper {
                 clientDTO.getClientType(),
                 clientDTO.getStreet(),
                 clientDTO.getCity(),
-                clientDTO.getStreetNumber()
+                clientDTO.getStreetNumber(),
+                clientDTO.getActiveAccounts()
         );
     }
 }

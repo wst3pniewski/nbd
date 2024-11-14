@@ -66,7 +66,7 @@ class TransactionRepositoryTest {
         transactionRepository.add(transaction2);
 
         List<Transaction> transactions = transactionRepository.findAll();
-        assertTrue(transactions.size() > 0);
+        assertFalse(transactions.isEmpty());
     }
 
     @Test

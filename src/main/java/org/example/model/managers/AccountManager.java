@@ -4,12 +4,9 @@ package org.example.model.managers;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.TransactionBody;
-import com.mongodb.session.ClientSession;
 import org.example.model.MongoDBConnection;
 import org.example.model.accounts.*;
 import org.example.model.clients.Client;
-import org.example.model.dto.BankAccountDTO;
-import org.example.model.repositories.AbstractMongoRepository;
 import org.example.model.repositories.AccountRepository;
 import org.example.model.repositories.ClientRepository;
 
@@ -19,10 +16,9 @@ import java.util.List;
 import java.util.UUID;
 
 public class AccountManager {
-    private AccountRepository accountRepository;
-    private ClientRepository clientRepository;
-    private MongoClient mongoClient;
-    private MongoDatabase database;
+    private final AccountRepository accountRepository;
+    private final ClientRepository clientRepository;
+    private final MongoClient mongoClient;
 
 
     public AccountManager() {
@@ -30,39 +26,56 @@ public class AccountManager {
         this.clientRepository = new ClientRepository();
 
         this.mongoClient = MongoDBConnection.createMongoClient();
-        this.database = mongoClient.getDatabase("bankSystemDB");
     }
 
     public BankAccount createStandardAccount(UUID clientId, BigDecimal debitLimit) {
-        BankAccount account = null;
 
         Client client = clientRepository.findById(clientId);
-        long activeAccounts = accountRepository.countActiveByClientId(clientId);
-        if (activeAccounts >= client.getClientType().getMaxActiveAccounts()) {
-            throw new IllegalArgumentException("Client exceeded the limit of accounts");
-        }
-        account = new StandardAccount(client, debitLimit);
-        accountRepository.add(account);
 
-        return account;
+        try (var session = mongoClient.startSession()) {
+            TransactionBody<BankAccount> transactionBody = (TransactionBody<BankAccount>) () -> {
+                int activeAccounts = client.getActiveAccounts();
+                if (activeAccounts >= client.getClientType().getMaxActiveAccounts()) {
+                    throw new IllegalArgumentException("Client exceeded the limit of accounts");
+                }
+
+                client.setActiveAccounts((activeAccounts + 1));
+                clientRepository.update(client);
+
+                BankAccount account = new StandardAccount(client, debitLimit);
+                accountRepository.add(account);
+
+                return account;
+            };
+            return session.withTransaction(transactionBody);
+        }
     }
 
     public BankAccount createSavingAccount(UUID clientId, BigDecimal interestRate) {
-        BankAccount account = null;
 
         Client client = clientRepository.findById(clientId);
-        long activeAccounts = accountRepository.countActiveByClientId(clientId);
-        if (activeAccounts >= client.getClientType().getMaxActiveAccounts()) {
-            throw new IllegalArgumentException("Client exceeded the limit of accounts");
-        }
-        account = new SavingAccount(client, interestRate);
-        accountRepository.add(account);
 
-        return account;
+        try (var session = mongoClient.startSession()) {
+            TransactionBody<BankAccount> transactionBody = (TransactionBody<BankAccount>) () -> {
+                int activeAccounts = client.getActiveAccounts();
+                if (activeAccounts >= client.getClientType().getMaxActiveAccounts()) {
+                    throw new IllegalArgumentException("Client exceeded the limit of accounts");
+                }
+
+                client.setActiveAccounts((activeAccounts + 1));
+                clientRepository.update(client);
+
+                BankAccount account = new SavingAccount(client, interestRate);
+                accountRepository.add(account);
+
+                return account;
+            };
+            return session.withTransaction(transactionBody);
+        }
     }
 
     public BankAccount createJuniorAccount(UUID clientId, UUID parentId) {
-//        BankAccount account;
+
         Client client = clientRepository.findById(clientId);
         int clientAge = client.getDateOfBirth().until(LocalDate.now()).getYears();
 
@@ -77,14 +90,36 @@ public class AccountManager {
 
         try (var session = mongoClient.startSession()) {
             TransactionBody<BankAccount> transactionBody = (TransactionBody<BankAccount>) () -> {
-                long activeAccounts = accountRepository.countActiveByClientId(parent.getId());
-                if (activeAccounts >= parent.getClientType().getMaxActiveAccounts()) {
+                int activeAccounts = client.getActiveAccounts();
+                if (activeAccounts >= client.getClientType().getMaxActiveAccounts()) {
                     throw new IllegalArgumentException("Parent exceeded the limit of accounts");
                 }
-
+                client.setActiveAccounts((activeAccounts + 1));
+                clientRepository.update(client);
                 BankAccount account = new JuniorAccount(client, parent);
 
                 accountRepository.add(account);
+
+                return account;
+            };
+
+            return session.withTransaction(transactionBody);
+
+        }
+    }
+
+    public BankAccount closeAccount(UUID accountId) {
+
+        BankAccount account = accountRepository.findById(accountId);
+
+        try (var session = mongoClient.startSession()) {
+            TransactionBody<BankAccount> transactionBody = (TransactionBody<BankAccount>) () -> {
+                Client client = clientRepository.findById(account.getClient().getId());
+                int activeAccounts = client.getActiveAccounts();
+
+                account.setActive(false);
+                account.setCloseDate(LocalDate.now());
+                accountRepository.update(account);
 
                 return account;
             };

@@ -22,8 +22,9 @@ class ClientDTOMapperTest {
         String street = "123 Main St";
         String city = "Anytown";
         String number = "123";
+        int activeAccounts = 0;
 
-        Client client = new Client(id, firstName, lastName, dateOfBirth, clientType, street, city, number);
+        Client client = new Client(id, firstName, lastName, dateOfBirth, clientType, street, city, number, activeAccounts);
 
 
         ClientDTO clientDTO = ClientDTOMapper.toDTO(client);
@@ -50,8 +51,9 @@ class ClientDTOMapperTest {
         String street = "123 Main St";
         String city = "Anytown";
         String number = "123";
+        int activeAccounts = 0;
 
-        ClientDTO clientDTO = new ClientDTO(id, firstName, lastName, dateOfBirth, clientType, street, city, number);
+        ClientDTO clientDTO = new ClientDTO(id, firstName, lastName, dateOfBirth, clientType, street, city, number, activeAccounts);
 
         Client client = ClientDTOMapper.fromDTO(clientDTO);
 

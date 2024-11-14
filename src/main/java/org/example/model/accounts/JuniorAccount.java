@@ -1,7 +1,5 @@
 package org.example.model.accounts;
 
-import org.bson.codecs.pojo.annotations.BsonCreator;
-import org.bson.codecs.pojo.annotations.BsonProperty;
 import org.example.model.clients.Client;
 
 import java.math.BigDecimal;

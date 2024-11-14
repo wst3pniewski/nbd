@@ -30,15 +30,19 @@ public class ClientDTO extends AbstractEntity {
     @BsonProperty("streetNumber")
     private String streetNumber;
 
+    @BsonProperty("activeAccounts")
+    private int activeAccounts;
+
     @BsonCreator
     public ClientDTO(@BsonProperty("_id") UUID id,
-                  @BsonProperty("firstName") String firstName,
-                  @BsonProperty("lastName") String lastName,
-                  @BsonProperty("dateOfBirth") LocalDate dateOfBirth,
-                  @BsonProperty("clientType") Client.ClientTypes clientType,
-                  @BsonProperty("street") String street,
-                  @BsonProperty("city") String city,
-                  @BsonProperty("number") String streetNumber) {
+                     @BsonProperty("firstName") String firstName,
+                     @BsonProperty("lastName") String lastName,
+                     @BsonProperty("dateOfBirth") LocalDate dateOfBirth,
+                     @BsonProperty("clientType") Client.ClientTypes clientType,
+                     @BsonProperty("street") String street,
+                     @BsonProperty("city") String city,
+                     @BsonProperty("number") String streetNumber,
+                     @BsonProperty("activeAccounts") int activeAccounts) {
         super(id);
         this.firstName = firstName;
         this.lastName = lastName;
@@ -47,6 +51,7 @@ public class ClientDTO extends AbstractEntity {
         this.street = street;
         this.city = city;
         this.streetNumber = streetNumber;
+        this.activeAccounts = activeAccounts;
     }
 
     public String getFirstName() {
@@ -79,6 +84,14 @@ public class ClientDTO extends AbstractEntity {
 
     public UUID getId() {
         return super.getEntityId();
+    }
+
+    public int getActiveAccounts() {
+        return activeAccounts;
+    }
+
+    public void setActiveAccounts(int activeAccounts) {
+        this.activeAccounts = activeAccounts;
     }
 
     public void setClientType(Client.ClientTypes clientType) {

@@ -27,8 +27,8 @@ class ClientRepositoryTest {
     @Test
     void add() {
         LocalDate dateOfBirth = LocalDate.of(2000, 1, 1);
-//        Address address = new Address("Aleja", "Lodz", "1");
-        Client client = new Client("John", "Doe", dateOfBirth, Client.ClientTypes.BUSINESS, "Aleja", "Lodz", "1");
+        Client client = new Client("John", "Doe", dateOfBirth, Client.ClientTypes.BUSINESS, "Aleja",
+                "Lodz", "1");
 
         clientRepository.add(client);
 
@@ -36,19 +36,20 @@ class ClientRepositoryTest {
 
         assertEquals(client.getId(), foundClient.getId());
 
-        clientRepository.delete(client.getId());
+//        clientRepository.delete(client.getId());
     }
 
     @Test
     void findAll() {
         LocalDate dateOfBirth = LocalDate.of(2000, 1, 1);
-//        Address address = new Address("Aleja", "Lodz", "1");
-        Client client = new Client( "John", "Doe", dateOfBirth, Client.ClientTypes.BUSINESS, "Aleja", "Lodz", "1");
+        Client client = new Client( "John", "Doe", dateOfBirth, Client.ClientTypes.BUSINESS, "Aleja",
+                "Lodz", "1");
 
         clientRepository.add(client);
+
         List<Client> clients = clientRepository.findAll();
-        System.out.println(clients);
-        assertTrue(clients.size() > 0);
+
+        assertFalse(clients.isEmpty());
 
         clientRepository.delete(client.getId());
     }
@@ -56,8 +57,8 @@ class ClientRepositoryTest {
     @Test
     void findById() {
         LocalDate dateOfBirth = LocalDate.of(2000, 1, 1);
-//        Address address = new Address("Aleja", "Lodz", "1");
-        Client client = new Client("John", "Doe", dateOfBirth, Client.ClientTypes.BUSINESS, "Aleja", "Lodz", "1");
+        Client client = new Client("John", "Doe", dateOfBirth, Client.ClientTypes.BUSINESS, "Aleja",
+                "Lodz", "1");
 
         clientRepository.add(client);
 
@@ -76,8 +77,8 @@ class ClientRepositoryTest {
     @Test
     void update() {
         LocalDate dateOfBirth = LocalDate.of(2000, 1, 1);
-//        Address address = new Address("Aleja", "Lodz", "1");
-        Client client = new Client("John", "Doe", dateOfBirth, Client.ClientTypes.BUSINESS, "Aleja", "Lodz", "1");
+        Client client = new Client("John", "Doe", dateOfBirth, Client.ClientTypes.BUSINESS,
+                "Aleja", "Lodz", "1");
 
         clientRepository.add(client);
 
@@ -95,7 +96,6 @@ class ClientRepositoryTest {
     @Test
     void delete() {
         LocalDate dateOfBirth = LocalDate.of(2000, 1, 1);
-//        Address address = new Address("Aleja", "Lodz", "1");
         Client client = new Client("John", "Doe", dateOfBirth, Client.ClientTypes.BUSINESS, "Aleja", "Lodz", "1");
 
         clientRepository.add(client);

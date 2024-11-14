@@ -3,7 +3,6 @@ package org.example.model.dto;
 import org.bson.codecs.pojo.annotations.BsonCreator;
 import org.bson.codecs.pojo.annotations.BsonDiscriminator;
 import org.bson.codecs.pojo.annotations.BsonProperty;
-import org.example.model.clients.Client;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

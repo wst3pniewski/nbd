@@ -1,6 +1,5 @@
 package org.example.model.managers;
 
-import org.example.model.clients.Address;
 import org.example.model.clients.Client;
 import org.example.model.repositories.AccountRepository;
 import org.example.model.repositories.ClientRepository;
@@ -29,6 +28,7 @@ public class ClientManager {
     }
 
     public Client updateClient(Client client) {
+        accountRepository.updateClient(client);
         return clientRepository.update(client);
     }
 

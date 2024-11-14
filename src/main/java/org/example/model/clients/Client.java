@@ -12,9 +12,9 @@ public class Client extends AbstractEntity {
         ADVANCED(5),
         BUSINESS(7);
 
-        int maxActiveAccounts;
+        final int maxActiveAccounts;
 
-        private ClientTypes(int maxActiveAccounts) {
+        ClientTypes(int maxActiveAccounts) {
             this.maxActiveAccounts = maxActiveAccounts;
         }
 
@@ -23,11 +23,11 @@ public class Client extends AbstractEntity {
         }
     }
 
-    private String firstName;
+    private final String firstName;
 
-    private String lastName;
+    private final String lastName;
 
-    private LocalDate dateOfBirth;
+    private final LocalDate dateOfBirth;
 
     private ClientTypes clientType;
 
@@ -36,6 +36,8 @@ public class Client extends AbstractEntity {
     private String city;
 
     private String streetNumber;
+
+    private int activeAccounts;
 
     public Client(String firstName,
                   String lastName,
@@ -52,6 +54,7 @@ public class Client extends AbstractEntity {
         this.street = street;
         this.city = city;
         this.streetNumber = number;
+        this.activeAccounts = 0;
     }
 
     public Client(UUID id,
@@ -61,7 +64,8 @@ public class Client extends AbstractEntity {
                   ClientTypes clientType,
                   String street,
                   String city,
-                  String number) {
+                  String number,
+                  int activeAccounts) {
         super(id);
         this.firstName = firstName;
         this.lastName = lastName;
@@ -70,6 +74,7 @@ public class Client extends AbstractEntity {
         this.street = street;
         this.city = city;
         this.streetNumber = number;
+        this.activeAccounts = activeAccounts;
     }
 
     public LocalDate getDateOfBirth() {
@@ -92,6 +97,16 @@ public class Client extends AbstractEntity {
         this.clientType = clientType;
     }
 
+    public void setActiveAccounts(int activeAccounts) {
+        this.activeAccounts = activeAccounts;
+    }
+
+    public void setAddress(String street, String city, String number) {
+        this.street = street;
+        this.city = city;
+        this.streetNumber = number;
+    }
+
     public String getStreet() {
         return street;
     }
@@ -108,4 +123,7 @@ public class Client extends AbstractEntity {
         return getEntityId();
     }
 
+    public int getActiveAccounts() {
+        return activeAccounts;
+    }
 }

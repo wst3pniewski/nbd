@@ -71,7 +71,7 @@ public abstract class BankAccount extends AbstractEntity {
     }
 
     public void setActive(Boolean active) {
-        if (this.isActive == true) {
+        if (!active) {
             this.isActive = false;
             this.closeDate = LocalDate.now();
         } else {

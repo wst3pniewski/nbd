@@ -16,13 +16,14 @@ import java.util.List;
 import java.util.UUID;
 
 
-public class ClientRepository extends AbstractMongoRepository {
+public class ClientRepository extends AbstractMongoRepository implements Repository<Client> {
 
-    private MongoCollection<ClientDTO> clients;
+    private final MongoCollection<ClientDTO> clients;
 
     public ClientRepository() {
         super();
         initDbConnection();
+        createOrUpdateClientsCollection();
         this.clients = bankSystemDB.getCollection("clients", ClientDTO.class);
     }
 
@@ -31,7 +32,7 @@ public class ClientRepository extends AbstractMongoRepository {
             return null;
         }
         InsertOneResult insertOneResult = clients.insertOne(ClientDTOMapper.toDTO(client));
-        if (insertOneResult.wasAcknowledged() == false) {
+        if (!insertOneResult.wasAcknowledged()) {
             return null;
         }
         return client;
@@ -62,7 +63,8 @@ public class ClientRepository extends AbstractMongoRepository {
                 Updates.set("clientType", client.getClientType()),
                 Updates.set("city", client.getCity()),
                 Updates.set("street", client.getStreet()),
-                Updates.set("streetNumber", client.getStreetNumber())
+                Updates.set("streetNumber", client.getStreetNumber()),
+                Updates.set("activeAccounts", client.getActiveAccounts())
         );
 
         UpdateResult updateResult = clients.updateOne(filter, setUpdate);
@@ -74,18 +76,13 @@ public class ClientRepository extends AbstractMongoRepository {
 
 
     public Boolean delete(UUID id) {
-        System.out.println(id.toString());
         Bson filter = Filters.eq("_id", id.toString());
 
         DeleteResult deleteResult = clients.deleteOne(filter);
-        if (deleteResult.getDeletedCount() == 0) {
-            return false;
-        }
-        return true;
+        return deleteResult.getDeletedCount() != 0;
     }
 
     @Override
-    public void close() throws Exception {
-    }
+    public void close() {}
 
 }
