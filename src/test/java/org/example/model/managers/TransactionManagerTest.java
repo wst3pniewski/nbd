@@ -97,6 +97,9 @@ class TransactionManagerTest {
         accountManager.depositMoney(account1.getId(), BigDecimal.valueOf(100));
         transactionManager.createStandardTransaction(account1.getId(), account2.getId(), BigDecimal.valueOf(100));
 
+        account1 = accountManager.findById(account1.getId());
+        account2 = accountManager.findById(account2.getId());
+
         assertEquals(BigDecimal.valueOf(0), account1.getBalance());
         assertEquals(BigDecimal.valueOf(0), ((StandardAccount) account1).getDebit());
         assertEquals(BigDecimal.valueOf(100), account2.getBalance());
@@ -153,6 +156,10 @@ class TransactionManagerTest {
         BankAccount account2 = accountManager.createSavingAccount(client.getId(), BigDecimal.valueOf(0.1));
         accountManager.depositMoney(account1.getId(), BigDecimal.valueOf(100));
         transactionManager.createJuniorOrSavingTransaction(account1.getId(), account2.getId(), BigDecimal.valueOf(100));
+
+        account1 = accountManager.findById(account1.getId());
+        account2 = accountManager.findById(account2.getId());
+
         assertEquals(BigDecimal.valueOf(0), account1.getBalance());
         assertEquals(BigDecimal.valueOf(100), account2.getBalance());
     }
@@ -170,6 +177,10 @@ class TransactionManagerTest {
         BankAccount account2 = accountManager.createJuniorAccount(child.getId(), parent.getId());
         accountManager.depositMoney(account1.getId(), BigDecimal.valueOf(100));
         transactionManager.createJuniorOrSavingTransaction(account1.getId(), account2.getId(), BigDecimal.valueOf(100));
+
+        account1 = accountManager.findById(account1.getId());
+        account2 = accountManager.findById(account2.getId());
+
         assertEquals(BigDecimal.valueOf(0), account1.getBalance());
         assertEquals(BigDecimal.valueOf(100), account2.getBalance());
     }
@@ -187,6 +198,10 @@ class TransactionManagerTest {
         BankAccount account2 = accountManager.createSavingAccount(parent.getId(), BigDecimal.valueOf(0.1));
         accountManager.depositMoney(account1.getId(), BigDecimal.valueOf(100));
         transactionManager.createJuniorOrSavingTransaction(account1.getId(), account2.getId(), BigDecimal.valueOf(100));
+
+        account1 = accountManager.findById(account1.getId());
+        account2 = accountManager.findById(account2.getId());
+
         assertEquals(BigDecimal.valueOf(0), account1.getBalance());
         assertEquals(BigDecimal.valueOf(100), account2.getBalance());
     }
@@ -250,6 +265,10 @@ class TransactionManagerTest {
         BankAccount account2 = accountManager.createStandardAccount(parent.getId(), BigDecimal.valueOf(1000));
         accountManager.depositMoney(account1.getId(), BigDecimal.valueOf(100));
         transactionManager.createJuniorOrSavingTransaction(account1.getId(), account2.getId(), BigDecimal.valueOf(100));
+
+        account1 = accountManager.findById(account1.getId());
+        account2 = accountManager.findById(account2.getId());
+
         assertEquals(BigDecimal.valueOf(0), account1.getBalance());
         assertEquals(BigDecimal.valueOf(100), account2.getBalance());
     }

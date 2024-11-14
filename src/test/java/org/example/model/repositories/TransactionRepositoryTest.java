@@ -87,4 +87,39 @@ class TransactionRepositoryTest {
         assertEquals(transaction.getId(), fountTransaction.getId());
     }
 
+    @Test
+    void deletePositive(){
+        LocalDate dateOfBirth = LocalDate.of(2000, 1, 1);
+        Client client = clientManager.createClient("Add", "Account", dateOfBirth,
+                Client.ClientTypes.STANDARD, "Ulica", "Lodz", "1");
+
+        BankAccount account1 = accountManager.createStandardAccount(client.getId(), BigDecimal.valueOf(1000));
+        BankAccount account2 = accountManager.createStandardAccount(client.getId(), BigDecimal.valueOf(1000));
+        account1 = accountManager.depositMoney(account1.getId(), BigDecimal.valueOf(100));
+
+        Transaction transaction = new Transaction(account1.getId(), account2.getId(), BigDecimal.valueOf(100));
+
+        transactionRepository.add(transaction);
+
+        assertTrue(transactionRepository.delete(transaction.getId()));
+        assertNull(transactionRepository.findById(transaction.getId()));
+    }
+
+    @Test
+    void deleteNegative(){
+        LocalDate dateOfBirth = LocalDate.of(2000, 1, 1);
+        Client client = clientManager.createClient("Add", "Account", dateOfBirth,
+                Client.ClientTypes.STANDARD, "Ulica", "Lodz", "1");
+
+        BankAccount account1 = accountManager.createStandardAccount(client.getId(), BigDecimal.valueOf(1000));
+        BankAccount account2 = accountManager.createStandardAccount(client.getId(), BigDecimal.valueOf(1000));
+        account1 = accountManager.depositMoney(account1.getId(), BigDecimal.valueOf(100));
+
+        Transaction transaction = new Transaction(account1.getId(), account2.getId(), BigDecimal.valueOf(100));
+
+
+        assertFalse(transactionRepository.delete(transaction.getId()));
+        assertNull(transactionRepository.findById(transaction.getId()));
+    }
+
 }

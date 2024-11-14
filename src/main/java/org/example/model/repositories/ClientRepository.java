@@ -3,6 +3,9 @@ package org.example.model.repositories;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Updates;
+import com.mongodb.client.result.DeleteResult;
+import com.mongodb.client.result.InsertOneResult;
+import com.mongodb.client.result.UpdateResult;
 import org.bson.conversions.Bson;
 import org.example.model.clients.Client;
 import org.example.model.dto.ClientDTO;
@@ -27,7 +30,10 @@ public class ClientRepository extends AbstractMongoRepository {
         if (client == null) {
             return null;
         }
-        clients.insertOne(ClientDTOMapper.toDTO(client));
+        InsertOneResult insertOneResult = clients.insertOne(ClientDTOMapper.toDTO(client));
+        if (insertOneResult.wasAcknowledged() == false) {
+            return null;
+        }
         return client;
     }
 
@@ -38,6 +44,9 @@ public class ClientRepository extends AbstractMongoRepository {
     public Client findById(UUID id) {
         Bson filter = Filters.eq("_id", id);
         ClientDTO client = clients.find(filter).first();
+        if (client == null) {
+            return null;
+        }
         return ClientDTOMapper.fromDTO(client);
     }
 
@@ -54,21 +63,25 @@ public class ClientRepository extends AbstractMongoRepository {
                 Updates.set("city", client.getCity()),
                 Updates.set("street", client.getStreet()),
                 Updates.set("streetNumber", client.getStreetNumber())
-//                Updates.set("address", client.getAddress())
         );
 
-        clients.updateOne(filter, setUpdate);
-
+        UpdateResult updateResult = clients.updateOne(filter, setUpdate);
+        if (updateResult.getModifiedCount() == 0) {
+            return null;
+        }
         return client;
     }
 
 
-    public Client delete(UUID id) {
+    public Boolean delete(UUID id) {
         System.out.println(id.toString());
         Bson filter = Filters.eq("_id", id.toString());
 
-        clients.deleteOne(filter);
-        return null;
+        DeleteResult deleteResult = clients.deleteOne(filter);
+        if (deleteResult.getDeletedCount() == 0) {
+            return false;
+        }
+        return true;
     }
 
     @Override

@@ -53,7 +53,11 @@ public class AccountRepository extends AbstractMongoRepository {
 
     public BankAccount findById(UUID id) {
         Bson filter = Filters.eq("_id", id);
-        return BankAccountDTOMapper.fromDTO(bankAccounts.find(filter).first());
+        BankAccountDTO account = bankAccounts.find(filter).first();
+        if (account == null) {
+            return null;
+        }
+        return BankAccountDTOMapper.fromDTO(account);
     }
 
 

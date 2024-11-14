@@ -4,6 +4,8 @@ package org.example.model.repositories;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Updates;
+import com.mongodb.client.result.DeleteResult;
+import com.mongodb.client.result.InsertOneResult;
 import org.bson.BsonNull;
 import org.bson.conversions.Bson;
 import org.example.model.Transaction;
@@ -30,14 +32,10 @@ public class TransactionRepository extends AbstractMongoRepository {
         if (transaction == null) {
             return null;
         }
-        transactions.insertOne(TransactionDTOMapper.toDTO(transaction));
-//        Bson filter = Filters.eq("sourceAccount._id", transaction.getSourceAccount().getId());
-//        Bson setUpdate = Updates.set("sourceAccount.closeDate", BsonNull.VALUE);
-//        transactions.updateOne(filter, setUpdate);
-//
-//        filter = Filters.eq("destinationAccount._id", transaction.getDestinationAccount().getId());
-//        setUpdate = Updates.set("destinationAccount.closeDate", BsonNull.VALUE);
-//        transactions.updateOne(filter, setUpdate);
+        InsertOneResult insertOneResult = transactions.insertOne(TransactionDTOMapper.toDTO(transaction));
+        if (insertOneResult.wasAcknowledged() == false) {
+            return null;
+        }
         return transaction;
     }
 
@@ -47,7 +45,20 @@ public class TransactionRepository extends AbstractMongoRepository {
 
     public Transaction findById(UUID id) {
         Bson filter = Filters.eq("_id", id);
-        return TransactionDTOMapper.fromDTO(transactions.find(filter).first());
+        TransactionDTO transaction = transactions.find(filter).first();
+        if (transaction == null) {
+            return null;
+        }
+        return TransactionDTOMapper.fromDTO(transaction);
+    }
+
+    public Boolean delete(UUID id) {
+        Bson filter = Filters.eq("_id", id);
+        DeleteResult deleteResult = transactions.deleteOne(filter);
+        if (deleteResult.getDeletedCount() == 0) {
+            return false;
+        }
+        return true;
     }
 
     public void close() throws Exception {
