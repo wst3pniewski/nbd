@@ -26,7 +26,8 @@ public abstract class BankAccount extends AbstractEntity {
         this.balance = new BigDecimal(0);
         this.isActive = true;
         this.creationDate = LocalDate.now();
-        this.closeDate = LocalDate.now();
+//        this.closeDate = LocalDate.now();
+        this.closeDate = null;
     }
 
     public BankAccount(UUID id, Client client) {
