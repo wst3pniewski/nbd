@@ -11,28 +11,22 @@ import org.example.model.dto.StandardAccountDTO;
 
 public class BankAccountDTOMapper {
     public static BankAccountDTO toDTO(BankAccount bankAccount) {
-        if (bankAccount instanceof SavingAccount) {
-            return SavingAccountDTOMapper.toDTO((SavingAccount) bankAccount);
-        } else if (bankAccount instanceof JuniorAccount) {
-            return JuniorAccountDTOMapper.toDTO((JuniorAccount) bankAccount);
-        } else if (bankAccount instanceof StandardAccount) {
-            return StandardAccountDTOMapper.toDTO((StandardAccount) bankAccount);
-        }
-        else {
-            throw new IllegalArgumentException("Unsupported BankAccount type: " + bankAccount.getClass().getName());
-        }
+        return switch (bankAccount.getClass().getSimpleName()) {
+            case "SavingAccount" -> SavingAccountDTOMapper.toDTO((SavingAccount) bankAccount);
+            case "JuniorAccount" -> JuniorAccountDTOMapper.toDTO((JuniorAccount) bankAccount);
+            case "StandardAccount" -> StandardAccountDTOMapper.toDTO((StandardAccount) bankAccount);
+            default ->
+                    throw new IllegalArgumentException("Unsupported BankAccount type: " + bankAccount.getClass().getName());
+        };
     }
 
     public static BankAccount fromDTO(BankAccountDTO bankAccountDTO) {
-        if (bankAccountDTO instanceof SavingAccountDTO) {
-            return SavingAccountDTOMapper.fromDTO((SavingAccountDTO) bankAccountDTO);
-        } else if (bankAccountDTO instanceof JuniorAccountDTO) {
-            return JuniorAccountDTOMapper.fromDTO((JuniorAccountDTO) bankAccountDTO);
-        } else if (bankAccountDTO instanceof StandardAccountDTO) {
-            return StandardAccountDTOMapper.fromDTO((StandardAccountDTO) bankAccountDTO);
-        }
-        else {
-            throw new IllegalArgumentException("Unsupported BankAccount type: " + bankAccountDTO.getClass().getName());
-        }
+        return switch (bankAccountDTO.getClass().getSimpleName()) {
+            case "SavingAccountDTO" -> SavingAccountDTOMapper.fromDTO((SavingAccountDTO) bankAccountDTO);
+            case "JuniorAccountDTO" -> JuniorAccountDTOMapper.fromDTO((JuniorAccountDTO) bankAccountDTO);
+            case "StandardAccountDTO" -> StandardAccountDTOMapper.fromDTO((StandardAccountDTO) bankAccountDTO);
+            default ->
+                    throw new IllegalArgumentException("Unsupported BankAccount type: " + bankAccountDTO.getClass().getName());
+        };
     }
 }

@@ -56,6 +56,7 @@ public class ClientRepository extends AbstractMongoRepository implements Reposit
             return null;
         }
         Bson filter = Filters.eq("_id", client.getId());
+        // TODO: findAndReplace
         Bson setUpdate = Updates.combine(
                 Updates.set("firstName", client.getFirstName()),
                 Updates.set("lastName", client.getLastName()),

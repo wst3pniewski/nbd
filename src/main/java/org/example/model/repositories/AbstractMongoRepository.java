@@ -15,19 +15,17 @@ import org.bson.codecs.configuration.CodecRegistries;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.Conventions;
 import org.bson.codecs.pojo.PojoCodecProvider;
-import org.bson.codecs.pojo.annotations.BsonProperty;
-import org.example.model.clients.Client;
 import org.example.model.codecs.UUIDCodec;
 import org.example.model.dto.*;
 
-import java.time.LocalDate;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.List;
+import java.util.Properties;
 
 public abstract class AbstractMongoRepository implements AutoCloseable {
-    private final ConnectionString connectionString = new ConnectionString("mongodb://mongodb1:27017," +
-            "mongodb2:27018, mongodb3:27019/?replicaSet=replica_set_single");
-    private final MongoCredential credentials = MongoCredential.createCredential("admin",
-            "admin", "adminpassword".toCharArray());
+    private ConnectionString connectionString;
+    private MongoCredential credentials;
     protected CodecRegistry pojoCodecRegistry = CodecRegistries.fromProviders(
             PojoCodecProvider.builder()
                     .register(BankAccountDTO.class, StandardAccountDTO.class, SavingAccountDTO.class, JuniorAccountDTO.class)
@@ -39,6 +37,19 @@ public abstract class AbstractMongoRepository implements AutoCloseable {
     protected MongoDatabase bankSystemDB;
 
     protected void initDbConnection() {
+        Properties properties = new Properties();
+        try (FileInputStream fis = new FileInputStream("application.properties")) {
+            properties.load(fis);
+
+            String url = properties.getProperty("mongo.url");
+            String username = properties.getProperty("mongo.username");
+            String password = properties.getProperty("mongo.password");
+            String database = properties.getProperty("mongo.database");
+            this.credentials = MongoCredential.createCredential(username, database, password.toCharArray());
+            this.connectionString = new ConnectionString(url);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         MongoClientSettings settings = MongoClientSettings.builder()
                 .credential(credentials)
                 .applyConnectionString(connectionString)

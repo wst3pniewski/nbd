@@ -1,6 +1,13 @@
 package org.example.model.dto;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.mongodb.lang.Nullable;
+import jakarta.json.bind.annotation.JsonbCreator;
+import jakarta.json.bind.annotation.JsonbProperty;
+import jakarta.json.bind.annotation.JsonbTypeDeserializer;
+import jakarta.json.bind.annotation.JsonbTypeInfo;
 import org.bson.codecs.pojo.annotations.BsonCreator;
 import org.bson.codecs.pojo.annotations.BsonDiscriminator;
 import org.bson.codecs.pojo.annotations.BsonProperty;
@@ -11,6 +18,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
 
+@JsonTypeInfo(use= JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
 @BsonDiscriminator(key = "_clazz", value = "bankAccount")
 public abstract class BankAccountDTO extends AbstractEntity {
 
@@ -20,6 +28,7 @@ public abstract class BankAccountDTO extends AbstractEntity {
     @BsonProperty("client")
     ClientDTO client;
 
+    @JsonProperty("active")
     @BsonProperty("active")
     Boolean isActive;
 
@@ -29,11 +38,12 @@ public abstract class BankAccountDTO extends AbstractEntity {
     @BsonProperty("closeDate")
     LocalDate closeDate;
 
+    @JsonCreator
     @BsonCreator
-    public BankAccountDTO(@BsonProperty("_id") UUID id,
+    public BankAccountDTO(@JsonProperty("id") @BsonProperty("_id") UUID id,
                           @BsonProperty("balance") BigDecimal balance,
                           @BsonProperty("client") ClientDTO client,
-                          @BsonProperty("active") Boolean isActive,
+                          @JsonProperty("active") @BsonProperty("active") Boolean isActive,
                           @BsonProperty("creationDate") LocalDate creationDate,
                           @BsonProperty("closeDate") LocalDate closeDate
     ) {

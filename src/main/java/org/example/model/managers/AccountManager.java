@@ -27,7 +27,7 @@ public class AccountManager {
 
         this.mongoClient = MongoDBConnection.createMongoClient();
     }
-
+    // TODO: This doesn't seem to work with concurrency
     public BankAccount createStandardAccount(UUID clientId, BigDecimal debitLimit) {
 
         Client client = clientRepository.findById(clientId);

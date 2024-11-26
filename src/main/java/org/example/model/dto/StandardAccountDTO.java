@@ -1,5 +1,9 @@
 package org.example.model.dto;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.json.bind.annotation.JsonbCreator;
+import jakarta.json.bind.annotation.JsonbProperty;
 import org.bson.codecs.pojo.annotations.BsonCreator;
 import org.bson.codecs.pojo.annotations.BsonDiscriminator;
 import org.bson.codecs.pojo.annotations.BsonProperty;
@@ -16,15 +20,16 @@ public class StandardAccountDTO extends BankAccountDTO {
     @BsonProperty("debit")
     BigDecimal debit;
 
+    @JsonCreator
     @BsonCreator
-    public StandardAccountDTO(@BsonProperty("_id") UUID id,
-                              @BsonProperty("balance") BigDecimal balance,
-                              @BsonProperty("client") ClientDTO client,
-                              @BsonProperty("active") Boolean isActive,
-                              @BsonProperty("creationDate") LocalDate creationDate,
-                              @BsonProperty("closeDate") LocalDate closeDate,
-                              @BsonProperty("debitLimit") BigDecimal debitLimit,
-                              @BsonProperty("debit") BigDecimal debit) {
+    public StandardAccountDTO(@JsonProperty("id") @BsonProperty("_id") UUID id,
+                              @JsonProperty("balance") @BsonProperty("balance") BigDecimal balance,
+                              @JsonProperty("client") @BsonProperty("client") ClientDTO client,
+                              @JsonProperty("active") @BsonProperty("active") Boolean isActive,
+                              @JsonProperty("creationDate") @BsonProperty("creationDate") LocalDate creationDate,
+                              @JsonProperty("closeDate") @BsonProperty("closeDate") LocalDate closeDate,
+                              @JsonProperty("debitLimit") @BsonProperty("debitLimit") BigDecimal debitLimit,
+                              @JsonProperty("debit") @BsonProperty("debit") BigDecimal debit) {
         super(id, balance, client, isActive, creationDate, closeDate);
         this.debitLimit = debitLimit;
         this.debit = debit;
