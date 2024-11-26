@@ -15,7 +15,7 @@ import java.util.UUID;
 public class CachedClientRepository implements Repository<Client> {
     private final RedisCache redisCache;
     private final ClientRepository mongoClientRepository;
-    private final Jsonb jsonb = JsonbBuilder.create();;
+    private final Jsonb jsonb = JsonbBuilder.create();
     private final String hashPrefix = "client:";
 
     public CachedClientRepository(ClientRepository clientRepository, RedisCache redisCache) {
