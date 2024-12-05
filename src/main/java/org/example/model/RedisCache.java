@@ -1,6 +1,7 @@
 package org.example.model;
 
 import redis.clients.jedis.JedisPooled;
+import redis.clients.jedis.exceptions.JedisConnectionException;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -8,10 +9,10 @@ import java.util.Properties;
 
 public class RedisCache implements AutoCloseable {
     private JedisPooled jedis;
+    private boolean isConnected = false;
 
     public RedisCache() {
         initDbConnection();
-        this.invalidateCache();
     }
 
     private void initDbConnection() {
@@ -21,8 +22,15 @@ public class RedisCache implements AutoCloseable {
 
             String url = properties.getProperty("redis.url");
             this.jedis = new JedisPooled(url);
+        if ("PONG".equals(this.jedis.ping())) {
+            this.isConnected = true;
+        } else {
+            System.err.println("Failed to connect to Redis.");
+        }
         } catch (IOException e) {
             e.printStackTrace();
+        } catch (JedisConnectionException e) {
+            System.err.println("Failed to connect to Redis: " + e.getMessage());
         }
     }
 
@@ -52,6 +60,10 @@ public class RedisCache implements AutoCloseable {
         } catch (Exception e) {
             System.err.println("An error occurred while invalidating the cache: " + e.getMessage());
         }
+    }
+
+    public boolean isConnected() {
+        return isConnected;
     }
 
     @Override

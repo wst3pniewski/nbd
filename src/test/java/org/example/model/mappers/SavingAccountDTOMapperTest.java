@@ -41,7 +41,7 @@ public class SavingAccountDTOMapperTest {
     void fromDTO_withValidSavingAccountDTO_returnsSavingAccount() {
         SavingAccountDTO dto = new SavingAccountDTO(UUID.randomUUID(), BigDecimal.ZERO, ClientDTOMapper.toDTO(client),
                 true, LocalDate.now(), null, BigDecimal.ZERO);
-        SavingAccount savingAccount = SavingAccountDTOMapper.fromDTO(dto);
+        SavingAccount savingAccount = SavingAccountDTOMapper.fromRedis(dto);
         assertNotNull(savingAccount);
         assertEquals(dto.getClient().getId(), savingAccount.getClient().getId());
         assertEquals(dto.getId(), savingAccount.getId());
@@ -53,7 +53,7 @@ public class SavingAccountDTOMapperTest {
 
     @Test
     void fromDTO_withNullSavingAccountDTO_returnsNull() {
-        SavingAccount savingAccount = SavingAccountDTOMapper.fromDTO(null);
+        SavingAccount savingAccount = SavingAccountDTOMapper.fromRedis(null);
         assertNull(savingAccount);
     }
 }

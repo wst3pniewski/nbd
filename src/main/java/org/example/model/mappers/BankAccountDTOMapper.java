@@ -22,7 +22,7 @@ public class BankAccountDTOMapper {
 
     public static BankAccount fromDTO(BankAccountDTO bankAccountDTO) {
         return switch (bankAccountDTO.getClass().getSimpleName()) {
-            case "SavingAccountDTO" -> SavingAccountDTOMapper.fromDTO((SavingAccountDTO) bankAccountDTO);
+            case "SavingAccountDTO" -> SavingAccountDTOMapper.fromRedis((SavingAccountDTO) bankAccountDTO);
             case "JuniorAccountDTO" -> JuniorAccountDTOMapper.fromDTO((JuniorAccountDTO) bankAccountDTO);
             case "StandardAccountDTO" -> StandardAccountDTOMapper.fromDTO((StandardAccountDTO) bankAccountDTO);
             default ->

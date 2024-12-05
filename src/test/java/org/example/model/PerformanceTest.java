@@ -8,6 +8,8 @@ import org.openjdk.jmh.annotations.*;
 import java.time.LocalDate;
 import java.util.concurrent.TimeUnit;
 
+@Warmup(iterations = 1)
+@Measurement(iterations = 5)
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 @State(Scope.Thread)
@@ -21,6 +23,7 @@ public class PerformanceTest {
     @Setup
     public void setup() {
         redisCache = new RedisCache();
+        redisCache.invalidateCache();
         mongoRepo = new ClientRepository();
         cachedRepo = new CachedClientRepository(mongoRepo, redisCache);
 

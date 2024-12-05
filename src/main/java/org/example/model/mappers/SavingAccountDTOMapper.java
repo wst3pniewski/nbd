@@ -2,7 +2,6 @@ package org.example.model.mappers;
 
 import org.example.model.accounts.SavingAccount;
 import org.example.model.dto.SavingAccountDTO;
-import org.example.model.dto.StandardAccountDTO;
 
 public class SavingAccountDTOMapper {
     public static SavingAccountDTO toDTO(SavingAccount savingAccount) {
@@ -20,7 +19,7 @@ public class SavingAccountDTOMapper {
                 );
     }
 
-    public static SavingAccount fromDTO(SavingAccountDTO savingAccountDTO) {
+    public static SavingAccount fromRedis(SavingAccountDTO savingAccountDTO) {
         if (savingAccountDTO == null) {
             return null;
         }

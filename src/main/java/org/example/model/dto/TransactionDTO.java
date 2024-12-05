@@ -1,7 +1,5 @@
 package org.example.model.dto;
 
-import jakarta.json.bind.annotation.JsonbCreator;
-import jakarta.json.bind.annotation.JsonbProperty;
 import org.bson.codecs.pojo.annotations.BsonCreator;
 import org.bson.codecs.pojo.annotations.BsonProperty;
 import org.example.model.AbstractEntity;
@@ -19,9 +17,8 @@ public class TransactionDTO extends AbstractEntity {
     @BsonProperty("amount")
     BigDecimal amount;
 
-    @JsonbCreator
     @BsonCreator
-    public TransactionDTO(@JsonbProperty("id") @BsonProperty("_id") UUID id,
+    public TransactionDTO(@BsonProperty("_id") UUID id,
                           @BsonProperty("sourceAccount") UUID sourceAccount,
                           @BsonProperty("destinationAccount") UUID destinationAccount,
                           @BsonProperty("amount") BigDecimal amount) {

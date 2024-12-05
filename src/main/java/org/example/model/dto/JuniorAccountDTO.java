@@ -1,9 +1,5 @@
 package org.example.model.dto;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.json.bind.annotation.JsonbCreator;
-import jakarta.json.bind.annotation.JsonbProperty;
 import org.bson.codecs.pojo.annotations.BsonCreator;
 import org.bson.codecs.pojo.annotations.BsonDiscriminator;
 import org.bson.codecs.pojo.annotations.BsonProperty;
@@ -14,19 +10,17 @@ import java.util.UUID;
 
 @BsonDiscriminator(key = "_clazz", value = "junior")
 public class JuniorAccountDTO extends BankAccountDTO {
-    @JsonProperty("parent")
     @BsonProperty("parent")
     ClientDTO parent;
 
-    @JsonCreator
     @BsonCreator
-    public JuniorAccountDTO(@JsonProperty("id") @BsonProperty("_id") UUID id,
-                            @JsonProperty("balance") @BsonProperty("balance") BigDecimal balance,
-                            @JsonProperty("client") @BsonProperty("client") ClientDTO client,
-                            @JsonProperty("active") @BsonProperty("active") Boolean isActive,
-                            @JsonProperty("creationDate") @BsonProperty("creationDate") LocalDate creationDate,
-                            @JsonProperty("closeDate") @BsonProperty("closeDate") LocalDate closeDate,
-                            @JsonProperty("parent") @BsonProperty("parent") ClientDTO parent) {
+    public JuniorAccountDTO(@BsonProperty("_id") UUID id,
+                            @BsonProperty("balance") BigDecimal balance,
+                            @BsonProperty("client") ClientDTO client,
+                            @BsonProperty("active") Boolean isActive,
+                            @BsonProperty("creationDate") LocalDate creationDate,
+                            @BsonProperty("closeDate") LocalDate closeDate,
+                            @BsonProperty("parent") ClientDTO parent) {
         super(id, balance, client, isActive, creationDate, closeDate);
         this.parent = parent;
     }

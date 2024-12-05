@@ -1,7 +1,6 @@
 package org.example.model.mappers;
 
 import org.example.model.Transaction;
-import org.example.model.dto.BankAccountDTO;
 import org.example.model.dto.TransactionDTO;
 
 public class TransactionDTOMapper {
@@ -11,8 +10,6 @@ public class TransactionDTOMapper {
                 transaction.getId(),
                 transaction.getSourceAccount(),
                 transaction.getDestinationAccount(),
-//                BankAccountDTOMapper.toDTO(transaction.getSourceAccount()),
-//                BankAccountDTOMapper.toDTO(transaction.getDestinationAccount()),
                 transaction.getAmount()
         );
     }
@@ -22,8 +19,6 @@ public class TransactionDTOMapper {
                 transactionDTO.getId(),
                 transactionDTO.getSourceAccount(),
                 transactionDTO.getDestinationAccount(),
-//                BankAccountDTOMapper.fromDTO(transactionDTO.getSourceAccount()),
-//                BankAccountDTOMapper.fromDTO(transactionDTO.getDestinationAccount()),
                 transactionDTO.getAmount()
         );
     }

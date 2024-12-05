@@ -5,8 +5,8 @@ import jakarta.json.bind.Jsonb;
 import jakarta.json.bind.JsonbBuilder;
 import org.example.model.RedisCache;
 import org.example.model.clients.Client;
-import org.example.model.dto.ClientDTO;
-import org.example.model.mappers.ClientDTOMapper;
+import org.example.model.mappers.ClientRedisMapper;
+import org.example.model.redis.ClientRedis;
 
 import java.util.List;
 import java.util.Objects;
@@ -29,35 +29,40 @@ public class CachedClientRepository implements Repository<Client> {
         }
 
         mongoClientRepository.add(client);
-        try {
-            String json = jsonb.toJson(ClientDTOMapper.toDTO(client));
-            String res = redisCache.jsonSet(hashPrefix + client.getId().toString(), json);
-            if (Objects.equals(res, "OK")) {
-                return ClientDTOMapper.fromDTO(jsonb.fromJson(json, ClientDTO.class));
+
+        if (redisCache.isConnected()) {
+            try {
+                String json = jsonb.toJson(ClientRedisMapper.toRedis(client));
+                String res = redisCache.jsonSet(hashPrefix + client.getId().toString(), json);
+                if (Objects.equals(res, "OK")) {
+                    return ClientRedisMapper.fromRedis(jsonb.fromJson(json, ClientRedis.class));
+                }
+            } catch (Exception e) {
+                System.err.println("Failed write to Redis: " + e.getMessage());
             }
-        } catch (Exception e) {
-            System.err.println("Failed write to Redis: " + e.getMessage());
         }
 
         return null;
     }
 
     public Client findById(UUID id){
-        try{
-            Object obj = redisCache.jsonGet(hashPrefix + id.toString());
-            if (obj != null) {
-                String json = jsonb.toJson(obj);
-                return ClientDTOMapper.fromDTO(jsonb.fromJson(json, ClientDTO.class));
+        if (redisCache.isConnected()) {
+            try{
+                Object obj = redisCache.jsonGet(hashPrefix + id.toString());
+                if (obj != null) {
+                    String json = jsonb.toJson(obj);
+                    return ClientRedisMapper.fromRedis(jsonb.fromJson(json, ClientRedis.class));
+                }
+            // TODO: catch specific exception
+            } catch (Exception e) {
+                System.err.println("Redis connection failed, falling back to MongoDB: " + e.getMessage());
             }
-        // TODO: catch specific exception
-        } catch (Exception e) {
-            System.err.println("Redis connection failed, falling back to MongoDB: " + e.getMessage());
         }
 
         Client client = mongoClientRepository.findById(id);
-        if (client != null) {
+        if (client != null & redisCache.isConnected()) {
             try {
-                String json = jsonb.toJson(client);
+                String json = jsonb.toJson(ClientRedisMapper.toRedis(client));
                 redisCache.jsonSet(hashPrefix + client.getId().toString(), json);
             // TODO: catch specific exception
             } catch (Exception e) {
@@ -75,11 +80,13 @@ public class CachedClientRepository implements Repository<Client> {
 
     public boolean delete(UUID id){
         Boolean mongoUpdStatus = mongoClientRepository.delete(id);
-        try{
-            long res = redisCache.jsonDel(hashPrefix + id.toString());
-            return res != 0;
-        } catch (Exception e) {
-            System.err.println("Failed write to Redis: " + e.getMessage());
+        if (redisCache.isConnected()) {
+            try{
+                long res = redisCache.jsonDel(hashPrefix + id.toString());
+                return res != 0;
+            } catch (Exception e) {
+                System.err.println("Failed write to Redis: " + e.getMessage());
+            }
         }
         return mongoUpdStatus;
     }
@@ -88,12 +95,14 @@ public class CachedClientRepository implements Repository<Client> {
         if (client == null) {
             return null;
         }
-        try{
-            String json = jsonb.toJson(client);
-            redisCache.jsonSet(hashPrefix + client.getId().toString(), json);
-            return client;
-        } catch (Exception e) {
-            System.err.println("Failed write to Redis: " + e.getMessage());
+        if (redisCache.isConnected()) {
+            try{
+                String json = jsonb.toJson(ClientRedisMapper.toRedis(client));
+                redisCache.jsonSet(hashPrefix + client.getId().toString(), json);
+                return client;
+            } catch (Exception e) {
+                System.err.println("Failed write to Redis: " + e.getMessage());
+            }
         }
         mongoClientRepository.update(client);
         return client;

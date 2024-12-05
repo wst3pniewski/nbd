@@ -5,8 +5,8 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.example.model.RedisCache;
 import org.example.model.accounts.BankAccount;
-import org.example.model.dto.BankAccountDTO;
-import org.example.model.mappers.BankAccountDTOMapper;
+import org.example.model.mappers.BankAccoutRedisMapper;
+import org.example.model.redis.BankAccountRedis;
 
 import java.util.List;
 import java.util.Objects;
@@ -33,16 +33,16 @@ public class CachedAccountRepository implements Repository<BankAccount> {
         }
 
         mongoAccountRepository.add(bankAccount);
-        try {
-            String json = objectMapper.writeValueAsString(BankAccountDTOMapper.toDTO(bankAccount));
-//            String json = jsonb.toJson(BankAccountDTOMapper.toDTO(bankAccount));
-            String res = redisCache.jsonSet(hashPrefix + bankAccount.getId().toString(), json);
-            if (Objects.equals(res, "OK")) {
-//                return BankAccountDTOMapper.fromDTO(jsonb.fromJson(json, BankAccountDTO.class));
-                return BankAccountDTOMapper.fromDTO(objectMapper.readValue(json, BankAccountDTO.class));
+        if (redisCache.isConnected()) {
+            try {
+                String json = objectMapper.writeValueAsString(BankAccoutRedisMapper.toRedis(bankAccount));
+                String res = redisCache.jsonSet(hashPrefix + bankAccount.getId().toString(), json);
+                if (Objects.equals(res, "OK")) {
+                    return BankAccoutRedisMapper.fromRedis(objectMapper.readValue(json, BankAccountRedis.class));
+                }
+            } catch (Exception e) {
+                System.err.println("Failed write to Redis: " + e.getMessage());
             }
-        } catch (Exception e) {
-            System.err.println("Failed write to Redis: " + e.getMessage());
         }
 
         return null;
@@ -55,24 +55,23 @@ public class CachedAccountRepository implements Repository<BankAccount> {
 
     @Override
     public BankAccount findById(UUID id) {
-        try{
-            Object obj = redisCache.jsonGet(hashPrefix + id.toString());
-            if (obj != null) {
-                String json = objectMapper.writeValueAsString(obj);
-//                String json = jsonb.toJson(obj);
-//                return BankAccountDTOMapper.fromDTO(jsonb.fromJson(json, BankAccountDTO.class));
-                return BankAccountDTOMapper.fromDTO(objectMapper.readValue(json, BankAccountDTO.class));
+        if (redisCache.isConnected()) {
+            try{
+                Object obj = redisCache.jsonGet(hashPrefix + id.toString());
+                if (obj != null) {
+                    String json = objectMapper.writeValueAsString(obj);
+                    return BankAccoutRedisMapper.fromRedis(objectMapper.readValue(json, BankAccountRedis.class));
+                }
+                // TODO: catch specific exception
+            } catch (Exception e) {
+                System.err.println("Redis connection failed, falling back to MongoDB: " + e.getMessage());
             }
-            // TODO: catch specific exception
-        } catch (Exception e) {
-            System.err.println("Redis connection failed, falling back to MongoDB: " + e.getMessage());
         }
 
         BankAccount bankAccount = mongoAccountRepository.findById(id);
-        if (bankAccount != null) {
+        if (bankAccount != null & redisCache.isConnected()) {
             try {
-                String json = objectMapper.writeValueAsString(BankAccountDTOMapper.toDTO(bankAccount));
-//                String json = jsonb.toJson(bankAccount);
+                String json = objectMapper.writeValueAsString(BankAccoutRedisMapper.toRedis(bankAccount));
                 redisCache.jsonSet(hashPrefix + bankAccount.getId().toString(), json);
                 // TODO: catch specific exception
             } catch (Exception e) {
@@ -89,13 +88,14 @@ public class CachedAccountRepository implements Repository<BankAccount> {
         if (bankAccount == null) {
             return null;
         }
-        try{
-            String json = objectMapper.writeValueAsString(BankAccountDTOMapper.toDTO(bankAccount));
-//            String json = jsonb.toJson(bankAccount);
-            redisCache.jsonSet(hashPrefix + bankAccount.getId().toString(), json);
-            return bankAccount;
-        } catch (Exception e) {
-            System.err.println("Failed write to Redis: " + e.getMessage());
+        if (redisCache.isConnected()) {
+            try{
+                String json = objectMapper.writeValueAsString(BankAccoutRedisMapper.toRedis(bankAccount));
+                redisCache.jsonSet(hashPrefix + bankAccount.getId().toString(), json);
+                return bankAccount;
+            } catch (Exception e) {
+                System.err.println("Failed write to Redis: " + e.getMessage());
+            }
         }
         mongoAccountRepository.update(bankAccount);
         return bankAccount;
