@@ -1,5 +1,6 @@
 package org.example.model.repositories;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -7,7 +8,9 @@ import org.example.model.RedisCache;
 import org.example.model.accounts.BankAccount;
 import org.example.model.mappers.BankAccoutRedisMapper;
 import org.example.model.redis.BankAccountRedis;
+import redis.clients.jedis.exceptions.JedisException;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -40,7 +43,7 @@ public class CachedAccountRepository implements Repository<BankAccount> {
                 if (Objects.equals(res, "OK")) {
                     return BankAccoutRedisMapper.fromRedis(objectMapper.readValue(json, BankAccountRedis.class));
                 }
-            } catch (Exception e) {
+            } catch (JedisException | IOException e) {
                 System.err.println("Failed write to Redis: " + e.getMessage());
             }
         }
@@ -62,8 +65,7 @@ public class CachedAccountRepository implements Repository<BankAccount> {
                     String json = objectMapper.writeValueAsString(obj);
                     return BankAccoutRedisMapper.fromRedis(objectMapper.readValue(json, BankAccountRedis.class));
                 }
-                // TODO: catch specific exception
-            } catch (Exception e) {
+            } catch (JedisException | IOException e) {
                 System.err.println("Redis connection failed, falling back to MongoDB: " + e.getMessage());
             }
         }
@@ -73,8 +75,7 @@ public class CachedAccountRepository implements Repository<BankAccount> {
             try {
                 String json = objectMapper.writeValueAsString(BankAccoutRedisMapper.toRedis(bankAccount));
                 redisCache.jsonSet(hashPrefix + bankAccount.getId().toString(), json);
-                // TODO: catch specific exception
-            } catch (Exception e) {
+            } catch (JedisException | JsonProcessingException e) {
                 System.err.println("Failed write to Redis: " + e.getMessage());
             }
         }
@@ -93,7 +94,7 @@ public class CachedAccountRepository implements Repository<BankAccount> {
                 String json = objectMapper.writeValueAsString(BankAccoutRedisMapper.toRedis(bankAccount));
                 redisCache.jsonSet(hashPrefix + bankAccount.getId().toString(), json);
                 return bankAccount;
-            } catch (Exception e) {
+            } catch (JedisException | JsonProcessingException e) {
                 System.err.println("Failed write to Redis: " + e.getMessage());
             }
         }

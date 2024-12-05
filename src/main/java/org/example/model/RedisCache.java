@@ -46,6 +46,10 @@ public class RedisCache implements AutoCloseable {
         return jedis.jsonDel(key);
     }
 
+    public void expire(String key, int seconds) {
+        jedis.expire(key, seconds);
+    }
+
     public JedisPooled getJedis() {
         return jedis;
     }

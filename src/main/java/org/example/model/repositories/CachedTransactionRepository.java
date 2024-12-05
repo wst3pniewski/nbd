@@ -6,6 +6,7 @@ import org.example.model.RedisCache;
 import org.example.model.Transaction;
 import org.example.model.mappers.TransactionRedisMapper;
 import org.example.model.redis.TransactionRedis;
+import redis.clients.jedis.exceptions.JedisException;
 
 import java.util.List;
 import java.util.Objects;
@@ -33,10 +34,12 @@ public class CachedTransactionRepository implements Repository<Transaction> {
             try {
                 String json = jsonb.toJson(TransactionRedisMapper.toRedis(transaction));
                 String res = redisCache.jsonSet(hashPrefix + transaction.getId().toString(), json);
+                int day24h = 86400;
+                redisCache.expire(hashPrefix + transaction.getId().toString(), day24h);
                 if (Objects.equals(res, "OK")) {
                     return TransactionRedisMapper.fromRedis(jsonb.fromJson(json, TransactionRedis.class));
                 }
-            } catch (Exception e) {
+            } catch (JedisException e) {
                 System.err.println("Failed write to Redis: " + e.getMessage());
             }
         }
@@ -58,7 +61,6 @@ public class CachedTransactionRepository implements Repository<Transaction> {
                     String json = jsonb.toJson(obj);
                     return TransactionRedisMapper.fromRedis(jsonb.fromJson(json, TransactionRedis.class));
                 }
-                // TODO: catch specific exception
             } catch (Exception e) {
                 System.err.println("Redis connection failed, falling back to MongoDB: " + e.getMessage());
             }
@@ -69,8 +71,9 @@ public class CachedTransactionRepository implements Repository<Transaction> {
             try {
                 String json = jsonb.toJson(TransactionRedisMapper.toRedis(transaction));
                 redisCache.jsonSet(hashPrefix + transaction.getId().toString(), json);
-                // TODO: catch specific exception
-            } catch (Exception e) {
+                int day24h = 86400;
+                redisCache.expire(hashPrefix + transaction.getId().toString(), day24h);
+            } catch (JedisException e) {
                 System.err.println("Failed write to Redis: " + e.getMessage());
             }
         }
@@ -88,8 +91,10 @@ public class CachedTransactionRepository implements Repository<Transaction> {
             try{
                 String json = jsonb.toJson(TransactionRedisMapper.toRedis(transaction));
                 redisCache.jsonSet(hashPrefix + transaction.getId().toString(), json);
+                int day24h = 86400;
+                redisCache.expire(hashPrefix + transaction.getId().toString(), day24h);
                 return transaction;
-            } catch (Exception e) {
+            } catch (JedisException e) {
                 System.err.println("Failed write to Redis: " + e.getMessage());
             }
         }
@@ -103,7 +108,7 @@ public class CachedTransactionRepository implements Repository<Transaction> {
             try{
                 long res = redisCache.jsonDel(hashPrefix + id.toString());
                 return res != 0;
-            } catch (Exception e) {
+            } catch (JedisException e) {
                 System.err.println("Failed write to Redis: " + e.getMessage());
             }
         }
