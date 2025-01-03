@@ -1,11 +1,5 @@
 package org.example.model.repositories;
 
-
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.model.Filters;
-import com.mongodb.client.result.DeleteResult;
-import com.mongodb.client.result.InsertOneResult;
-import org.bson.conversions.Bson;
 import org.example.model.Transaction;
 import org.example.model.dto.TransactionDTO;
 import org.example.model.mappers.TransactionDTOMapper;
@@ -16,45 +10,41 @@ import java.util.List;
 import java.util.UUID;
 
 
-public class TransactionRepository extends AbstractMongoRepository implements Repository<Transaction> {
+public class TransactionRepository implements Repository<Transaction> {
 
-    private final MongoCollection<TransactionDTO> transactions;
 
     public TransactionRepository() {
         super();
-        initDbConnection();
-        createOrUpdateTransactionsCollection();
-        this.transactions = bankSystemDB.getCollection("transactions", TransactionDTO.class);
     }
 
     public Transaction add(Transaction transaction) {
         if (transaction == null) {
             return null;
         }
-        InsertOneResult insertOneResult = transactions.insertOne(TransactionDTOMapper.toDTO(transaction));
-        if (!insertOneResult.wasAcknowledged()) {
-            return null;
-        }
+//        InsertOneResult insertOneResult = transactions.insertOne(TransactionDTOMapper.toDTO(transaction));
+//        if (!insertOneResult.wasAcknowledged()) {
+//            return null;
+//        }
         return transaction;
     }
 
     public List<Transaction> findAll() {
-        return transactions.find().into(new ArrayList<>()).stream().map(TransactionDTOMapper::fromDTO).toList();
+//        return transactions.find().into(new ArrayList<>()).stream().map(TransactionDTOMapper::fromDTO).toList();
     }
 
     public Transaction findById(UUID id) {
-        Bson filter = Filters.eq("_id", id);
-        TransactionDTO transaction = transactions.find(filter).first();
-        if (transaction == null) {
-            return null;
-        }
-        return TransactionDTOMapper.fromDTO(transaction);
+//        Bson filter = Filters.eq("_id", id);
+//        TransactionDTO transaction = transactions.find(filter).first();
+//        if (transaction == null) {
+//            return null;
+//        }
+//        return TransactionDTOMapper.fromDTO(transaction);
     }
 
     public Boolean delete(UUID id) {
-        Bson filter = Filters.eq("_id", id);
-        DeleteResult deleteResult = transactions.deleteOne(filter);
-        return deleteResult.getDeletedCount() != 0;
+//        Bson filter = Filters.eq("_id", id);
+//        DeleteResult deleteResult = transactions.deleteOne(filter);
+//        return deleteResult.getDeletedCount() != 0;
     }
 
     public Transaction update(Transaction transaction) {
