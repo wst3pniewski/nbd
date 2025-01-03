@@ -1,0 +1,59 @@
+version: "3.8"
+services:
+  cassandra1:
+    image: docker.io/bitnami/cassandra:latest
+    container_name: cassandra1
+    hostname: cassandra1
+    environment:
+      - CASSANDRA_CLUSTER_NAME=nbd-cassandra-cluster
+      - CASSANDRA_DATACENTER=dc1
+      - CASSANDRA_RACK=rack1
+      - CASSANDRA_LISTEN_ADDRESS=cassandra1
+      - CASSANDRA_BROADCAST_ADDRESS=cassandra1
+      - CASSANDRA_SEEDS=cassandra1,cassandra2
+      - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
+      - CASSANDRA_USER=cassandra
+      - CASSANDRA_PASSWORD=cassandrapassword
+      - CASSANDRA_PASSWORD_SEEDER=yes
+      - MAX_HEAP_SIZE=2G
+      - HEAP_NEWSIZE=200M
+    ports:
+      - "7001:7000"
+      - "9042:9042"
+    volumes:
+      - cassandra1_data:/bitnami/cassandra
+    networks:
+      - cassandranet
+
+  cassandra2:
+    image: docker.io/bitnami/cassandra:latest
+    container_name: cassandra2
+    hostname: cassandra2
+    environment:
+      - CASSANDRA_CLUSTER_NAME=nbd-cassandra-cluster
+      - CASSANDRA_DATACENTER=dc1
+      - CASSANDRA_RACK=rack1
+      - CASSANDRA_LISTEN_ADDRESS=cassandra2
+      - CASSANDRA_BROADCAST_ADDRESS=cassandra2
+      - CASSANDRA_SEEDS=cassandra1,cassandra2
+      - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
+      - CASSANDRA_USER=cassandra
+      - CASSANDRA_PASSWORD=cassandrapassword
+      - CASSANDRA_PASSWORD_SEEDER=yes
+      - MAX_HEAP_SIZE=2G
+      - HEAP_NEWSIZE=200M
+    ports:
+      - "7002:7000"
+      - "9043:9042"
+    volumes:
+      - cassandra2_data:/bitnami/cassandra
+    networks:
+      - cassandranet
+
+networks:
+  cassandranet:
+    driver: bridge
+
+volumes:
+  cassandra1_data:
+  cassandra2_data:
