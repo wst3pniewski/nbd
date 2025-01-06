@@ -1,22 +1,30 @@
 package org.example.model.domain.accounts;
 
-import org.example.model.AbstractEntity;
+import com.datastax.oss.driver.api.mapper.annotations.CqlName;
+import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
 import org.example.model.domain.clients.Client;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
 
-public abstract class BankAccount extends AbstractEntity {
+public abstract class BankAccount {
+
+    @PartitionKey
+    @CqlName("account_id")
+    UUID accountId;
 
     BigDecimal balance;
 
     Client client;
 
+    @CqlName("is_active")
     Boolean isActive;
 
+    @CqlName("creation_date")
     LocalDate creationDate;
 
+    @CqlName("close_date")
     LocalDate closeDate;
 
 
@@ -31,7 +39,7 @@ public abstract class BankAccount extends AbstractEntity {
     }
 
     public BankAccount(UUID id, Client client) {
-        super(id);
+        this.accountId = id;
         this.client = client;
         this.balance = new BigDecimal(0);
         this.isActive = true;
@@ -40,12 +48,16 @@ public abstract class BankAccount extends AbstractEntity {
     }
 
     public BankAccount(UUID id, BigDecimal balance, Client client, Boolean isActive, LocalDate creationDate, LocalDate closeDate) {
-        super(id);
+        this.accountId = id;
         this.balance = balance;
         this.client = client;
         this.isActive = isActive;
         this.creationDate = creationDate;
         this.closeDate = closeDate;
+    }
+
+    public UUID getId() {
+        return this.accountId;
     }
 
     public Client getClient() {
@@ -88,9 +100,5 @@ public abstract class BankAccount extends AbstractEntity {
     public void setCloseDate(LocalDate closeDate) {
         this.closeDate = closeDate;
         this.isActive = false;
-    }
-
-    public UUID getId() {
-        return getEntityId();
     }
 }

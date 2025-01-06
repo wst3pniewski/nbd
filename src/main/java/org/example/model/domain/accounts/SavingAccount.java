@@ -1,5 +1,7 @@
 package org.example.model.domain.accounts;
 
+import com.datastax.oss.driver.api.mapper.annotations.CqlName;
+import com.datastax.oss.driver.api.mapper.annotations.Entity;
 import org.example.model.domain.clients.Client;
 
 import java.math.BigDecimal;
@@ -7,8 +9,11 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
+@CqlName("saving_accounts")
+@Entity
 public class SavingAccount extends BankAccount {
 
+    @CqlName("interest_rate")
     BigDecimal interestRate;
 
     public SavingAccount(Client client, BigDecimal interestRate) {
