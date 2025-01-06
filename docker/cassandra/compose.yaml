@@ -1,4 +1,4 @@
-version: "3.8"
+name: cassandra
 services:
   cassandra1:
     image: docker.io/bitnami/cassandra:latest
@@ -22,6 +22,7 @@ services:
       - "9042:9042"
     volumes:
       - cassandra1_data:/bitnami/cassandra
+      - ./cassandra/conf/cassandra1:/opt/bitnami/cassandra/conf
     networks:
       - cassandranet
 
@@ -47,6 +48,7 @@ services:
       - "9043:9042"
     volumes:
       - cassandra2_data:/bitnami/cassandra
+      - ./cassandra/conf/cassandra2:/opt/bitnami/cassandra/conf
     networks:
       - cassandranet
 

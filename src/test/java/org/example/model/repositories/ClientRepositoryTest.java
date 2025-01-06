@@ -1,9 +1,7 @@
 package org.example.model.repositories;
 
-import org.example.model.clients.Client;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.example.model.domain.clients.Client;
+import org.junit.jupiter.api.*;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -13,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class ClientRepositoryTest {
     private static ClientRepository clientRepository;
+    private Client client;
 
     @BeforeAll
     static void beforeAll() {
@@ -21,51 +20,40 @@ class ClientRepositoryTest {
 
     @AfterAll
     static void afterAll() {
+        clientRepository.close();
+    }
 
+    @BeforeEach
+    void setUp() {
+        LocalDate dateOfBirth = LocalDate.of(2000, 1, 1);
+        client = new Client(UUID.randomUUID(),
+                "BUSSINESS",
+                dateOfBirth,
+                "John",
+                "Doe",
+                "8th Avenue",
+                "NYC",
+                "1");
+
+        clientRepository.add(client);
     }
 
     @Test
-    void add() {
-        LocalDate dateOfBirth = LocalDate.of(2000, 1, 1);
-        Client client = new Client("John", "Doe", dateOfBirth, Client.ClientTypes.BUSINESS, "Aleja",
-                "Lodz", "1");
+    void addAndFindById() {
+        Client foundClient = clientRepository.findById(client.getClientId());
 
-        clientRepository.add(client);
+        assertEquals(client.getClientId(), foundClient.getClientId());
 
-        Client foundClient = clientRepository.findById(client.getId());
-
-        assertEquals(client.getId(), foundClient.getId());
-
-//        clientRepository.delete(client.getId());
+        clientRepository.delete(client.getClientId());
     }
 
     @Test
     void findAll() {
-        LocalDate dateOfBirth = LocalDate.of(2000, 1, 1);
-        Client client = new Client( "John", "Doe", dateOfBirth, Client.ClientTypes.BUSINESS, "Aleja",
-                "Lodz", "1");
-
-        clientRepository.add(client);
-
         List<Client> clients = clientRepository.findAll();
 
         assertFalse(clients.isEmpty());
 
-        clientRepository.delete(client.getId());
-    }
-
-    @Test
-    void findById() {
-        LocalDate dateOfBirth = LocalDate.of(2000, 1, 1);
-        Client client = new Client("John", "Doe", dateOfBirth, Client.ClientTypes.BUSINESS, "Aleja",
-                "Lodz", "1");
-
-        clientRepository.add(client);
-
-        Client foundClient = clientRepository.findById(client.getId());
-        assertEquals(client.getId(), foundClient.getId());
-
-        clientRepository.delete(client.getId());
+        clientRepository.delete(client.getClientId());
     }
 
     @Test
@@ -75,36 +63,12 @@ class ClientRepositoryTest {
     }
 
     @Test
-    void update() {
-        LocalDate dateOfBirth = LocalDate.of(2000, 1, 1);
-        Client client = new Client("John", "Doe", dateOfBirth, Client.ClientTypes.BUSINESS,
-                "Aleja", "Lodz", "1");
-
-        clientRepository.add(client);
-
-        client.setClientType(Client.ClientTypes.STANDARD);
-
-        clientRepository.update(client);
-
-        Client foundClient = clientRepository.findById(client.getId());
-
-        assertEquals(client.getClientType(), foundClient.getClientType());
-
-        clientRepository.delete(client.getId());
-    }
-
-    @Test
     void delete() {
-        LocalDate dateOfBirth = LocalDate.of(2000, 1, 1);
-        Client client = new Client("John", "Doe", dateOfBirth, Client.ClientTypes.BUSINESS, "Aleja", "Lodz", "1");
-
         clientRepository.add(client);
 
-        client.setClientType(Client.ClientTypes.STANDARD);
+        clientRepository.delete(client.getClientId());
 
-        clientRepository.delete(client.getId());
-
-        Client foundClient = clientRepository.findById(client.getId());
+        Client foundClient = clientRepository.findById(client.getClientId());
 
         assertNull(foundClient);
     }
@@ -112,5 +76,18 @@ class ClientRepositoryTest {
     @Test
     void deleteNotExistingClient() {
         assertDoesNotThrow(() -> clientRepository.delete(UUID.randomUUID()));
+    }
+
+    @Test
+    void update() {
+        client.setClientType("STANDARD");
+
+        clientRepository.update(client);
+
+        Client foundClient = clientRepository.findById(client.getClientId());
+
+        assertEquals(client.getClientType(), foundClient.getClientType());
+
+        clientRepository.delete(client.getClientId());
     }
 }

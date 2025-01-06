@@ -1,78 +1,109 @@
 package org.example.model.repositories;
 
-import org.example.model.clients.Client;
-import org.example.model.dto.ClientDTO;
-import org.example.model.mappers.ClientDTOMapper;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
+import com.datastax.oss.driver.api.core.type.DataTypes;
+import com.datastax.oss.driver.api.querybuilder.SchemaBuilder;
+import com.datastax.oss.driver.api.querybuilder.schema.CreateKeyspace;
+import org.example.model.domain.clients.Client;
+import org.example.model.dao.ClientDao;
+import org.example.model.mappers.ClientMapper;
+import org.example.model.mappers.ClientMapperBuilder;
 
-import java.util.ArrayList;
+import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.UUID;
 
+import static com.datastax.oss.driver.api.querybuilder.SchemaBuilder.createKeyspace;
 
-public class ClientRepository implements Repository<Client> {
 
+public class ClientRepository implements Repository<Client>, AutoCloseable {
 
-    public ClientRepository() {
-        super();
+    private static CqlSession session;
+    private static ClientMapper clientMapper;
+    private static ClientDao clientDao;
+
+    public void initSession() {
+        session = CqlSession.builder()
+//                .addContactPoint(new InetSocketAddress("cassandral", 9042))
+//                .addContactPoint(new InetSocketAddress("cassandra2", 9043))
+                .addContactPoint(new InetSocketAddress("cassandra1", 9042))
+                .addContactPoint(new InetSocketAddress("cassandra2", 9043))
+                .withLocalDatacenter("dc1")
+                .withAuthCredentials("cassandra", "cassandrapassword")
+                .build();
+        CreateKeyspace createKeyspace = createKeyspace(CqlIdentifier.fromCql("bank_accounts"))
+                .ifNotExists()
+                .withSimpleStrategy(2)
+                .withDurableWrites(true);
+        SimpleStatement statement = createKeyspace.build();
+        session.execute(statement);
+        session.execute(SchemaBuilder.dropTable(CqlIdentifier.fromCql("bank_accounts"), CqlIdentifier.fromCql("clients")).ifExists().build());
+        SimpleStatement createClients =
+                SchemaBuilder.createTable(CqlIdentifier.fromCql("bank_accounts"), CqlIdentifier.fromCql("clients"))
+                        .ifNotExists()
+                        .withPartitionKey(CqlIdentifier.fromCql("client_id"), DataTypes.UUID)
+                        .withColumn(CqlIdentifier.fromCql("first_name"), DataTypes.TEXT)
+                        .withColumn(CqlIdentifier.fromCql("last_name"), DataTypes.TEXT)
+                        .withColumn(CqlIdentifier.fromCql("date_of_birth"), DataTypes.DATE)
+                        .withClusteringColumn(CqlIdentifier.fromCql("client_type"), DataTypes.TEXT)
+                        .withColumn(CqlIdentifier.fromCql("street"), DataTypes.TEXT)
+                        .withColumn(CqlIdentifier.fromCql("city"), DataTypes.TEXT)
+                        .withColumn(CqlIdentifier.fromCql("street_number"), DataTypes.TEXT)
+//                        .withColumn("active_accounts", SchemaBuilder.cint())
+                        .build();
+        session.execute(createClients);
+//        session.execute(
+//                SchemaBuilder.dropKeyspace(CqlIdentifier.fromCql("xd")).ifExists().build()
+//        );
+//        session.execute(
+//                SchemaBuilder.dropKeyspace(CqlIdentifier.fromCql("test_keyspace")).ifExists().build()
+//        );
     }
 
-    public Client add(Client client) {
+    public ClientRepository() {
+        initSession();
+        clientMapper = new ClientMapperBuilder(session).build();
+        clientDao = clientMapper.clientDao();
+    }
+
+
+    public void add(Client client) {
         if (client == null) {
-            return null;
-//        }
-//        InsertOneResult insertOneResult = clients.insertOne(ClientDTOMapper.toDTO(client));
-//        if (!insertOneResult.wasAcknowledged()) {
-//            return null;
-//        }
-        return client;
+            return;
+        }
+        clientDao.create(client);
     }
 
     public List<Client> findAll() {
-//        return clients.find().into(new ArrayList<>()).stream().map(ClientDTOMapper::fromDTO).toList();
+       return clientDao.findAll().all();
     }
 
     public Client findById(UUID id) {
-//        Bson filter = Filters.eq("_id", id);
-//        ClientDTO client = clients.find(filter).first();
-        if (client == null) {
-            return null;
-        }
-//        return ClientDTOMapper.fromDTO(client);
+        return clientDao.findById(id);
     }
 
-    public Client update(Client client) {
+    public void update(Client client) {
         if (client == null) {
-            return null;
+            return;
         }
-//        Bson filter = Filters.eq("_id", client.getId());
-//        // TODO: findAndReplace
-//        Bson setUpdate = Updates.combine(
-//                Updates.set("firstName", client.getFirstName()),
-//                Updates.set("lastName", client.getLastName()),
-//                Updates.set("dateOfBirth", client.getDateOfBirth()),
-//                Updates.set("clientType", client.getClientType()),
-//                Updates.set("city", client.getCity()),
-//                Updates.set("street", client.getStreet()),
-//                Updates.set("streetNumber", client.getStreetNumber()),
-//                Updates.set("activeAccounts", client.getActiveAccounts())
-//        );
-//
-//        UpdateResult updateResult = clients.updateOne(filter, setUpdate);
-//        if (updateResult.getModifiedCount() == 0) {
-//            return null;
-//        }
-        return client;
+        Client oldClient = clientDao.findById(client.getClientId());
+        clientDao.delete(oldClient);
+        clientDao.create(client);
     }
 
 
-    public Boolean delete(UUID id) {
-//        Bson filter = Filters.eq("_id", id.toString());
-//
-//        DeleteResult deleteResult = clients.deleteOne(filter);
-//        return deleteResult.getDeletedCount() != 0;
+    public void delete(UUID id) {
+        Client client = clientDao.findById(id);
+        if (client == null) {
+            return;
+        }
+        clientDao.delete(client);
     }
 
     @Override
-    public void close() {}
+    public void close() {
+    }
 
 }
