@@ -16,7 +16,8 @@ public abstract class BankAccount {
 
     BigDecimal balance;
 
-    Client client;
+    @CqlName("client_id")
+    UUID clientId;
 
     @CqlName("is_active")
     Boolean isActive;
@@ -28,9 +29,9 @@ public abstract class BankAccount {
     LocalDate closeDate;
 
 
-    public BankAccount(Client client) {
+    public BankAccount(UUID clientId) {
         super();
-        this.client = client;
+        this.clientId = clientId;
         this.balance = new BigDecimal(0);
         this.isActive = true;
         this.creationDate = LocalDate.now();
@@ -38,19 +39,19 @@ public abstract class BankAccount {
         this.closeDate = null;
     }
 
-    public BankAccount(UUID id, Client client) {
+    public BankAccount(UUID id, UUID client) {
         this.accountId = id;
-        this.client = client;
+        this.clientId = clientId;
         this.balance = new BigDecimal(0);
         this.isActive = true;
         this.creationDate = LocalDate.now();
         this.closeDate = null;
     }
 
-    public BankAccount(UUID id, BigDecimal balance, Client client, Boolean isActive, LocalDate creationDate, LocalDate closeDate) {
+    public BankAccount(UUID id, BigDecimal balance, UUID client, Boolean isActive, LocalDate creationDate, LocalDate closeDate) {
         this.accountId = id;
         this.balance = balance;
-        this.client = client;
+        this.clientId = clientId;
         this.isActive = isActive;
         this.creationDate = creationDate;
         this.closeDate = closeDate;
@@ -60,8 +61,8 @@ public abstract class BankAccount {
         return this.accountId;
     }
 
-    public Client getClient() {
-        return client;
+    public UUID getClientId() {
+        return clientId;
     }
 
     public LocalDate getCreationDate() {

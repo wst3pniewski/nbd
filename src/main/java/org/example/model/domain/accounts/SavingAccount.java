@@ -2,6 +2,8 @@ package org.example.model.domain.accounts;
 
 import com.datastax.oss.driver.api.mapper.annotations.CqlName;
 import com.datastax.oss.driver.api.mapper.annotations.Entity;
+import com.datastax.oss.driver.api.mapper.annotations.PropertyStrategy;
+import com.datastax.oss.driver.api.mapper.entity.naming.GetterStyle;
 import org.example.model.domain.clients.Client;
 
 import java.math.BigDecimal;
@@ -11,30 +13,31 @@ import java.util.UUID;
 
 @CqlName("saving_accounts")
 @Entity
+@PropertyStrategy(mutable = false, getterStyle = GetterStyle.JAVABEANS)
 public class SavingAccount extends BankAccount {
 
     @CqlName("interest_rate")
     BigDecimal interestRate;
 
-    public SavingAccount(Client client, BigDecimal interestRate) {
-        super(client);
-        LocalDate today = LocalDate.now();
-        long age = ChronoUnit.YEARS.between(client.getDateOfBirth(), today);
-        if (age >= 18) {
-            this.interestRate = interestRate;
-        } else {
-            throw new IllegalArgumentException("Client must be at least 18 years old to open a saving account");
-        }
-    }
+//    public SavingAccount(UUID client, BigDecimal interestRate) {
+//        super(client);
 
-    public SavingAccount(UUID id,
-                         BigDecimal balance,
-                         Client client,
-                         Boolean isActive,
+    /// /        LocalDate today = LocalDate.now();
+    /// /        long age = ChronoUnit.YEARS.between(client.getDateOfBirth(), today);
+    /// /        if (age >= 18) {
+    /// /            this.interestRate = interestRate;
+    /// /        } else {
+    /// /            throw new IllegalArgumentException("Client must be at least 18 years old to open a saving account");
+    /// /        }
+//    }
+    public SavingAccount(BigDecimal interestRate,
+                         UUID id,
+                         UUID clientId,
                          LocalDate creationDate,
-                         LocalDate closeDate,
-                         BigDecimal interestRate) {
-        super(id, balance, client, isActive, creationDate, closeDate);
+                         BigDecimal balance,
+                         Boolean isActive,
+                         LocalDate closeDate) {
+        super(id, balance, clientId, isActive, creationDate, closeDate);
         this.interestRate = interestRate;
     }
 
