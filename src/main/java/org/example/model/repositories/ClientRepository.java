@@ -26,8 +26,6 @@ public class ClientRepository implements Repository<Client>, AutoCloseable {
 
     public void initSession() {
         session = CqlSession.builder()
-//                .addContactPoint(new InetSocketAddress("cassandral", 9042))
-//                .addContactPoint(new InetSocketAddress("cassandra2", 9043))
                 .addContactPoint(new InetSocketAddress("cassandra1", 9042))
                 .addContactPoint(new InetSocketAddress("cassandra2", 9043))
                 .withLocalDatacenter("dc1")
@@ -54,12 +52,6 @@ public class ClientRepository implements Repository<Client>, AutoCloseable {
 //                        .withColumn("active_accounts", SchemaBuilder.cint())
                         .build();
         session.execute(createClients);
-//        session.execute(
-//                SchemaBuilder.dropKeyspace(CqlIdentifier.fromCql("xd")).ifExists().build()
-//        );
-//        session.execute(
-//                SchemaBuilder.dropKeyspace(CqlIdentifier.fromCql("test_keyspace")).ifExists().build()
-//        );
     }
 
     public ClientRepository() {
