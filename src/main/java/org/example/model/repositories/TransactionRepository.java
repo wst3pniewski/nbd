@@ -8,6 +8,7 @@ import com.datastax.oss.driver.api.querybuilder.SchemaBuilder;
 import com.datastax.oss.driver.api.querybuilder.schema.CreateKeyspace;
 import org.example.model.dao.TransactionDao;
 import org.example.model.domain.Transaction;
+import org.example.model.domain.TransactionIds;
 import org.example.model.domain.accounts.BankAccountIds;
 import org.example.model.mappers.TransactionMapper;
 import org.example.model.mappers.TransactionMapperBuilder;
@@ -33,20 +34,20 @@ public class TransactionRepository implements Repository<Transaction>, AutoClose
                 .withLocalDatacenter("dc1")
                 .withAuthCredentials("cassandra", "cassandrapassword")
                 .build();
-        CreateKeyspace createKeyspace = createKeyspace(CqlIdentifier.fromCql("bank_accounts"))
+        CreateKeyspace createKeyspace = createKeyspace(TransactionIds.BANK_ACCOUNTS_KEYSPACE)
                 .ifNotExists()
                 .withSimpleStrategy(2)
                 .withDurableWrites(true);
         SimpleStatement statement = createKeyspace.build();
         session.execute(statement);
-        session.execute(SchemaBuilder.dropTable(BankAccountIds.BANK_ACCOUNTS_KEYSPACE, CqlIdentifier.fromCql("transactions")).ifExists().build());
+        session.execute(SchemaBuilder.dropTable(BankAccountIds.BANK_ACCOUNTS_KEYSPACE, TransactionIds.TRANSACTIONS).ifExists().build());
         SimpleStatement createTransactions =
-                SchemaBuilder.createTable(CqlIdentifier.fromCql("bank_accounts"), CqlIdentifier.fromCql("transactions"))
+                SchemaBuilder.createTable(TransactionIds.BANK_ACCOUNTS_KEYSPACE, TransactionIds.TRANSACTIONS)
                         .ifNotExists()
-                        .withPartitionKey(CqlIdentifier.fromCql("transaction_id"), DataTypes.UUID)
-                        .withColumn(CqlIdentifier.fromCql("source_account"), DataTypes.UUID)
-                        .withColumn(CqlIdentifier.fromCql("destination_account"), DataTypes.UUID)
-                        .withColumn(CqlIdentifier.fromCql("amount"), DataTypes.DECIMAL)
+                        .withPartitionKey(TransactionIds.TRANSACTION_ID, DataTypes.UUID)
+                        .withColumn(TransactionIds.SOURCE_ACCOUNT, DataTypes.UUID)
+                        .withColumn(TransactionIds.DESTINATION_ACCOUNT, DataTypes.UUID)
+                        .withColumn(TransactionIds.AMOUNT, DataTypes.DECIMAL)
                         .build();
         session.execute(createTransactions);
     }
