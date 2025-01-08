@@ -58,4 +58,8 @@ public class ClientManager {
         return clientRepository.findAll();
     }
 
+    public void close() {
+        clientRepository.close();
+        accountRepository.close();
+    }
 }

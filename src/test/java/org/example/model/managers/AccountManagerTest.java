@@ -28,7 +28,8 @@ class AccountManagerTest {
 
     @AfterAll
     static void afterAll() {
-
+        clientManager.close();
+        accountManager.close();
     }
 
     @BeforeEach

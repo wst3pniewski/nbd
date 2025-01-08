@@ -14,9 +14,6 @@ import com.datastax.oss.driver.api.querybuilder.select.Select;
 import com.datastax.oss.driver.api.querybuilder.update.Update;
 import org.example.model.BankAccountQueryProvider;
 import org.example.model.dao.BankAccountDao;
-import org.example.model.dao.JuniorAccountDao;
-import org.example.model.dao.SavingAccountDao;
-import org.example.model.dao.StandardAccountDao;
 import org.example.model.domain.accounts.*;
 import org.example.model.mappers.BankAccountMapper;
 import org.example.model.mappers.BankAccountMapperBuilder;
@@ -29,7 +26,7 @@ import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.literal;
 import static com.datastax.oss.driver.api.querybuilder.SchemaBuilder.createKeyspace;
 
 
-public class AccountRepository implements Repository<BankAccount> {
+public class AccountRepository implements Repository<BankAccount>, AutoCloseable{
 
     private static CqlSession session;
     private static BankAccountMapper accountMapper;

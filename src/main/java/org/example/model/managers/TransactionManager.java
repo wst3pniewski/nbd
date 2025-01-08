@@ -96,4 +96,9 @@ public class TransactionManager {
 
         return transaction;
     }
+
+    public void close(){
+        transactionRepository.close();
+        accountManager.close();
+    }
 }

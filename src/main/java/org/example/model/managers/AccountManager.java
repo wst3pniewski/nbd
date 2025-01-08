@@ -15,11 +15,9 @@ public class AccountManager {
     private final AccountRepository accountRepository;
     private final ClientRepository clientRepository;
 
-
     public AccountManager() {
         this.accountRepository = new AccountRepository();
         this.clientRepository = new ClientRepository();
-
     }
 
     public BankAccount createStandardAccount(UUID clientId, BigDecimal debitLimit) {
@@ -221,5 +219,10 @@ public class AccountManager {
 
     public long countActiveByClientId(UUID clientId) {
         return accountRepository.countActiveByClientId(clientId);
+    }
+
+    public void close() {
+        accountRepository.close();
+        clientRepository.close();
     }
 }

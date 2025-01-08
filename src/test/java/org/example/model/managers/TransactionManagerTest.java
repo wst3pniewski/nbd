@@ -34,6 +34,9 @@ class TransactionManagerTest {
 
     @AfterAll
     static void afterAll() {
+        accountManager.close();
+        clientManager.close();
+        transactionManager.close();
     }
 
     @BeforeEach

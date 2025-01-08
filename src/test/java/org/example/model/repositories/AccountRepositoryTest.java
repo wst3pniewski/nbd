@@ -30,6 +30,8 @@ class AccountRepositoryTest {
 
     @AfterAll
     static void afterAll() {
+        accountRepository.close();
+        clientRepository.close();
     }
 
     @BeforeEach
