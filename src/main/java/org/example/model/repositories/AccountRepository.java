@@ -3,10 +3,14 @@ package org.example.model.repositories;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.cql.ResultSet;
+import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.core.type.DataTypes;
+import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
 import com.datastax.oss.driver.api.querybuilder.SchemaBuilder;
 import com.datastax.oss.driver.api.querybuilder.schema.CreateKeyspace;
+import com.datastax.oss.driver.api.querybuilder.select.Select;
 import org.example.model.dao.JuniorAccountDao;
 import org.example.model.dao.SavingAccountDao;
 import org.example.model.dao.StandardAccountDao;
@@ -18,6 +22,7 @@ import org.example.model.mappers.BankAccountMapper;
 import org.example.model.mappers.BankAccountMapperBuilder;
 
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -46,7 +51,6 @@ public class AccountRepository implements Repository<BankAccount> {
         SimpleStatement statement = createKeyspace.build();
         session.execute(statement);
 
-//        session.execute(SchemaBuilder.dropTable(CqlIdentifier.fromCql("bank_accounts"), CqlIdentifier.fromCql("clients")).ifExists().build());
         SimpleStatement createJuniorAccounts =
                 SchemaBuilder.createTable(CqlIdentifier.fromCql("bank_accounts"), CqlIdentifier.fromCql("junior_accounts"))
                         .ifNotExists()
@@ -86,6 +90,20 @@ public class AccountRepository implements Repository<BankAccount> {
                         .withColumn(CqlIdentifier.fromCql("debit"), DataTypes.DECIMAL)
                         .build();
         session.execute(createStandardAccounts);
+
+        SimpleStatement createStandardAccountsByClients =
+                SchemaBuilder.createTable(CqlIdentifier.fromCql("bank_accounts"), CqlIdentifier.fromCql("standard_accounts_by_clients"))
+                        .ifNotExists()
+                        .withPartitionKey(CqlIdentifier.fromCql("client_id"), DataTypes.UUID)
+                        .withClusteringColumn(CqlIdentifier.fromCql("account_id"), DataTypes.UUID)
+                        .withColumn(CqlIdentifier.fromCql("balance"), DataTypes.DECIMAL)
+                        .withColumn(CqlIdentifier.fromCql("is_active"), DataTypes.BOOLEAN)
+                        .withColumn(CqlIdentifier.fromCql("creation_date"), DataTypes.DATE)
+                        .withColumn(CqlIdentifier.fromCql("close_date"), DataTypes.DATE)
+                        .withColumn(CqlIdentifier.fromCql("debit_limit"), DataTypes.DECIMAL)
+                        .withColumn(CqlIdentifier.fromCql("debit"), DataTypes.DECIMAL)
+                        .build();
+        session.execute(createStandardAccountsByClients);
     }
 
     public AccountRepository() {
@@ -108,25 +126,31 @@ public class AccountRepository implements Repository<BankAccount> {
             case "StandardAccount" -> standardAccountDao.create((StandardAccount) account);
             default ->
                     throw new IllegalArgumentException("Unsupported BankAccount type: " + account.getClass().getName());
-        };
+        }
+        ;
     }
 
     public List<BankAccount> findAll() {
-//        return bankAccounts.find().into(new ArrayList<>()).stream().map(BankAccountDTOMapper::fromDTO).toList();
-        return null;
+        List<BankAccount> accounts = new ArrayList<>();
+        accounts.addAll(juniorAccountDao.findAll().all());
+        accounts.addAll(savingAccountDao.findAll().all());
+        accounts.addAll(standardAccountDao.findAll().all());
+        return accounts;
     }
 
 
     public BankAccount findById(UUID id) {
-//        Bson filter = Filters.eq("_id", id);
-//        BankAccountDTO account = bankAccounts.find(filter).first();
-//        if (account == null) {
-//            return null;
-//        }
-//        return BankAccountDTOMapper.fromDTO(account);
-        return null;
+        BankAccount account;
+        account = juniorAccountDao.findById(id);
+        if (account != null) {
+            return account;
+        }
+        account = savingAccountDao.findById(id);
+        if (account != null) {
+            return account;
+        }
+        return standardAccountDao.findById(id);
     }
-
 
     public void update(BankAccount account) {
 //        if (account == null) {
@@ -167,10 +191,12 @@ public class AccountRepository implements Repository<BankAccount> {
     }
 
     public List<BankAccount> getAccountsByClientId(UUID clientId) {
-//        Bson filter = Filters.eq("client._id", clientId);
-//        return bankAccounts.find(filter).into(new ArrayList<>()).stream().map(BankAccountDTOMapper::fromDTO).toList();
-
-        return null;
+        Select selectFromWhere = QueryBuilder.selectFrom("bank_accounts", "standard_accounts_by_clients")
+                .all()
+                .whereColumn("client_id").isEqualTo(QueryBuilder.literal(clientId));
+        ResultSet resultSet = session.execute(selectFromWhere.build());
+        List<BankAccount> accounts = new ArrayList<>();
+        List<Row> result = resultSet.all();
     }
 
 
@@ -185,14 +211,15 @@ public class AccountRepository implements Repository<BankAccount> {
     }
 
 //    public boolean updateClient(Client client) {
-////        Bson filter = Filters.eq("client._id", client.getId());
-////        Bson setUpdate = Updates.set("client", client);
-////        UpdateResult updateResult = bankAccounts.updateMany(filter, setUpdate);
-////        return updateResult.getModifiedCount() != 0;
+
+    /// /        Bson filter = Filters.eq("client._id", client.getId());
+    /// /        Bson setUpdate = Updates.set("client", client);
+    /// /        UpdateResult updateResult = bankAccounts.updateMany(filter, setUpdate);
+    /// /        return updateResult.getModifiedCount() != 0;
 //
 //        return false;
 //    }
-
     public void close() {
+        session.close();
     }
 }

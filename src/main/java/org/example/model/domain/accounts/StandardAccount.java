@@ -21,22 +21,10 @@ public class StandardAccount extends BankAccount {
 
     BigDecimal debit;
 
-//    public StandardAccount(UUID client, BigDecimal debitLimit) {
-//        super(client);
-
-    /// /        LocalDate today = LocalDate.now();
-    /// /        long age = ChronoUnit.YEARS.between(client.getDateOfBirth(), today);
-    /// /        if (age >= 18) {
-    /// /            this.debitLimit = debitLimit;
-    /// /            this.debit = new BigDecimal(0);
-    /// /        } else {
-    /// /            throw new IllegalArgumentException("Client must be at least 18 years old to open a standard account");
-    /// /        }
-//    }
-    public StandardAccount(BigDecimal debitLimit,
-                           BigDecimal debit,
-                           UUID id,
+    public StandardAccount(UUID id,
                            UUID clientId,
+                           BigDecimal debitLimit,
+                           BigDecimal debit,
                            LocalDate creationDate,
                            BigDecimal balance,
                            Boolean isActive,
@@ -46,6 +34,26 @@ public class StandardAccount extends BankAccount {
         this.debit = debit;
     }
 
+    public StandardAccount(UUID clientId, BigDecimal debitLimit) {
+        super(clientId);
+        this.debitLimit = debitLimit;
+        this.debit = new BigDecimal(0);
+//        LocalDate today = LocalDate.now();
+//        long age = ChronoUnit.YEARS.between(client.getDateOfBirth(), today);
+//        if (age >= 18) {
+//            this.debitLimit = debitLimit;
+//            this.debit = new BigDecimal(0);
+//        } else {
+//            throw new IllegalArgumentException("Client must be at least 18 years old to open a standard account");
+//        }
+    }
+
+
+    @CqlName("account_id")
+    @Override
+    public UUID getId() {
+        return super.getId();
+    }
 
     public BigDecimal getDebitLimit() {
         return debitLimit;

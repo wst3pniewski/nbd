@@ -1,15 +1,27 @@
 package org.example.model.domain;
 
-import org.example.model.AbstractEntity;
+
+import com.datastax.oss.driver.api.mapper.annotations.CqlName;
+import com.datastax.oss.driver.api.mapper.annotations.Entity;
+import com.datastax.oss.driver.api.mapper.annotations.PropertyStrategy;
+import com.datastax.oss.driver.api.mapper.entity.naming.GetterStyle;
 
 import java.math.BigDecimal;
 import java.util.UUID;
 
 
-public class Transaction extends AbstractEntity {
+@CqlName("transactions")
+@Entity
+@PropertyStrategy(mutable = false, getterStyle = GetterStyle.JAVABEANS)
+public class Transaction {
 
+    @CqlName("transaction_id")
+    UUID transactionId;
+
+    @CqlName("source_account")
     UUID sourceAccount;
 
+    @CqlName("destination_account")
     UUID destinationAccount;
 
     BigDecimal amount;
@@ -18,17 +30,17 @@ public class Transaction extends AbstractEntity {
     public Transaction(UUID sourceAccount,
                        UUID destinationAccount,
                        BigDecimal amount) {
-        super();
+        this.transactionId = UUID.randomUUID();
         this.sourceAccount = sourceAccount;
         this.destinationAccount = destinationAccount;
         this.amount = amount;
     }
 
-    public Transaction(UUID id,
-                       UUID sourceAccount,
+    public Transaction(UUID sourceAccount,
                        UUID destinationAccount,
-                       BigDecimal amount) {
-        super(id);
+                       BigDecimal amount,
+                       UUID transactionId) {
+        this.transactionId = transactionId;
         this.sourceAccount = sourceAccount;
         this.destinationAccount = destinationAccount;
         this.amount = amount;
@@ -47,6 +59,6 @@ public class Transaction extends AbstractEntity {
     }
 
     public UUID getId() {
-        return getEntityId();
+        return this.transactionId;
     }
 }

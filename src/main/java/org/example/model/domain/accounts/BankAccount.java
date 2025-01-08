@@ -1,8 +1,8 @@
 package org.example.model.domain.accounts;
 
+import com.datastax.oss.driver.api.mapper.annotations.ClusteringColumn;
 import com.datastax.oss.driver.api.mapper.annotations.CqlName;
 import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
-import org.example.model.domain.clients.Client;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -16,6 +16,7 @@ public abstract class BankAccount {
 
     BigDecimal balance;
 
+    @ClusteringColumn
     @CqlName("client_id")
     UUID clientId;
 
@@ -28,28 +29,8 @@ public abstract class BankAccount {
     @CqlName("close_date")
     LocalDate closeDate;
 
-
-    public BankAccount(UUID clientId) {
-        super();
-        this.clientId = clientId;
-        this.balance = new BigDecimal(0);
-        this.isActive = true;
-        this.creationDate = LocalDate.now();
-//        this.closeDate = LocalDate.now();
-        this.closeDate = null;
-    }
-
-    public BankAccount(UUID id, UUID client) {
-        this.accountId = id;
-        this.clientId = clientId;
-        this.balance = new BigDecimal(0);
-        this.isActive = true;
-        this.creationDate = LocalDate.now();
-        this.closeDate = null;
-    }
-
-    public BankAccount(UUID id, BigDecimal balance, UUID client, Boolean isActive, LocalDate creationDate, LocalDate closeDate) {
-        this.accountId = id;
+    public BankAccount(UUID accountId, BigDecimal balance, UUID clientId, Boolean isActive, LocalDate creationDate, LocalDate closeDate) {
+        this.accountId = accountId;
         this.balance = balance;
         this.clientId = clientId;
         this.isActive = isActive;
@@ -57,6 +38,17 @@ public abstract class BankAccount {
         this.closeDate = closeDate;
     }
 
+    public BankAccount(UUID clientId) {
+        this.accountId = UUID.randomUUID();
+        this.clientId = clientId;
+        this.balance = new BigDecimal(0);
+        this.isActive = true;
+        this.creationDate = LocalDate.now();
+        this.closeDate = null;
+    }
+
+    @PartitionKey
+    @CqlName("account_id")
     public UUID getId() {
         return this.accountId;
     }
@@ -80,6 +72,7 @@ public abstract class BankAccount {
         this.balance = balance;
     }
 
+    @CqlName("is_active")
     public Boolean getActive() {
         return isActive;
     }

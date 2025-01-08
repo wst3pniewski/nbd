@@ -1,8 +1,6 @@
 //package org.example.model.repositories;
 //
 //import org.example.model.domain.Transaction;
-//import org.example.model.accounts.BankAccount;
-//import org.example.model.clients.Client;
 //import org.example.model.managers.AccountManager;
 //import org.example.model.managers.ClientManager;
 //import org.junit.jupiter.api.AfterAll;

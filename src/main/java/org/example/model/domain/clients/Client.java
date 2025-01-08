@@ -10,7 +10,9 @@ import java.util.UUID;
 @CqlName("clients")
 @PropertyStrategy(mutable = false, getterStyle = GetterStyle.JAVABEANS)
 public class Client {
-
+    public static final String STANDARD = "STANDARD";
+    public static final String ADVANCED = "ADVANCED";
+    public static final String BUSINESS = "BUSINESS";
     public enum ClientTypes {
         STANDARD(2), ADVANCED(5), BUSINESS(7);
 

@@ -9,4 +9,6 @@ import org.example.model.domain.accounts.StandardAccount;
 public interface StandardAccountDao extends BaseDao<StandardAccount> {
     @Query("SELECT * FROM bank_accounts.standard_accounts")
     PagingIterable<StandardAccount> findAll();
+
+//    @Query("SELECT * FROM bank_accounts.standard_accounts WHERE client_id = :clientId")
 }

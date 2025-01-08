@@ -37,7 +37,7 @@ public class ClientRepository implements Repository<Client>, AutoCloseable {
                 .withDurableWrites(true);
         SimpleStatement statement = createKeyspace.build();
         session.execute(statement);
-        session.execute(SchemaBuilder.dropTable(CqlIdentifier.fromCql("bank_accounts"), CqlIdentifier.fromCql("clients")).ifExists().build());
+//        session.execute(SchemaBuilder.dropTable(CqlIdentifier.fromCql("bank_accounts"), CqlIdentifier.fromCql("clients")).ifExists().build());
         SimpleStatement createClients =
                 SchemaBuilder.createTable(CqlIdentifier.fromCql("bank_accounts"), CqlIdentifier.fromCql("clients"))
                         .ifNotExists()
@@ -96,6 +96,7 @@ public class ClientRepository implements Repository<Client>, AutoCloseable {
 
     @Override
     public void close() {
+        session.close();
     }
 
 }
