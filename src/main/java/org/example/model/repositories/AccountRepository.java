@@ -3,29 +3,29 @@ package org.example.model.repositories;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.CqlSession;
-import com.datastax.oss.driver.api.core.cql.ResultSet;
-import com.datastax.oss.driver.api.core.cql.Row;
-import com.datastax.oss.driver.api.core.cql.SimpleStatement;
+import com.datastax.oss.driver.api.core.cql.*;
 import com.datastax.oss.driver.api.core.type.DataTypes;
 import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
 import com.datastax.oss.driver.api.querybuilder.SchemaBuilder;
+import com.datastax.oss.driver.api.querybuilder.insert.Insert;
+import com.datastax.oss.driver.api.querybuilder.relation.Relation;
 import com.datastax.oss.driver.api.querybuilder.schema.CreateKeyspace;
 import com.datastax.oss.driver.api.querybuilder.select.Select;
+import com.datastax.oss.driver.api.querybuilder.update.Update;
+import org.example.model.BankAccountQueryProvider;
+import org.example.model.dao.BankAccountDao;
 import org.example.model.dao.JuniorAccountDao;
 import org.example.model.dao.SavingAccountDao;
 import org.example.model.dao.StandardAccountDao;
-import org.example.model.domain.accounts.BankAccount;
-import org.example.model.domain.accounts.JuniorAccount;
-import org.example.model.domain.accounts.SavingAccount;
-import org.example.model.domain.accounts.StandardAccount;
+import org.example.model.domain.accounts.*;
 import org.example.model.mappers.BankAccountMapper;
 import org.example.model.mappers.BankAccountMapperBuilder;
 
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.literal;
 import static com.datastax.oss.driver.api.querybuilder.SchemaBuilder.createKeyspace;
 
 
@@ -33,12 +33,10 @@ public class AccountRepository implements Repository<BankAccount> {
 
     private static CqlSession session;
     private static BankAccountMapper accountMapper;
-    private static JuniorAccountDao juniorAccountDao;
-    private static SavingAccountDao savingAccountDao;
-    private static StandardAccountDao standardAccountDao;
+    private static BankAccountDao bankAccountDao;
 
     public void initSession() {
-        session = CqlSession.builder()
+        session = CqlSession.builder().withKeyspace("bank_accounts")
                 .addContactPoint(new InetSocketAddress("cassandra1", 9042))
                 .addContactPoint(new InetSocketAddress("cassandra2", 9043))
                 .withLocalDatacenter("dc1")
@@ -51,174 +49,340 @@ public class AccountRepository implements Repository<BankAccount> {
         SimpleStatement statement = createKeyspace.build();
         session.execute(statement);
 
-        SimpleStatement createJuniorAccounts =
-                SchemaBuilder.createTable(CqlIdentifier.fromCql("bank_accounts"), CqlIdentifier.fromCql("junior_accounts"))
+        SimpleStatement createBankAccounts =
+                SchemaBuilder.createTable(BankAccountIds.BANK_ACCOUNTS_KEYSPACE, BankAccountIds.BANK_ACCOUNT_TABLE)
                         .ifNotExists()
-                        .withPartitionKey(CqlIdentifier.fromCql("account_id"), DataTypes.UUID)
-                        .withColumn(CqlIdentifier.fromCql("balance"), DataTypes.DECIMAL)
-                        .withColumn(CqlIdentifier.fromCql("client_id"), DataTypes.UUID)
-                        .withColumn(CqlIdentifier.fromCql("is_active"), DataTypes.BOOLEAN)
-                        .withColumn(CqlIdentifier.fromCql("creation_date"), DataTypes.DATE)
-                        .withColumn(CqlIdentifier.fromCql("close_date"), DataTypes.DATE)
-                        .withColumn(CqlIdentifier.fromCql("parent_id"), DataTypes.UUID)
+                        .withPartitionKey(BankAccountIds.ACCOUNT_ID, DataTypes.UUID)
+                        .withColumn(BankAccountIds.BALANCE, DataTypes.DECIMAL)
+                        .withColumn(BankAccountIds.CLIENT_ID, DataTypes.UUID)
+                        .withColumn(BankAccountIds.IS_ACTIVE, DataTypes.BOOLEAN)
+                        .withColumn(BankAccountIds.CREATION_DATE, DataTypes.DATE)
+                        .withColumn(BankAccountIds.CLOSE_DATE, DataTypes.DATE)
+                        .withColumn(BankAccountIds.DISCRIMINATOR, DataTypes.TEXT)
+                        .withColumn(BankAccountIds.DEBIT_LIMIT, DataTypes.DECIMAL)
+                        .withColumn(BankAccountIds.DEBIT, DataTypes.DECIMAL)
+                        .withColumn(BankAccountIds.INTEREST_RATE, DataTypes.DECIMAL)
+                        .withColumn(BankAccountIds.PARENT_ID, DataTypes.UUID)
                         .build();
-        session.execute(createJuniorAccounts);
+        session.execute(createBankAccounts);
 
-        SimpleStatement createSavingAccounts =
-                SchemaBuilder.createTable(CqlIdentifier.fromCql("bank_accounts"), CqlIdentifier.fromCql("saving_accounts"))
+        SimpleStatement createBankAccountsByClients =
+                SchemaBuilder.createTable(BankAccountIds.BANK_ACCOUNTS_KEYSPACE, BankAccountIds.BANK_ACCOUNTS_BY_CLIENTS)
                         .ifNotExists()
-                        .withPartitionKey(CqlIdentifier.fromCql("account_id"), DataTypes.UUID)
-                        .withColumn(CqlIdentifier.fromCql("balance"), DataTypes.DECIMAL)
-                        .withColumn(CqlIdentifier.fromCql("client_id"), DataTypes.UUID)
-                        .withColumn(CqlIdentifier.fromCql("is_active"), DataTypes.BOOLEAN)
-                        .withColumn(CqlIdentifier.fromCql("creation_date"), DataTypes.DATE)
-                        .withColumn(CqlIdentifier.fromCql("close_date"), DataTypes.DATE)
-                        .withColumn(CqlIdentifier.fromCql("interest_rate"), DataTypes.DECIMAL)
+                        .withPartitionKey(BankAccountIds.CLIENT_ID, DataTypes.UUID)
+                        .withClusteringColumn(BankAccountIds.ACCOUNT_ID, DataTypes.UUID)
+                        .withColumn(BankAccountIds.BALANCE, DataTypes.DECIMAL)
+                        .withColumn(BankAccountIds.IS_ACTIVE, DataTypes.BOOLEAN)
+                        .withColumn(BankAccountIds.CREATION_DATE, DataTypes.DATE)
+                        .withColumn(BankAccountIds.CLOSE_DATE, DataTypes.DATE)
+                        .withColumn(BankAccountIds.DISCRIMINATOR, DataTypes.TEXT)
+                        .withColumn(BankAccountIds.DEBIT_LIMIT, DataTypes.DECIMAL)
+                        .withColumn(BankAccountIds.DEBIT, DataTypes.DECIMAL)
+                        .withColumn(BankAccountIds.INTEREST_RATE, DataTypes.DECIMAL)
+                        .withColumn(BankAccountIds.PARENT_ID, DataTypes.UUID)
                         .build();
-        session.execute(createSavingAccounts);
-
-        SimpleStatement createStandardAccounts =
-                SchemaBuilder.createTable(CqlIdentifier.fromCql("bank_accounts"), CqlIdentifier.fromCql("standard_accounts"))
-                        .ifNotExists()
-                        .withPartitionKey(CqlIdentifier.fromCql("account_id"), DataTypes.UUID)
-                        .withColumn(CqlIdentifier.fromCql("balance"), DataTypes.DECIMAL)
-                        .withColumn(CqlIdentifier.fromCql("client_id"), DataTypes.UUID)
-                        .withColumn(CqlIdentifier.fromCql("is_active"), DataTypes.BOOLEAN)
-                        .withColumn(CqlIdentifier.fromCql("creation_date"), DataTypes.DATE)
-                        .withColumn(CqlIdentifier.fromCql("close_date"), DataTypes.DATE)
-                        .withColumn(CqlIdentifier.fromCql("debit_limit"), DataTypes.DECIMAL)
-                        .withColumn(CqlIdentifier.fromCql("debit"), DataTypes.DECIMAL)
-                        .build();
-        session.execute(createStandardAccounts);
-
-        SimpleStatement createStandardAccountsByClients =
-                SchemaBuilder.createTable(CqlIdentifier.fromCql("bank_accounts"), CqlIdentifier.fromCql("standard_accounts_by_clients"))
-                        .ifNotExists()
-                        .withPartitionKey(CqlIdentifier.fromCql("client_id"), DataTypes.UUID)
-                        .withClusteringColumn(CqlIdentifier.fromCql("account_id"), DataTypes.UUID)
-                        .withColumn(CqlIdentifier.fromCql("balance"), DataTypes.DECIMAL)
-                        .withColumn(CqlIdentifier.fromCql("is_active"), DataTypes.BOOLEAN)
-                        .withColumn(CqlIdentifier.fromCql("creation_date"), DataTypes.DATE)
-                        .withColumn(CqlIdentifier.fromCql("close_date"), DataTypes.DATE)
-                        .withColumn(CqlIdentifier.fromCql("debit_limit"), DataTypes.DECIMAL)
-                        .withColumn(CqlIdentifier.fromCql("debit"), DataTypes.DECIMAL)
-                        .build();
-        session.execute(createStandardAccountsByClients);
+        session.execute(createBankAccountsByClients);
     }
 
     public AccountRepository() {
         initSession();
         accountMapper = new BankAccountMapperBuilder(session).build();
-        juniorAccountDao = accountMapper.juniorAccountDao(CqlIdentifier.fromCql("bank_accounts"));
-        savingAccountDao = accountMapper.savingAccountDao(CqlIdentifier.fromCql("bank_accounts"));
-        standardAccountDao = accountMapper.standardAccountDao(CqlIdentifier.fromCql("bank_accounts"));
-
+        bankAccountDao = accountMapper.bankAccountDao(BankAccountIds.BANK_ACCOUNTS_KEYSPACE);
     }
 
     public void add(BankAccount account) {
         if (account == null) {
             return;
         }
-
-        switch (account.getClass().getSimpleName()) {
-            case "JuniorAccount" -> juniorAccountDao.create((JuniorAccount) account);
-            case "SavingAccount" -> savingAccountDao.create((SavingAccount) account);
-            case "StandardAccount" -> standardAccountDao.create((StandardAccount) account);
-            default ->
-                    throw new IllegalArgumentException("Unsupported BankAccount type: " + account.getClass().getName());
-        }
-        ;
+        bankAccountDao.create(account);
+        insertBankAccountByClient(account);
     }
 
     public List<BankAccount> findAll() {
-        List<BankAccount> accounts = new ArrayList<>();
-        accounts.addAll(juniorAccountDao.findAll().all());
-        accounts.addAll(savingAccountDao.findAll().all());
-        accounts.addAll(standardAccountDao.findAll().all());
-        return accounts;
+        return bankAccountDao.findAll();
     }
 
 
     public BankAccount findById(UUID id) {
-        BankAccount account;
-        account = juniorAccountDao.findById(id);
-        if (account != null) {
-            return account;
+        BankAccount account = bankAccountDao.findById(id);
+        if (account == null) {
+            return null;
         }
-        account = savingAccountDao.findById(id);
-        if (account != null) {
-            return account;
-        }
-        return standardAccountDao.findById(id);
+        return account;
     }
 
-    public void update(BankAccount account) {
-//        if (account == null) {
-//            return null;
-//        }
-//        BankAccountDTO accountDTO = BankAccountDTOMapper.toDTO(account);
-//        Bson filter = Filters.eq("_id", account.getId());
-//        Bson setUpdate = null;
-//        if (accountDTO instanceof StandardAccountDTO) {
-//            setUpdate = Updates.combine(
-//                    Updates.set("balance", account.getBalance()),
-//                    Updates.set("active", account.getActive()),
-//                    Updates.set("closeDate", account.getCloseDate()),
-//                    Updates.set("debit", ((StandardAccount) account).getDebit()),
-//                    Updates.set("debitLimit", ((StandardAccount) account).getDebitLimit())
-//            );
-//        } else if (accountDTO instanceof SavingAccountDTO) {
-//            setUpdate = Updates.combine(
-//                    Updates.set("balance", account.getBalance()),
-//                    Updates.set("active", account.getActive()),
-//                    Updates.set("closeDate", account.getCloseDate()),
-//                    Updates.set("interestRate", ((SavingAccount) account).getInterestRate())
-//            );
-//        } else if (accountDTO instanceof JuniorAccountDTO) {
-//            setUpdate = Updates.combine(
-//                    Updates.set("balance", account.getBalance()),
-//                    Updates.set("active", account.getActive()),
-//                    Updates.set("closeDate", account.getCloseDate())
-//            );
-//        }
-//        if (setUpdate == null) {
-//            return null;
-//        }
-//        bankAccounts.updateOne(filter, setUpdate);
-//        return account;
-
-        return;
-    }
-
-    public List<BankAccount> getAccountsByClientId(UUID clientId) {
-        Select selectFromWhere = QueryBuilder.selectFrom("bank_accounts", "standard_accounts_by_clients")
+    public List<BankAccount> findByClientId(UUID clientId) {
+        Select selectBankAccount = QueryBuilder
+                .selectFrom(BankAccountIds.BANK_ACCOUNTS_BY_CLIENTS)
                 .all()
-                .whereColumn("client_id").isEqualTo(QueryBuilder.literal(clientId));
-        ResultSet resultSet = session.execute(selectFromWhere.build());
-        List<BankAccount> accounts = new ArrayList<>();
+                .where(Relation.column(BankAccountIds.CLIENT_ID).isEqualTo(literal(clientId)));
+        ResultSet resultSet = session.execute(selectBankAccount.build());
         List<Row> result = resultSet.all();
+        List<BankAccount> bankAccounts = result.stream().map(row -> {
+            String discriminator = row.getString(BankAccountIds.DISCRIMINATOR);
+            return switch (discriminator) {
+                case "JUNIOR" -> BankAccountQueryProvider.getJuniorAccount(row);
+                case "SAVING" -> BankAccountQueryProvider.getSavingAccount(row);
+                case "STANDARD" -> BankAccountQueryProvider.getStandardAccount(row);
+                default -> throw new IllegalStateException("Unexpected value: " + discriminator);
+            };
+        }).toList();
+        return bankAccounts;
     }
 
+    private void insertBankAccountByClient(BankAccount bankAccount) {
+        Insert insert = null;
+        switch (bankAccount.getDiscriminator()) {
+            case "JUNIOR" -> {
+                insert = QueryBuilder.insertInto(BankAccountIds.BANK_ACCOUNTS_BY_CLIENTS)
+                        .value(BankAccountIds.CLIENT_ID, literal(bankAccount.getClientId()))
+                        .value(BankAccountIds.ACCOUNT_ID, literal(bankAccount.getId()))
+                        .value(BankAccountIds.BALANCE, literal(bankAccount.getBalance()))
+                        .value(BankAccountIds.IS_ACTIVE, literal(bankAccount.getActive()))
+                        .value(BankAccountIds.CREATION_DATE, literal(bankAccount.getCreationDate()))
+                        .value(BankAccountIds.CLOSE_DATE, literal(bankAccount.getCloseDate()))
+                        .value(BankAccountIds.DISCRIMINATOR, literal(bankAccount.getDiscriminator()))
+                        // JUNIOR
+                        .value(BankAccountIds.PARENT_ID, literal(((JuniorAccount) bankAccount).getParentId()))
+                        .ifNotExists();
+            }
+            case "SAVING" -> {
+                insert = QueryBuilder.insertInto(BankAccountIds.BANK_ACCOUNTS_BY_CLIENTS)
+                        .value(BankAccountIds.CLIENT_ID, literal(bankAccount.getClientId()))
+                        .value(BankAccountIds.ACCOUNT_ID, literal(bankAccount.getId()))
+                        .value(BankAccountIds.BALANCE, literal(bankAccount.getBalance()))
+                        .value(BankAccountIds.IS_ACTIVE, literal(bankAccount.getActive()))
+                        .value(BankAccountIds.CREATION_DATE, literal(bankAccount.getCreationDate()))
+                        .value(BankAccountIds.CLOSE_DATE, literal(bankAccount.getCloseDate()))
+                        .value(BankAccountIds.DISCRIMINATOR, literal(bankAccount.getDiscriminator()))
+                        // SAVING
+                        .value(BankAccountIds.INTEREST_RATE, literal(((SavingAccount) bankAccount).getInterestRate()))
+                        .ifNotExists();
+            }
+            case "STANDARD" -> {
+                insert = QueryBuilder.insertInto(BankAccountIds.BANK_ACCOUNTS_BY_CLIENTS)
+                        .value(BankAccountIds.CLIENT_ID, literal(bankAccount.getClientId()))
+                        .value(BankAccountIds.ACCOUNT_ID, literal(bankAccount.getId()))
+                        .value(BankAccountIds.BALANCE, literal(bankAccount.getBalance()))
+                        .value(BankAccountIds.IS_ACTIVE, literal(bankAccount.getActive()))
+                        .value(BankAccountIds.CREATION_DATE, literal(bankAccount.getCreationDate()))
+                        .value(BankAccountIds.CLOSE_DATE, literal(bankAccount.getCloseDate()))
+                        .value(BankAccountIds.DISCRIMINATOR, literal(bankAccount.getDiscriminator()))
+                        // STANDARD
+                        .value(BankAccountIds.DEBIT, literal(((StandardAccount) bankAccount).getDebit()))
+                        .value(BankAccountIds.DEBIT_LIMIT, literal(((StandardAccount) bankAccount).getDebitLimit()))
+                        .ifNotExists();
+            }
+            default -> throw new IllegalStateException("Unexpected value: " + bankAccount.getDiscriminator());
+        }
+
+        session.execute(insert.build());
+    }
+
+    public void update(BankAccount bankAccount, BankAccount bankAccount2) {
+        if (bankAccount == null || bankAccount2 == null) {
+            return;
+        }
+
+        // Account 1
+        // General fields
+        Update updateBankAccount = QueryBuilder.update(BankAccountIds.BANK_ACCOUNT_TABLE)
+                .setColumn(BankAccountIds.BALANCE, literal(bankAccount.getBalance()))
+                .setColumn(BankAccountIds.IS_ACTIVE, literal(bankAccount.getActive()))
+                .setColumn(BankAccountIds.CLOSE_DATE, literal(bankAccount.getCloseDate()))
+                .whereColumn(BankAccountIds.ACCOUNT_ID).isEqualTo(literal(bankAccount.getId()));
+
+        Update updateBankAccountByClient = QueryBuilder.update(BankAccountIds.BANK_ACCOUNTS_BY_CLIENTS)
+                .setColumn(BankAccountIds.BALANCE, literal(bankAccount.getBalance()))
+                .setColumn(BankAccountIds.IS_ACTIVE, literal(bankAccount.getActive()))
+                .setColumn(BankAccountIds.CLOSE_DATE, literal(bankAccount.getCloseDate()))
+                .whereColumn(BankAccountIds.CLIENT_ID).isEqualTo(literal(bankAccount.getClientId()))
+                .whereColumn(BankAccountIds.ACCOUNT_ID).isEqualTo(literal(bankAccount.getId()));
+
+        // Account 2
+        // General fields
+        Update updateBankAccount2 = QueryBuilder.update(BankAccountIds.BANK_ACCOUNT_TABLE)
+                .setColumn(BankAccountIds.BALANCE, literal(bankAccount2.getBalance()))
+                .setColumn(BankAccountIds.IS_ACTIVE, literal(bankAccount2.getActive()))
+                .setColumn(BankAccountIds.CLOSE_DATE, literal(bankAccount2.getCloseDate()))
+                .whereColumn(BankAccountIds.ACCOUNT_ID).isEqualTo(literal(bankAccount2.getId()));
+
+        Update updateBankAccountByClient2 = QueryBuilder.update(BankAccountIds.BANK_ACCOUNTS_BY_CLIENTS)
+                .setColumn(BankAccountIds.BALANCE, literal(bankAccount2.getBalance()))
+                .setColumn(BankAccountIds.IS_ACTIVE, literal(bankAccount2.getActive()))
+                .setColumn(BankAccountIds.CLOSE_DATE, literal(bankAccount2.getCloseDate()))
+                .whereColumn(BankAccountIds.CLIENT_ID).isEqualTo(literal(bankAccount2.getClientId()))
+                .whereColumn(BankAccountIds.ACCOUNT_ID).isEqualTo(literal(bankAccount2.getId()));
+
+        // Account 1
+        // Specific fields
+        Update updateBankAccountSpecific;
+        Update updateBankAccountByClientSpecific;
+        switch (bankAccount.getDiscriminator()) {
+            case "JUNIOR" -> {
+                updateBankAccountSpecific = QueryBuilder.update(BankAccountIds.BANK_ACCOUNT_TABLE)
+                        .setColumn(BankAccountIds.PARENT_ID, literal(((JuniorAccount) bankAccount).getParentId()))
+                        .whereColumn(BankAccountIds.ACCOUNT_ID).isEqualTo(literal(bankAccount.getId()));
+                updateBankAccountByClientSpecific = QueryBuilder.update(BankAccountIds.BANK_ACCOUNTS_BY_CLIENTS)
+                        .setColumn(BankAccountIds.PARENT_ID, literal(((JuniorAccount) bankAccount).getParentId()))
+                        .whereColumn(BankAccountIds.CLIENT_ID).isEqualTo(literal(bankAccount.getClientId()))
+                        .whereColumn(BankAccountIds.ACCOUNT_ID).isEqualTo(literal(bankAccount.getId()));
+            }
+            case "SAVING" -> {
+                updateBankAccountSpecific = QueryBuilder.update(BankAccountIds.BANK_ACCOUNT_TABLE)
+                        .setColumn(BankAccountIds.INTEREST_RATE, literal(((SavingAccount) bankAccount).getInterestRate()))
+                        .whereColumn(BankAccountIds.ACCOUNT_ID).isEqualTo(literal(bankAccount.getId()));
+                updateBankAccountByClientSpecific = QueryBuilder.update(BankAccountIds.BANK_ACCOUNTS_BY_CLIENTS)
+                        .setColumn(BankAccountIds.INTEREST_RATE, literal(((SavingAccount) bankAccount).getInterestRate()))
+                        .whereColumn(BankAccountIds.CLIENT_ID).isEqualTo(literal(bankAccount.getClientId()))
+                        .whereColumn(BankAccountIds.ACCOUNT_ID).isEqualTo(literal(bankAccount.getId()));
+            }
+            case "STANDARD" -> {
+                updateBankAccountSpecific = QueryBuilder.update(BankAccountIds.BANK_ACCOUNT_TABLE)
+                        .setColumn(BankAccountIds.DEBIT, literal(((StandardAccount) bankAccount).getDebit())
+                        )
+                        .setColumn(BankAccountIds.DEBIT_LIMIT, literal(((StandardAccount) bankAccount).getDebitLimit()))
+                        .whereColumn(BankAccountIds.ACCOUNT_ID).isEqualTo(literal(bankAccount.getId()));
+                updateBankAccountByClientSpecific = QueryBuilder.update(BankAccountIds.BANK_ACCOUNTS_BY_CLIENTS)
+                        .setColumn(BankAccountIds.DEBIT, literal(((StandardAccount) bankAccount).getDebit())
+                        )
+                        .setColumn(BankAccountIds.DEBIT_LIMIT, literal(((StandardAccount) bankAccount).getDebitLimit())
+                        )
+                        .whereColumn(BankAccountIds.CLIENT_ID).isEqualTo(literal(bankAccount.getClientId()))
+                        .whereColumn(BankAccountIds.ACCOUNT_ID).isEqualTo(literal(bankAccount.getId()));
+            }
+            default -> throw new IllegalStateException("Unexpected value: " + bankAccount.getDiscriminator());
+        }
+
+        // Account 2
+        // Specific fields
+        Update updateBankAccountSpecific2;
+        Update updateBankAccountByClientSpecific2;
+        switch (bankAccount2.getDiscriminator()) {
+            case "JUNIOR" -> {
+                updateBankAccountSpecific2 = QueryBuilder.update(BankAccountIds.BANK_ACCOUNT_TABLE)
+                        .setColumn(BankAccountIds.PARENT_ID, literal(((JuniorAccount) bankAccount2).getParentId()))
+                        .whereColumn(BankAccountIds.ACCOUNT_ID).isEqualTo(literal(bankAccount2.getId()));
+                updateBankAccountByClientSpecific2 = QueryBuilder.update(BankAccountIds.BANK_ACCOUNTS_BY_CLIENTS)
+                        .setColumn(BankAccountIds.PARENT_ID, literal(((JuniorAccount) bankAccount2).getParentId()))
+                        .whereColumn(BankAccountIds.CLIENT_ID).isEqualTo(literal(bankAccount2.getClientId()))
+                        .whereColumn(BankAccountIds.ACCOUNT_ID).isEqualTo(literal(bankAccount2.getId()));
+            }
+            case "SAVING" -> {
+                updateBankAccountSpecific2 = QueryBuilder.update(BankAccountIds.BANK_ACCOUNT_TABLE)
+                        .setColumn(BankAccountIds.INTEREST_RATE, literal(((SavingAccount) bankAccount2).getInterestRate()))
+                        .whereColumn(BankAccountIds.ACCOUNT_ID).isEqualTo(literal(bankAccount2.getId()));
+                updateBankAccountByClientSpecific2 = QueryBuilder.update(BankAccountIds.BANK_ACCOUNTS_BY_CLIENTS)
+                        .setColumn(BankAccountIds.INTEREST_RATE, literal(((SavingAccount) bankAccount2).getInterestRate()))
+                        .whereColumn(BankAccountIds.CLIENT_ID).isEqualTo(literal(bankAccount2.getClientId()))
+                        .whereColumn(BankAccountIds.ACCOUNT_ID).isEqualTo(literal(bankAccount2.getId()));
+            }
+            case "STANDARD" -> {
+                updateBankAccountSpecific2 = QueryBuilder.update(BankAccountIds.BANK_ACCOUNT_TABLE)
+                        .setColumn(BankAccountIds.DEBIT, literal(((StandardAccount) bankAccount2).getDebit())
+                        )
+                        .setColumn(BankAccountIds.DEBIT_LIMIT, literal(((StandardAccount) bankAccount2).getDebitLimit()))
+                        .whereColumn(BankAccountIds.ACCOUNT_ID).isEqualTo(literal(bankAccount2.getId()));
+                updateBankAccountByClientSpecific2 = QueryBuilder.update(BankAccountIds.BANK_ACCOUNTS_BY_CLIENTS)
+                        .setColumn(BankAccountIds.DEBIT, literal(((StandardAccount) bankAccount2).getDebit())
+                        )
+                        .setColumn(BankAccountIds.DEBIT_LIMIT, literal(((StandardAccount) bankAccount2).getDebitLimit())
+                        )
+                        .whereColumn(BankAccountIds.CLIENT_ID).isEqualTo(literal(bankAccount2.getClientId()))
+                        .whereColumn(BankAccountIds.ACCOUNT_ID).isEqualTo(literal(bankAccount2.getId()));
+            }
+            default -> throw new IllegalStateException("Unexpected value: " + bankAccount2.getDiscriminator());
+        }
+
+        BatchStatement batchStatement = BatchStatement.builder(BatchType.LOGGED)
+                .addStatement(updateBankAccount.build())
+                .addStatement(updateBankAccountByClient.build())
+                .addStatement(updateBankAccountSpecific.build())
+                .addStatement(updateBankAccountByClientSpecific.build())
+                .addStatement(updateBankAccount2.build())
+                .addStatement(updateBankAccountByClient2.build())
+                .addStatement(updateBankAccountSpecific2.build())
+                .addStatement(updateBankAccountByClientSpecific2.build())
+                .build();
+        session.execute(batchStatement);
+    }
+
+    public void update(BankAccount bankAccount) {
+        if (bankAccount == null) {
+            return;
+        }
+
+        // General fields
+        Update updateBankAccount = QueryBuilder.update(BankAccountIds.BANK_ACCOUNT_TABLE)
+                .setColumn(BankAccountIds.BALANCE, literal(bankAccount.getBalance()))
+                .setColumn(BankAccountIds.IS_ACTIVE, literal(bankAccount.getActive()))
+                .setColumn(BankAccountIds.CLOSE_DATE, literal(bankAccount.getCloseDate()))
+                .whereColumn(BankAccountIds.ACCOUNT_ID).isEqualTo(literal(bankAccount.getId()));
+
+        Update updateBankAccountByClient = QueryBuilder.update(BankAccountIds.BANK_ACCOUNTS_BY_CLIENTS)
+                .setColumn(BankAccountIds.BALANCE, literal(bankAccount.getBalance()))
+                .setColumn(BankAccountIds.IS_ACTIVE, literal(bankAccount.getActive()))
+                .setColumn(BankAccountIds.CLOSE_DATE, literal(bankAccount.getCloseDate()))
+                .whereColumn(BankAccountIds.CLIENT_ID).isEqualTo(literal(bankAccount.getClientId()))
+                .whereColumn(BankAccountIds.ACCOUNT_ID).isEqualTo(literal(bankAccount.getId()));
+
+        // Specific fields
+        Update updateBankAccountSpecific;
+        Update updateBankAccountByClientSpecific;
+        switch (bankAccount.getDiscriminator()) {
+            case "JUNIOR" -> {
+                updateBankAccountSpecific = QueryBuilder.update(BankAccountIds.BANK_ACCOUNT_TABLE)
+                        .setColumn(BankAccountIds.PARENT_ID, literal(((JuniorAccount) bankAccount).getParentId()))
+                        .whereColumn(BankAccountIds.ACCOUNT_ID).isEqualTo(literal(bankAccount.getId()));
+                updateBankAccountByClientSpecific = QueryBuilder.update(BankAccountIds.BANK_ACCOUNTS_BY_CLIENTS)
+                        .setColumn(BankAccountIds.PARENT_ID, literal(((JuniorAccount) bankAccount).getParentId()))
+                        .whereColumn(BankAccountIds.CLIENT_ID).isEqualTo(literal(bankAccount.getClientId()))
+                        .whereColumn(BankAccountIds.ACCOUNT_ID).isEqualTo(literal(bankAccount.getId()));
+            }
+            case "SAVING" -> {
+                updateBankAccountSpecific = QueryBuilder.update(BankAccountIds.BANK_ACCOUNT_TABLE)
+                        .setColumn(BankAccountIds.INTEREST_RATE, literal(((SavingAccount) bankAccount).getInterestRate()))
+                        .whereColumn(BankAccountIds.ACCOUNT_ID).isEqualTo(literal(bankAccount.getId()));
+                updateBankAccountByClientSpecific = QueryBuilder.update(BankAccountIds.BANK_ACCOUNTS_BY_CLIENTS)
+                        .setColumn(BankAccountIds.INTEREST_RATE, literal(((SavingAccount) bankAccount).getInterestRate()))
+                        .whereColumn(BankAccountIds.CLIENT_ID).isEqualTo(literal(bankAccount.getClientId()))
+                        .whereColumn(BankAccountIds.ACCOUNT_ID).isEqualTo(literal(bankAccount.getId()));
+            }
+            case "STANDARD" -> {
+                updateBankAccountSpecific = QueryBuilder.update(BankAccountIds.BANK_ACCOUNT_TABLE)
+                        .setColumn(BankAccountIds.DEBIT, literal(((StandardAccount) bankAccount).getDebit())
+                        )
+                        .setColumn(BankAccountIds.DEBIT_LIMIT, literal(((StandardAccount) bankAccount).getDebitLimit()))
+                        .whereColumn(BankAccountIds.ACCOUNT_ID).isEqualTo(literal(bankAccount.getId()));
+                updateBankAccountByClientSpecific = QueryBuilder.update(BankAccountIds.BANK_ACCOUNTS_BY_CLIENTS)
+                        .setColumn(BankAccountIds.DEBIT, literal(((StandardAccount) bankAccount).getDebit())
+                        )
+                        .setColumn(BankAccountIds.DEBIT_LIMIT, literal(((StandardAccount) bankAccount).getDebitLimit())
+                        )
+                        .whereColumn(BankAccountIds.CLIENT_ID).isEqualTo(literal(bankAccount.getClientId()))
+                        .whereColumn(BankAccountIds.ACCOUNT_ID).isEqualTo(literal(bankAccount.getId()));
+            }
+            default -> throw new IllegalStateException("Unexpected value: " + bankAccount.getDiscriminator());
+        }
+        BatchStatement batchStatement = BatchStatement.builder(BatchType.LOGGED)
+                .addStatement(updateBankAccount.build())
+                .addStatement(updateBankAccountByClient.build())
+                .addStatement(updateBankAccountSpecific.build())
+                .addStatement(updateBankAccountByClientSpecific.build())
+                .build();
+        session.execute(batchStatement);
+    }
 
     public long countActiveByClientId(UUID clientId) {
-//        Bson filter = Filters.and(
-//                Filters.eq("client._id", clientId),
-//                Filters.eq("active", true)
-//        );
-//        return bankAccounts.countDocuments(filter);
-
-        return 1l;
+        Select selectBankAccount = QueryBuilder
+                .selectFrom(BankAccountIds.BANK_ACCOUNTS_BY_CLIENTS)
+                .all()
+                .where(Relation.column(BankAccountIds.CLIENT_ID).isEqualTo(literal(clientId)))
+                .countAll();
+        ResultSet resultSet = session.execute(selectBankAccount.build());
+        return resultSet.one().getLong(0);
     }
 
-//    public boolean updateClient(Client client) {
-
-    /// /        Bson filter = Filters.eq("client._id", client.getId());
-    /// /        Bson setUpdate = Updates.set("client", client);
-    /// /        UpdateResult updateResult = bankAccounts.updateMany(filter, setUpdate);
-    /// /        return updateResult.getModifiedCount() != 0;
-//
-//        return false;
-//    }
     public void close() {
         session.close();
     }

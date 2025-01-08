@@ -3,6 +3,7 @@ package org.example.model.domain;
 
 import com.datastax.oss.driver.api.mapper.annotations.CqlName;
 import com.datastax.oss.driver.api.mapper.annotations.Entity;
+import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
 import com.datastax.oss.driver.api.mapper.annotations.PropertyStrategy;
 import com.datastax.oss.driver.api.mapper.entity.naming.GetterStyle;
 
@@ -15,16 +16,17 @@ import java.util.UUID;
 @PropertyStrategy(mutable = false, getterStyle = GetterStyle.JAVABEANS)
 public class Transaction {
 
-    @CqlName("transaction_id")
-    UUID transactionId;
+//    @PartitionKey
+//    @CqlName("transaction_id")
+    private UUID transactionId;
 
     @CqlName("source_account")
-    UUID sourceAccount;
+    private UUID sourceAccount;
 
     @CqlName("destination_account")
-    UUID destinationAccount;
+    private UUID destinationAccount;
 
-    BigDecimal amount;
+    private BigDecimal amount;
 
 
     public Transaction(UUID sourceAccount,
@@ -36,20 +38,22 @@ public class Transaction {
         this.amount = amount;
     }
 
-    public Transaction(UUID sourceAccount,
+    public Transaction(UUID transactionId,
+                       UUID sourceAccount,
                        UUID destinationAccount,
-                       BigDecimal amount,
-                       UUID transactionId) {
+                       BigDecimal amount) {
         this.transactionId = transactionId;
         this.sourceAccount = sourceAccount;
         this.destinationAccount = destinationAccount;
         this.amount = amount;
     }
 
+//    @CqlName("source_account")
     public UUID getSourceAccount() {
         return sourceAccount;
     }
 
+//    @CqlName("destination_account")
     public UUID getDestinationAccount() {
         return destinationAccount;
     }
@@ -58,6 +62,8 @@ public class Transaction {
         return amount;
     }
 
+    @PartitionKey
+    @CqlName("transaction_id")
     public UUID getId() {
         return this.transactionId;
     }

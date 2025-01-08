@@ -8,6 +8,7 @@ import com.datastax.oss.driver.api.querybuilder.SchemaBuilder;
 import com.datastax.oss.driver.api.querybuilder.schema.CreateKeyspace;
 import org.example.model.dao.TransactionDao;
 import org.example.model.domain.Transaction;
+import org.example.model.domain.accounts.BankAccountIds;
 import org.example.model.mappers.TransactionMapper;
 import org.example.model.mappers.TransactionMapperBuilder;
 
@@ -27,7 +28,7 @@ public class TransactionRepository implements Repository<Transaction>, AutoClose
     private static TransactionDao transactionDao;
 
     public void initSession() {
-        session = CqlSession.builder()
+        session = CqlSession.builder().withKeyspace(BankAccountIds.BANK_ACCOUNTS_KEYSPACE)
                 .addContactPoint(new InetSocketAddress("cassandra1", 9042))
                 .addContactPoint(new InetSocketAddress("cassandra2", 9043))
                 .withLocalDatacenter("dc1")
@@ -39,7 +40,7 @@ public class TransactionRepository implements Repository<Transaction>, AutoClose
                 .withDurableWrites(true);
         SimpleStatement statement = createKeyspace.build();
         session.execute(statement);
-        session.execute(SchemaBuilder.dropTable(CqlIdentifier.fromCql("bank_accounts"), CqlIdentifier.fromCql("transactions")).ifExists().build());
+        session.execute(SchemaBuilder.dropTable(BankAccountIds.BANK_ACCOUNTS_KEYSPACE, CqlIdentifier.fromCql("transactions")).ifExists().build());
         SimpleStatement createTransactions =
                 SchemaBuilder.createTable(CqlIdentifier.fromCql("bank_accounts"), CqlIdentifier.fromCql("transactions"))
                         .ifNotExists()

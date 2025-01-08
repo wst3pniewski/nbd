@@ -3,17 +3,14 @@ package org.example.model.domain.accounts;
 import com.datastax.oss.driver.api.mapper.annotations.CqlName;
 import com.datastax.oss.driver.api.mapper.annotations.Entity;
 import com.datastax.oss.driver.api.mapper.annotations.PropertyStrategy;
-import com.datastax.oss.driver.api.mapper.entity.naming.GetterStyle;
-import org.example.model.domain.clients.Client;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
-@CqlName("standard_accounts")
-@Entity
-@PropertyStrategy(mutable = false, getterStyle = GetterStyle.JAVABEANS)
+@Entity(defaultKeyspace = "bank_accounts")
+@PropertyStrategy(mutable = false)
+@CqlName("bank_account")
 public class StandardAccount extends BankAccount {
 
     @CqlName("debit_limit")
@@ -22,14 +19,15 @@ public class StandardAccount extends BankAccount {
     BigDecimal debit;
 
     public StandardAccount(UUID id,
-                           UUID clientId,
                            BigDecimal debitLimit,
                            BigDecimal debit,
+                           UUID clientId,
                            LocalDate creationDate,
                            BigDecimal balance,
+                           String discriminator,
                            Boolean isActive,
                            LocalDate closeDate) {
-        super(id, balance, clientId, isActive, creationDate, closeDate);
+        super(id, clientId, creationDate, balance, discriminator, isActive, closeDate);
         this.debitLimit = debitLimit;
         this.debit = debit;
     }
@@ -38,14 +36,7 @@ public class StandardAccount extends BankAccount {
         super(clientId);
         this.debitLimit = debitLimit;
         this.debit = new BigDecimal(0);
-//        LocalDate today = LocalDate.now();
-//        long age = ChronoUnit.YEARS.between(client.getDateOfBirth(), today);
-//        if (age >= 18) {
-//            this.debitLimit = debitLimit;
-//            this.debit = new BigDecimal(0);
-//        } else {
-//            throw new IllegalArgumentException("Client must be at least 18 years old to open a standard account");
-//        }
+        this.discriminator = "STANDARD";
     }
 
 

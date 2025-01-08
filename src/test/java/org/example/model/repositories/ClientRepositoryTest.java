@@ -27,10 +27,10 @@ class ClientRepositoryTest {
     void setUp() {
         LocalDate dateOfBirth = LocalDate.of(2000, 1, 1);
         client = new Client(UUID.randomUUID(),
-                "BUSSINESS",
                 dateOfBirth,
                 "John",
                 "Doe",
+                Client.BUSINESS,
                 "8th Avenue",
                 "NYC",
                 "1");
@@ -80,7 +80,7 @@ class ClientRepositoryTest {
 
     @Test
     void update() {
-        client.setClientType("STANDARD");
+        client.setClientType(Client.ADVANCED);
 
         clientRepository.update(client);
 

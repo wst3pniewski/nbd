@@ -36,10 +36,10 @@ class AccountRepositoryTest {
     void setUp() {
         LocalDate dateOfBirth = LocalDate.of(2000, 1, 1);
         client = new Client(UUID.randomUUID(),
-                "BUSSINESS",
                 dateOfBirth,
                 "John",
                 "Doe",
+                Client.BUSINESS,
                 "8th Avenue",
                 "NYC",
                 "1");
@@ -49,8 +49,7 @@ class AccountRepositoryTest {
 
     @Test
     void addAndFindById() {
-        BankAccount account = new StandardAccount(UUID.randomUUID(), client.getClientId(), BigDecimal.valueOf(0), BigDecimal.valueOf(0),
-                LocalDate.now(), BigDecimal.valueOf(1000), true, null);
+        BankAccount account = new StandardAccount(client.getClientId(), BigDecimal.valueOf(1000));
 
         accountRepository.add(account);
 
@@ -69,50 +68,46 @@ class AccountRepositoryTest {
         assert (!bankAccountList.isEmpty());
     }
 
-//    @Test
-//    void updateAccount() {
+    @Test
+    void findByClientId() {
+        BankAccount account1 = new StandardAccount(client.getClientId(), BigDecimal.valueOf(1000));
+        BankAccount account2 = new StandardAccount(client.getClientId(), BigDecimal.valueOf(0.1));
+        accountRepository.add(account1);
+        accountRepository.add(account2);
+        List<BankAccount> bankAccountList = accountRepository.findByClientId(client.getClientId());
+        assert (!bankAccountList.isEmpty());
+        assert (bankAccountList.size() == 2);
+    }
+
+    @Test
+    void updateAccount() {
 //        LocalDate dateOfBirth = LocalDate.of(2000, 1, 1);
 //        Client client = new Client("John", "Doe", dateOfBirth, Client.ClientTypes.BUSINESS, "Aleja", "Lodz", "1");
-//        BankAccount account = new StandardAccount(client, BigDecimal.valueOf(1000));
-//
-//        accountRepository.add(account);
-//
-//        account.setBalance(BigDecimal.valueOf(2000));
-//        account.setActive(false);
-//        accountRepository.update(account);
-//
-//        BankAccount foundAccount = accountRepository.findById(account.getId());
-//        assertEquals(BigDecimal.valueOf(2000), foundAccount.getBalance());
-//    }
-//
-//    @Test
-//    void countActiveByClientId() {
-//        LocalDate dateOfBirth = LocalDate.of(2000, 1, 1);
-//        Client client = new Client("John", "Doe", dateOfBirth, Client.ClientTypes.BUSINESS, "Aleja", "Lodz", "1");
-//        BankAccount account = new StandardAccount(client, BigDecimal.valueOf(1000));
-//
-//        accountRepository.add(account);
-//
-//        BankAccount account2 = new StandardAccount(client, BigDecimal.valueOf(1000));
-//        account2.setActive(false);
-//
-//        accountRepository.add(account2);
-//
-//        long count = accountRepository.countActiveByClientId(client.getId());
-//        assertEquals(1, count);
-//    }
-//
-//    @Test
-//    void getAccountsByClientId() {
-//        LocalDate dateOfBirth = LocalDate.of(2000, 1, 1);
-//        Client client = new Client("John", "Doe", dateOfBirth, Client.ClientTypes.BUSINESS, "Aleja", "Lodz", "1");
-//        BankAccount account = new StandardAccount(client, BigDecimal.valueOf(1000));
-//
-//        accountRepository.add(account);
-//
-//        List<BankAccount> accounts = accountRepository.getAccountsByClientId(client.getId());
-//        assertEquals(1, accounts.size());
-//        assertEquals(account.getId(), accounts.getFirst().getId());
-//    }
-//
+        BankAccount account = new StandardAccount(client.getClientId(), BigDecimal.valueOf(1000));
+
+        accountRepository.add(account);
+
+        account.setBalance(BigDecimal.valueOf(2000));
+        ((StandardAccount) account).setDebit(BigDecimal.valueOf(1000));
+        account.setActive(false);
+        accountRepository.update(account);
+
+        BankAccount foundAccount = accountRepository.findById(account.getId());
+        assertEquals(BigDecimal.valueOf(2000), foundAccount.getBalance());
+    }
+
+    @Test
+    void countActiveByClientId() {
+        BankAccount account = new StandardAccount(client.getClientId(), BigDecimal.valueOf(1000));
+
+        accountRepository.add(account);
+
+        BankAccount account2 = new StandardAccount(client.getClientId(), BigDecimal.valueOf(1000));
+        account2.setActive(false);
+
+        accountRepository.add(account2);
+
+        long count = accountRepository.countActiveByClientId(client.getClientId());
+        assertEquals(2, count);
+    }
 }

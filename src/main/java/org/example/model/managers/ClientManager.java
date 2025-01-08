@@ -25,7 +25,7 @@ public class ClientManager {
                                String firstName,
                                String lastName,
                                String street, String city, String zipCode) {
-        Client client = new Client(clientId, clientType, dateOfBirth, firstName, lastName, street, city, zipCode);
+        Client client = new Client(clientId, dateOfBirth, firstName, lastName, clientType, street, city, zipCode);
         clientRepository.add(client);
         return client;
     }
@@ -37,20 +37,17 @@ public class ClientManager {
         if (clientRepository.findById(client.getClientId()) == null) {
             throw new IllegalArgumentException("Client not found");
         }
-//        accountRepository.updateClient(client);
         clientRepository.update(client);
     }
 
-    public Client deleteClient(UUID id) {
-        Client client = clientRepository.findById(id);
+    public void deleteClient(UUID clientId) {
+        Client client = clientRepository.findById(clientId);
         if (client == null) {
             throw new IllegalArgumentException("Client not found");
         }
-        if (accountRepository.countActiveByClientId(id) == 0) {
-            clientRepository.delete(id);
-            return client;
+        if (accountRepository.countActiveByClientId(clientId) == 0) {
+            clientRepository.delete(clientId);
         }
-        return null;
     }
 
     public Client findById(UUID id) {

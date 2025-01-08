@@ -15,11 +15,13 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class ClientManagerTest {
     private static ClientManager clientManager;
-    private org.example.model.domain.clients.Client client;
+    private static AccountManager accountManager;
+    private Client client;
 
     @BeforeAll
     static void beforeAll() {
         clientManager = new ClientManager();
+        accountManager = new AccountManager();
     }
 
     @AfterAll
@@ -30,7 +32,7 @@ class ClientManagerTest {
     void setUp() {
         LocalDate dateOfBirth = LocalDate.of(2000, 1, 1);
         client = clientManager.createClient(UUID.randomUUID(),
-                "BUSSINESS",
+                Client.BUSINESS,
                 dateOfBirth,
                 "John",
                 "Doe",
@@ -41,8 +43,6 @@ class ClientManagerTest {
 
     @Test
     void createClient() {
-//        Client client = clientManager.createClient("John", "Doe", LocalDate.of(1990, 1, 1), Client.ClientTypes.STANDARD,
-//                "Street", "City", "12345");
         assertNotNull(client);
         Client foundClient = clientManager.findById(client.getClientId());
         assertEquals(client.getClientId(), foundClient.getClientId());
@@ -50,49 +50,36 @@ class ClientManagerTest {
 
     @Test
     void updateClient() {
-//        Client client = clientManager.createClient("John", "Doe", LocalDate.of(1990, 1, 1), Client.ClientTypes.STANDARD,
-//                "Street", "City", "12345");
         client.setClientType(Client.BUSINESS);
         clientManager.updateClient(client);
         Client foundClient = clientManager.findById(client.getClientId());
-
         assertEquals(client.getClientType(), foundClient.getClientType());
     }
 
     @Test
     void deleteClient() {
-//        Client client = clientManager.createClient("John", "Doe", LocalDate.of(1990, 1, 1), Client.ClientTypes.STANDARD,
-//                "Street", "City", "12345");
         clientManager.deleteClient(client.getClientId());
     }
 
-//    // TODO: BUSINESS LOGIC
-//    @Test
-//    void deleteClientWithAccountsNotPossible() {
-//        Client client = clientManager.createClient("John", "Doe", LocalDate.of(1990, 1, 1), Client.ClientTypes.STANDARD,
-//                "Street", "City", "12345");
-//        AccountManager accountManager = new AccountManager();
-//        accountManager.createStandardAccount(client.getId(), BigDecimal.valueOf(1000));
-//        clientManager.deleteClient(client.getId());
-//        Client foundClient = clientManager.findById(client.getId());
-//        assertNotNull(foundClient);
-//    }
+    // TODO: BUSINESS LOGIC
+    @Test
+    void deleteClientWithAccountsNotPossible() {
+        accountManager.createStandardAccount(client.getClientId(), BigDecimal.valueOf(1000));
+        clientManager.deleteClient(client.getClientId());
+        Client foundClient = clientManager.findById(client.getClientId());
+        assertNotNull(foundClient);
+    }
 
     @Test
     void findById() {
-//        Client client = clientManager.createClient("John", "Doe", LocalDate.of(1990, 1, 1), Client.ClientTypes.STANDARD,
-//                "Street", "City", "12345");
         Client foundClient = clientManager.findById(client.getClientId());
         assertEquals(client.getClientId(), foundClient.getClientId());
     }
 
     @Test
     void findAll() {
-//        Client client = clientManager.createClient("John", "Doe", LocalDate.of(1990, 1, 1), Client.ClientTypes.STANDARD,
-//                "Street", "City", "12345");
-
         List<Client> clients = clientManager.findAll();
-        assertTrue(clients.isEmpty() == false);
+        assertFalse(clients.isEmpty());
     }
 
 }

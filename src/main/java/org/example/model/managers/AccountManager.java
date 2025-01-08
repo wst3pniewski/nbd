@@ -1,7 +1,7 @@
 package org.example.model.managers;
 
 
-import org.example.model.domain.accounts.BankAccount;
+import org.example.model.domain.accounts.*;
 import org.example.model.domain.clients.Client;
 import org.example.model.repositories.AccountRepository;
 import org.example.model.repositories.ClientRepository;
@@ -22,20 +22,25 @@ public class AccountManager {
 
     }
 
-    // TODO: This doesn't seem to work with concurrency
     public BankAccount createStandardAccount(UUID clientId, BigDecimal debitLimit) {
-
         Client client = clientRepository.findById(clientId);
-
-        int activeAccounts = client.getActiveAccounts();
-        if (activeAccounts >= client.getClientType().getMaxActiveAccounts()) {
-            throw new IllegalArgumentException("Client exceeded the limit of accounts");
+        if (client == null) {
+            throw new IllegalArgumentException("Client not found");
         }
+        int clientAge = client.getDateOfBirth().until(LocalDate.now()).getYears();
 
-        client.setActiveAccounts((activeAccounts + 1));
-        clientRepository.update(client);
+        if (clientAge< 18) {
+            throw new IllegalArgumentException("Parent is not an adult");
+        }
+//        int activeAccounts = client.getActiveAccounts();
+//        if (activeAccounts >= client.getClientType().getMaxActiveAccounts()) {
+//            throw new IllegalArgumentException("Client exceeded the limit of accounts");
+//        }
+//
+//        client.setActiveAccounts((activeAccounts + 1));
+//        clientRepository.update(client);
 
-        BankAccount account = new StandardAccount(client, debitLimit);
+        BankAccount account = new StandardAccount(clientId, debitLimit);
         accountRepository.add(account);
 
         return account;
@@ -44,16 +49,24 @@ public class AccountManager {
     public BankAccount createSavingAccount(UUID clientId, BigDecimal interestRate) {
 
         Client client = clientRepository.findById(clientId);
-
-        int activeAccounts = client.getActiveAccounts();
-        if (activeAccounts >= client.getClientType().getMaxActiveAccounts()) {
-            throw new IllegalArgumentException("Client exceeded the limit of accounts");
+        if (client == null) {
+            throw new IllegalArgumentException("Client not found");
         }
 
-        client.setActiveAccounts((activeAccounts + 1));
-        clientRepository.update(client);
+        int clientAge = client.getDateOfBirth().until(LocalDate.now()).getYears();
 
-        BankAccount account = new SavingAccount(client, interestRate);
+        if (clientAge< 18) {
+            throw new IllegalArgumentException("Parent is not an adult");
+        }
+//        int activeAccounts = client.getActiveAccounts();
+//        if (activeAccounts >= client.getClientType().getMaxActiveAccounts()) {
+//            throw new IllegalArgumentException("Client exceeded the limit of accounts");
+//        }
+//
+//        client.setActiveAccounts((activeAccounts + 1));
+//        clientRepository.update(client);
+
+        BankAccount account = new SavingAccount(clientId, interestRate);
         accountRepository.add(account);
 
         return account;
@@ -62,53 +75,63 @@ public class AccountManager {
     public BankAccount createJuniorAccount(UUID clientId, UUID parentId) {
 
         Client client = clientRepository.findById(clientId);
+
+        if (client == null) {
+            throw new IllegalArgumentException("Client not found");
+        }
+
         int clientAge = client.getDateOfBirth().until(LocalDate.now()).getYears();
 
         if (clientAge >= 18) {
             throw new IllegalArgumentException("Client is not a child");
         }
+
         Client parent = clientRepository.findById(parentId);
+
         if (parent == null) {
             throw new IllegalArgumentException("Parent not found");
         }
 
-
-        int activeAccounts = client.getActiveAccounts();
-        if (activeAccounts >= client.getClientType().getMaxActiveAccounts()) {
-            throw new IllegalArgumentException("Parent exceeded the limit of accounts");
+        int parentAge = parent.getDateOfBirth().until(LocalDate.now()).getYears();
+        if (parentAge < 18) {
+            throw new IllegalArgumentException("Parent is not an adult");
         }
-        client.setActiveAccounts((activeAccounts + 1));
-        clientRepository.update(client);
-        BankAccount account = new JuniorAccount(client, parent);
 
+
+//        int activeAccounts = client.getActiveAccounts();
+//        if (activeAccounts >= client.getClientType().getMaxActiveAccounts()) {
+//            throw new IllegalArgumentException("Parent exceeded the limit of accounts");
+//        }
+//        client.setActiveAccounts((activeAccounts + 1));
+//        clientRepository.update(client);
+
+        BankAccount account = new JuniorAccount(clientId, parentId);
         accountRepository.add(account);
 
         return account;
-
-
     }
 
 
     public BankAccount closeAccount(UUID accountId) {
-
         BankAccount account = accountRepository.findById(accountId);
+        if (account == null) {
+            throw new IllegalArgumentException("Account not found");
+        }
 
-        Client client = clientRepository.findById(account.getClient().getId());
-        int activeAccounts = client.getActiveAccounts();
+//        Client client = clientRepository.findById(account.getClient().getId());
+//        int activeAccounts = client.getActiveAccounts();
 
         account.setActive(false);
-        account.setCloseDate(LocalDate.now());
+//        account.setCloseDate(LocalDate.now());
         accountRepository.update(account);
-
         return account;
-
-
     }
 
     public BankAccount depositMoney(UUID accountId, BigDecimal amount) {
-        BankAccount account = null;
-
-        account = accountRepository.findById(accountId);
+        BankAccount account = accountRepository.findById(accountId);
+        if (account == null) {
+            throw new IllegalArgumentException("Account not found");
+        }
         account.setBalance(amount);
         accountRepository.update(account);
 
@@ -116,9 +139,10 @@ public class AccountManager {
     }
 
     public BankAccount withdrawMoney(UUID accountId, BigDecimal amount) {
-        BankAccount account = null;
-
-        account = accountRepository.findById(accountId);
+        BankAccount account = accountRepository.findById(accountId);
+        if (account == null) {
+            throw new IllegalArgumentException("Account not found");
+        }
         BigDecimal balance = account.getBalance();
         if (balance.compareTo(amount) < 0) {
             throw new IllegalArgumentException("Insufficient balance");
@@ -130,9 +154,10 @@ public class AccountManager {
     }
 
     public BankAccount interestCalculation(UUID accountId) {
-        BankAccount account = null;
-
-        account = accountRepository.findById(accountId);
+        BankAccount account = accountRepository.findById(accountId);
+        if (account == null) {
+            throw new IllegalArgumentException("Account not found");
+        }
         if (account instanceof SavingAccount) {
             BigDecimal interestRate = ((SavingAccount) account).getInterestRate();
             BigDecimal balance = account.getBalance();
@@ -143,14 +168,14 @@ public class AccountManager {
             throw new IllegalArgumentException("Account is not a saving account");
         }
 
-
         return account;
     }
 
     public BankAccount payDebt(UUID accountId, BigDecimal amount) {
-        BankAccount account = null;
-
-        account = accountRepository.findById(accountId);
+        BankAccount account = accountRepository.findById(accountId);
+        if (account == null) {
+            throw new IllegalArgumentException("Account not found");
+        }
         if (account instanceof StandardAccount) {
             BigDecimal debit = ((StandardAccount) account).getDebit();
             BigDecimal amountDebitSubtract = amount.subtract(debit);
@@ -162,7 +187,6 @@ public class AccountManager {
             }
             accountRepository.update(account);
         } else {
-
             throw new IllegalArgumentException("Account is not a standard account");
         }
 
@@ -177,6 +201,13 @@ public class AccountManager {
         return accountRepository.findAll();
     }
 
+    public void update(BankAccount bankAccount, BankAccount bankAccount2) {
+        if (bankAccount == null || bankAccount2 == null) {
+            return;
+        }
+        accountRepository.update(bankAccount, bankAccount2);
+    }
+
     public void update(BankAccount account) {
         if (account == null) {
             return;
@@ -185,11 +216,10 @@ public class AccountManager {
     }
 
     public List<BankAccount> getAccountsByClientId(UUID clientId) {
-        return accountRepository.getAccountsByClientId(clientId);
+        return accountRepository.findByClientId(clientId);
     }
 
     public long countActiveByClientId(UUID clientId) {
         return accountRepository.countActiveByClientId(clientId);
     }
-
 }

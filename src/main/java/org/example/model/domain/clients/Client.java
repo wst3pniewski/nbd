@@ -13,25 +13,11 @@ public class Client {
     public static final String STANDARD = "STANDARD";
     public static final String ADVANCED = "ADVANCED";
     public static final String BUSINESS = "BUSINESS";
-    public enum ClientTypes {
-        STANDARD(2), ADVANCED(5), BUSINESS(7);
-
-        final int maxActiveAccounts;
-
-        ClientTypes(int maxActiveAccounts) {
-            this.maxActiveAccounts = maxActiveAccounts;
-        }
-
-        public int getMaxActiveAccounts() {
-            return maxActiveAccounts;
-        }
-    }
 
     @PartitionKey
     @CqlName("client_id")
     private final UUID clientId;
 
-    @ClusteringColumn
     @CqlName("client_type")
     private String clientType;
 
@@ -41,41 +27,20 @@ public class Client {
 
     private final LocalDate dateOfBirth;
 
-
     private String street;
 
     private String city;
 
     private String streetNumber;
 
-//    private int activeAccounts;
-
-//    public Client(String firstName,
-//                  String lastName,
-//                  LocalDate dateOfBirth,
-//                  String clientType,
-//                  String street,
-//                  String city,
-//                  String number) {
-//        this.clientId = UUID.randomUUID();
-//        this.firstName = firstName;
-//        this.lastName = lastName;
-//        this.dateOfBirth = dateOfBirth;
-//        this.clientType = clientType;
-//        this.street = street;
-//        this.city = city;
-//        this.streetNumber = number;
-//        this.activeAccounts = 0;
-//    }
-
     public Client(UUID clientId,
-                  String clientType,
                   LocalDate dateOfBirth,
                   String firstName,
                   String lastName,
+                  String clientType,
                   String street,
                   String city,
-                  String number/*int activeAccounts*/) {
+                  String streetNumber) {
         this.clientId = clientId;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -83,8 +48,7 @@ public class Client {
         this.clientType = clientType;
         this.street = street;
         this.city = city;
-        this.streetNumber = number;
-//        this.activeAccounts = activeAccounts;
+        this.streetNumber = streetNumber;
     }
 
     public UUID getClientId() {
@@ -111,10 +75,6 @@ public class Client {
         this.clientType = clientType;
     }
 
-//    public void setActiveAccounts(int activeAccounts) {
-//        this.activeAccounts = activeAccounts;
-//    }
-
     public void setAddress(String street, String city, String number) {
         this.street = street;
         this.city = city;
@@ -132,8 +92,4 @@ public class Client {
     public String getStreetNumber() {
         return streetNumber;
     }
-
-//    public int getActiveAccounts() {
-//        return activeAccounts;
-//    }
 }

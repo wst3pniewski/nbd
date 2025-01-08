@@ -10,13 +10,18 @@ import java.util.UUID;
 public interface ClientDao {
     @Insert
     void create(Client client);
+    @Update
+    void update(Client client);
+
+//    @Update(customWhereClause = "client_id = :id")
+//    void update(Client client, UUID id);
 
     @Select
     Client findById(UUID clientId);
 
-    @Query("SELECT * FROM bank_accounts.clients")
-    PagingIterable<Client> findAll();
-
     @Delete
     void delete(Client client);
+
+    @Query("SELECT * FROM bank_accounts.clients")
+    PagingIterable<Client> findAll();
 }

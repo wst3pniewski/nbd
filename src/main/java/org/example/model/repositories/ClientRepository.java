@@ -37,7 +37,7 @@ public class ClientRepository implements Repository<Client>, AutoCloseable {
                 .withDurableWrites(true);
         SimpleStatement statement = createKeyspace.build();
         session.execute(statement);
-//        session.execute(SchemaBuilder.dropTable(CqlIdentifier.fromCql("bank_accounts"), CqlIdentifier.fromCql("clients")).ifExists().build());
+        session.execute(SchemaBuilder.dropTable(CqlIdentifier.fromCql("bank_accounts"), CqlIdentifier.fromCql("clients")).ifExists().build());
         SimpleStatement createClients =
                 SchemaBuilder.createTable(CqlIdentifier.fromCql("bank_accounts"), CqlIdentifier.fromCql("clients"))
                         .ifNotExists()
@@ -45,11 +45,10 @@ public class ClientRepository implements Repository<Client>, AutoCloseable {
                         .withColumn(CqlIdentifier.fromCql("first_name"), DataTypes.TEXT)
                         .withColumn(CqlIdentifier.fromCql("last_name"), DataTypes.TEXT)
                         .withColumn(CqlIdentifier.fromCql("date_of_birth"), DataTypes.DATE)
-                        .withClusteringColumn(CqlIdentifier.fromCql("client_type"), DataTypes.TEXT)
+                        .withColumn(CqlIdentifier.fromCql("client_type"), DataTypes.TEXT)
                         .withColumn(CqlIdentifier.fromCql("street"), DataTypes.TEXT)
                         .withColumn(CqlIdentifier.fromCql("city"), DataTypes.TEXT)
                         .withColumn(CqlIdentifier.fromCql("street_number"), DataTypes.TEXT)
-//                        .withColumn("active_accounts", SchemaBuilder.cint())
                         .build();
         session.execute(createClients);
     }
@@ -80,9 +79,7 @@ public class ClientRepository implements Repository<Client>, AutoCloseable {
         if (client == null) {
             return;
         }
-        Client oldClient = clientDao.findById(client.getClientId());
-        clientDao.delete(oldClient);
-        clientDao.create(client);
+        clientDao.update(client);
     }
 
 

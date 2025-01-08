@@ -1,41 +1,51 @@
 package org.example.model.domain.accounts;
 
-import com.datastax.oss.driver.api.mapper.annotations.ClusteringColumn;
-import com.datastax.oss.driver.api.mapper.annotations.CqlName;
-import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
+import com.datastax.oss.driver.api.mapper.annotations.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
 
-public abstract class BankAccount {
+@Entity(defaultKeyspace = "bank_accounts")
+@PropertyStrategy(mutable = false)
+@CqlName("bank_account")
+public class BankAccount {
 
     @PartitionKey
     @CqlName("account_id")
-    UUID accountId;
+    protected UUID accountId;
 
-    BigDecimal balance;
+    protected BigDecimal balance;
 
-    @ClusteringColumn
+//    @ClusteringColumn
     @CqlName("client_id")
-    UUID clientId;
+    protected UUID clientId;
 
     @CqlName("is_active")
-    Boolean isActive;
+    protected Boolean isActive;
 
     @CqlName("creation_date")
-    LocalDate creationDate;
+    protected LocalDate creationDate;
 
     @CqlName("close_date")
-    LocalDate closeDate;
+    protected LocalDate closeDate;
 
-    public BankAccount(UUID accountId, BigDecimal balance, UUID clientId, Boolean isActive, LocalDate creationDate, LocalDate closeDate) {
+    protected String discriminator;
+
+    public BankAccount(UUID accountId,
+                       UUID clientId,
+                       LocalDate creationDate,
+                       BigDecimal balance,
+                       String discriminator,
+                       Boolean isActive,
+                       LocalDate closeDate) {
         this.accountId = accountId;
         this.balance = balance;
         this.clientId = clientId;
         this.isActive = isActive;
         this.creationDate = creationDate;
         this.closeDate = closeDate;
+        this.discriminator = discriminator;
     }
 
     public BankAccount(UUID clientId) {
@@ -45,6 +55,7 @@ public abstract class BankAccount {
         this.isActive = true;
         this.creationDate = LocalDate.now();
         this.closeDate = null;
+        this.discriminator = "BANKACCOUNT";
     }
 
     @PartitionKey
@@ -63,6 +74,10 @@ public abstract class BankAccount {
 
     public BigDecimal getBalance() {
         return balance;
+    }
+
+    public String getDiscriminator() {
+        return discriminator;
     }
 
     public void setBalance(BigDecimal balance) {
