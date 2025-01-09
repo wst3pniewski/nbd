@@ -17,7 +17,7 @@ public interface ClientDao {
     @Update
     void update(Client client);
 
-    @StatementAttributes(consistencyLevel = "ONE", pageSize = 100)
+    @StatementAttributes(consistencyLevel = "ONE")
     @Select
     Client findById(UUID clientId);
 

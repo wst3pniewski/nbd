@@ -12,7 +12,7 @@ import java.util.UUID;
 
 @Dao
 public interface BankAccountDao {
-    @StatementAttributes(consistencyLevel = "ONE", pageSize = 100)
+    @StatementAttributes(consistencyLevel = "QUORUM")
     @QueryProvider(providerClass = BankAccountQueryProvider.class,
             entityHelpers = {JuniorAccount.class, SavingAccount.class, StandardAccount.class})
     BankAccount findById(UUID accountId);
