@@ -7,7 +7,8 @@ import java.net.InetSocketAddress;
 
 public class NbdAddressTranslator implements AddressTranslator {
 
-    public NbdAddressTranslator(DriverContext dctx) {}
+    public NbdAddressTranslator(DriverContext dctx) {
+    }
 
     public InetSocketAddress translate(InetSocketAddress address) {
         String hostAddress = address.getAddress().getHostAddress();
@@ -20,5 +21,6 @@ public class NbdAddressTranslator implements AddressTranslator {
     }
 
     @Override
-    public void close() { }
+    public void close() {
+    }
 }

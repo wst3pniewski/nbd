@@ -63,7 +63,6 @@ class ClientManagerTest {
         clientManager.deleteClient(client.getClientId());
     }
 
-    // TODO: BUSINESS LOGIC
     @Test
     void deleteClientWithAccountsNotPossible() {
         accountManager.createStandardAccount(client.getClientId(), BigDecimal.valueOf(1000));

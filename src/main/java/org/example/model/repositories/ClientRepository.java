@@ -20,9 +20,9 @@ import static com.datastax.oss.driver.api.querybuilder.SchemaBuilder.createKeysp
 
 public class ClientRepository implements Repository<Client>, AutoCloseable {
 
-    private static CqlSession session;
-    private static ClientMapper clientMapper;
-    private static ClientDao clientDao;
+    private CqlSession session;
+    private final ClientMapper clientMapper;
+    private final ClientDao clientDao;
 
     public void initSession() {
         session = CqlSession.builder()
@@ -31,13 +31,15 @@ public class ClientRepository implements Repository<Client>, AutoCloseable {
                 .withLocalDatacenter("dc1")
                 .withAuthCredentials("cassandra", "cassandrapassword")
                 .build();
+        // KEYSPACE
         CreateKeyspace createKeyspace = createKeyspace(CqlIdentifier.fromCql("bank_accounts"))
                 .ifNotExists()
                 .withSimpleStrategy(2)
                 .withDurableWrites(true);
         SimpleStatement statement = createKeyspace.build();
         session.execute(statement);
-        session.execute(SchemaBuilder.dropTable(CqlIdentifier.fromCql("bank_accounts"), CqlIdentifier.fromCql("clients")).ifExists().build());
+//        session.execute(SchemaBuilder.dropTable(CqlIdentifier.fromCql("bank_accounts"), CqlIdentifier.fromCql("clients")).ifExists().build());
+        // CLIENTS
         SimpleStatement createClients =
                 SchemaBuilder.createTable(CqlIdentifier.fromCql("bank_accounts"), CqlIdentifier.fromCql("clients"))
                         .ifNotExists()

@@ -24,6 +24,7 @@ class TransactionRepositoryTest {
     private static Client client;
     private static BankAccount account1;
     private static BankAccount account2;
+
     @BeforeAll
     static void beforeAll() {
         transactionRepository = new TransactionRepository();
@@ -50,6 +51,7 @@ class TransactionRepositoryTest {
         account1 = accountManager.createStandardAccount(client.getClientId(), BigDecimal.valueOf(1000));
         account2 = accountManager.createStandardAccount(client.getClientId(), BigDecimal.valueOf(1000));
     }
+
     @Test
     void add() {
         accountManager.depositMoney(account1.getId(), BigDecimal.valueOf(100));
@@ -89,7 +91,31 @@ class TransactionRepositoryTest {
     }
 
     @Test
-    void deletePositive(){
+    void findBySourceAccountId() {
+        account1 = accountManager.depositMoney(account1.getId(), BigDecimal.valueOf(100));
+
+        Transaction transaction = new Transaction(account1.getId(), account2.getId(), BigDecimal.valueOf(100));
+
+        transactionRepository.add(transaction);
+
+        List<Transaction> transactions = transactionRepository.findTransactionBySourceAccount(account1.getId());
+        assertFalse(transactions.isEmpty());
+    }
+
+    @Test
+    void findByDestinationAccountId() {
+        account1 = accountManager.depositMoney(account1.getId(), BigDecimal.valueOf(100));
+
+        Transaction transaction = new Transaction(account1.getId(), account2.getId(), BigDecimal.valueOf(100));
+
+        transactionRepository.add(transaction);
+
+        List<Transaction> transactions = transactionRepository.findTransactionByDestinationAccount(account2.getId());
+        assertFalse(transactions.isEmpty());
+    }
+
+    @Test
+    void deletePositive() {
         account1 = accountManager.depositMoney(account1.getId(), BigDecimal.valueOf(100));
 
         Transaction transaction = new Transaction(account1.getId(), account2.getId(), BigDecimal.valueOf(100));

@@ -45,17 +45,6 @@ class AccountManagerTest {
                 "1");
     }
 
-//    TODO: Do I need this business logic?
-//    @Test
-//    void maxAccountsExceeded() {
-//        accountManager.createStandardAccount(client.getClientId(), BigDecimal.valueOf(1000));
-//        accountManager.createStandardAccount(client.getClientId(), BigDecimal.valueOf(1000));
-//        long activeAccounts = accountManager.countActiveByClientId(client.getClientId());
-//
-//        assertThrows(IllegalArgumentException.class, () -> accountManager.createStandardAccount(client.getClientId(), BigDecimal.valueOf(1000)));
-//        assertEquals(2, activeAccounts);
-//    }
-
     @Test
     void createStandardAccount() {
         BankAccount bankAccount = accountManager.createStandardAccount(client.getClientId(), BigDecimal.valueOf(1000));

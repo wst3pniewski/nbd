@@ -1,6 +1,5 @@
 package org.example.model.managers;
 
-
 import org.example.model.domain.accounts.*;
 import org.example.model.domain.clients.Client;
 import org.example.model.repositories.AccountRepository;
@@ -27,16 +26,9 @@ public class AccountManager {
         }
         int clientAge = client.getDateOfBirth().until(LocalDate.now()).getYears();
 
-        if (clientAge< 18) {
+        if (clientAge < 18) {
             throw new IllegalArgumentException("Parent is not an adult");
         }
-//        int activeAccounts = client.getActiveAccounts();
-//        if (activeAccounts >= client.getClientType().getMaxActiveAccounts()) {
-//            throw new IllegalArgumentException("Client exceeded the limit of accounts");
-//        }
-//
-//        client.setActiveAccounts((activeAccounts + 1));
-//        clientRepository.update(client);
 
         BankAccount account = new StandardAccount(clientId, debitLimit);
         accountRepository.add(account);
@@ -53,16 +45,9 @@ public class AccountManager {
 
         int clientAge = client.getDateOfBirth().until(LocalDate.now()).getYears();
 
-        if (clientAge< 18) {
+        if (clientAge < 18) {
             throw new IllegalArgumentException("Parent is not an adult");
         }
-//        int activeAccounts = client.getActiveAccounts();
-//        if (activeAccounts >= client.getClientType().getMaxActiveAccounts()) {
-//            throw new IllegalArgumentException("Client exceeded the limit of accounts");
-//        }
-//
-//        client.setActiveAccounts((activeAccounts + 1));
-//        clientRepository.update(client);
 
         BankAccount account = new SavingAccount(clientId, interestRate);
         accountRepository.add(account);
@@ -95,14 +80,6 @@ public class AccountManager {
             throw new IllegalArgumentException("Parent is not an adult");
         }
 
-
-//        int activeAccounts = client.getActiveAccounts();
-//        if (activeAccounts >= client.getClientType().getMaxActiveAccounts()) {
-//            throw new IllegalArgumentException("Parent exceeded the limit of accounts");
-//        }
-//        client.setActiveAccounts((activeAccounts + 1));
-//        clientRepository.update(client);
-
         BankAccount account = new JuniorAccount(clientId, parentId);
         accountRepository.add(account);
 
@@ -116,11 +93,7 @@ public class AccountManager {
             throw new IllegalArgumentException("Account not found");
         }
 
-//        Client client = clientRepository.findById(account.getClient().getId());
-//        int activeAccounts = client.getActiveAccounts();
-
         account.setActive(false);
-//        account.setCloseDate(LocalDate.now());
         accountRepository.update(account);
         return account;
     }
@@ -218,7 +191,7 @@ public class AccountManager {
     }
 
     public long countActiveByClientId(UUID clientId) {
-        return accountRepository.countActiveByClientId(clientId);
+        return accountRepository.countAccountsByClientId(clientId);
     }
 
     public void close() {

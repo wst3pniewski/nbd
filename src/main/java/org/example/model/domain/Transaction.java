@@ -16,8 +16,6 @@ import java.util.UUID;
 @PropertyStrategy(mutable = false, getterStyle = GetterStyle.JAVABEANS)
 public class Transaction {
 
-//    @PartitionKey
-//    @CqlName("transaction_id")
     private UUID transactionId;
 
     @CqlName("source_account")
@@ -48,12 +46,10 @@ public class Transaction {
         this.amount = amount;
     }
 
-//    @CqlName("source_account")
     public UUID getSourceAccount() {
         return sourceAccount;
     }
 
-//    @CqlName("destination_account")
     public UUID getDestinationAccount() {
         return destinationAccount;
     }

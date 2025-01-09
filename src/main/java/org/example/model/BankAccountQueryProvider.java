@@ -1,6 +1,5 @@
 package org.example.model;
 
-import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
 import com.datastax.oss.driver.api.core.cql.Row;
@@ -18,9 +17,9 @@ import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.literal;
 
 public class BankAccountQueryProvider {
     private final CqlSession session;
-    private EntityHelper<JuniorAccount> juniorAccountEntityHelper;
-    private EntityHelper<SavingAccount> savingAccountEntityHelper;
-    private EntityHelper<StandardAccount> standardAccountEntityHelper;
+    private final EntityHelper<JuniorAccount> juniorAccountEntityHelper;
+    private final EntityHelper<SavingAccount> savingAccountEntityHelper;
+    private final EntityHelper<StandardAccount> standardAccountEntityHelper;
 
     public BankAccountQueryProvider(MapperContext ctx, EntityHelper<JuniorAccount> juniorAccountEntityHelper, EntityHelper<SavingAccount> savingAccountEntityHelper, EntityHelper<StandardAccount> standardAccountEntityHelper) {
         session = ctx.getSession();
@@ -79,7 +78,7 @@ public class BankAccountQueryProvider {
 
     public BankAccount findById(UUID bankAccountId) {
         Select selectBankAccount = QueryBuilder
-                .selectFrom(CqlIdentifier.fromCql("bank_account"))
+                .selectFrom(BankAccountIds.BANK_ACCOUNT_TABLE)
                 .all()
                 .where(Relation.column(BankAccountIds.ACCOUNT_ID).isEqualTo(literal(bankAccountId)));
         Row row = session.execute(selectBankAccount.build()).one();
@@ -95,13 +94,13 @@ public class BankAccountQueryProvider {
         };
     }
 
-    public List<BankAccount> findAll(){
+    public List<BankAccount> findAll() {
         Select selectBankAccount = QueryBuilder
-                .selectFrom(CqlIdentifier.fromCql("bank_account"))
+                .selectFrom(BankAccountIds.BANK_ACCOUNT_TABLE)
                 .all();
         ResultSet resultSet = session.execute(selectBankAccount.build());
         List<Row> result = resultSet.all();
-        List<BankAccount> bankAccounts = result.stream().map(row -> {
+        return result.stream().map(row -> {
             String discriminator = row.getString(BankAccountIds.DISCRIMINATOR);
             return switch (discriminator) {
                 case "JUNIOR" -> getJuniorAccount(row);
@@ -110,7 +109,6 @@ public class BankAccountQueryProvider {
                 default -> throw new IllegalStateException("Unexpected value: " + discriminator);
             };
         }).toList();
-        return bankAccounts;
     }
 
     public static JuniorAccount getJuniorAccount(Row juniorAccount) {

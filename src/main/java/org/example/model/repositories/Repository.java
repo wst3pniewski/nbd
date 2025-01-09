@@ -3,7 +3,7 @@ package org.example.model.repositories;
 import java.util.List;
 import java.util.UUID;
 
-public interface Repository<T>{
+public interface Repository<T> {
     void add(T t);
 
     List<T> findAll();

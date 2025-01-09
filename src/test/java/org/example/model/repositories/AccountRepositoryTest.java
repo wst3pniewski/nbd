@@ -83,8 +83,6 @@ class AccountRepositoryTest {
 
     @Test
     void updateAccount() {
-//        LocalDate dateOfBirth = LocalDate.of(2000, 1, 1);
-//        Client client = new Client("John", "Doe", dateOfBirth, Client.ClientTypes.BUSINESS, "Aleja", "Lodz", "1");
         BankAccount account = new StandardAccount(client.getClientId(), BigDecimal.valueOf(1000));
 
         accountRepository.add(account);
@@ -99,7 +97,7 @@ class AccountRepositoryTest {
     }
 
     @Test
-    void countActiveByClientId() {
+    void countAccountsByClientId() {
         BankAccount account = new StandardAccount(client.getClientId(), BigDecimal.valueOf(1000));
 
         accountRepository.add(account);
@@ -109,7 +107,7 @@ class AccountRepositoryTest {
 
         accountRepository.add(account2);
 
-        long count = accountRepository.countActiveByClientId(client.getClientId());
+        long count = accountRepository.countAccountsByClientId(client.getClientId());
         assertEquals(2, count);
     }
 }

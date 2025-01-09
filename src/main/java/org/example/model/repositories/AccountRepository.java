@@ -26,11 +26,11 @@ import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.literal;
 import static com.datastax.oss.driver.api.querybuilder.SchemaBuilder.createKeyspace;
 
 
-public class AccountRepository implements Repository<BankAccount>, AutoCloseable{
+public class AccountRepository implements Repository<BankAccount>, AutoCloseable {
 
-    private static CqlSession session;
-    private static BankAccountMapper accountMapper;
-    private static BankAccountDao bankAccountDao;
+    private CqlSession session;
+    private final BankAccountMapper accountMapper;
+    private final BankAccountDao bankAccountDao;
 
     public void initSession() {
         session = CqlSession.builder().withKeyspace("bank_accounts")
@@ -39,6 +39,8 @@ public class AccountRepository implements Repository<BankAccount>, AutoCloseable
                 .withLocalDatacenter("dc1")
                 .withAuthCredentials("cassandra", "cassandrapassword")
                 .build();
+
+        // KEYSPACE
         CreateKeyspace createKeyspace = createKeyspace(CqlIdentifier.fromCql("bank_accounts"))
                 .ifNotExists()
                 .withSimpleStrategy(2)
@@ -46,6 +48,7 @@ public class AccountRepository implements Repository<BankAccount>, AutoCloseable
         SimpleStatement statement = createKeyspace.build();
         session.execute(statement);
 
+        // BANK_ACCOUNTS
         SimpleStatement createBankAccounts =
                 SchemaBuilder.createTable(BankAccountIds.BANK_ACCOUNTS_KEYSPACE, BankAccountIds.BANK_ACCOUNT_TABLE)
                         .ifNotExists()
@@ -63,6 +66,7 @@ public class AccountRepository implements Repository<BankAccount>, AutoCloseable
                         .build();
         session.execute(createBankAccounts);
 
+        // BANK_ACCOUNTS_BY_CLIENTS
         SimpleStatement createBankAccountsByClients =
                 SchemaBuilder.createTable(BankAccountIds.BANK_ACCOUNTS_KEYSPACE, BankAccountIds.BANK_ACCOUNTS_BY_CLIENTS)
                         .ifNotExists()
@@ -101,11 +105,7 @@ public class AccountRepository implements Repository<BankAccount>, AutoCloseable
 
 
     public BankAccount findById(UUID id) {
-        BankAccount account = bankAccountDao.findById(id);
-        if (account == null) {
-            return null;
-        }
-        return account;
+        return bankAccountDao.findById(id);
     }
 
     public List<BankAccount> findByClientId(UUID clientId) {
@@ -115,7 +115,7 @@ public class AccountRepository implements Repository<BankAccount>, AutoCloseable
                 .where(Relation.column(BankAccountIds.CLIENT_ID).isEqualTo(literal(clientId)));
         ResultSet resultSet = session.execute(selectBankAccount.build());
         List<Row> result = resultSet.all();
-        List<BankAccount> bankAccounts = result.stream().map(row -> {
+        return result.stream().map(row -> {
             String discriminator = row.getString(BankAccountIds.DISCRIMINATOR);
             return switch (discriminator) {
                 case "JUNIOR" -> BankAccountQueryProvider.getJuniorAccount(row);
@@ -124,7 +124,6 @@ public class AccountRepository implements Repository<BankAccount>, AutoCloseable
                 default -> throw new IllegalStateException("Unexpected value: " + discriminator);
             };
         }).toList();
-        return bankAccounts;
     }
 
     private void insertBankAccountByClient(BankAccount bankAccount) {
@@ -370,7 +369,7 @@ public class AccountRepository implements Repository<BankAccount>, AutoCloseable
         session.execute(batchStatement);
     }
 
-    public long countActiveByClientId(UUID clientId) {
+    public long countAccountsByClientId(UUID clientId) {
         Select selectBankAccount = QueryBuilder
                 .selectFrom(BankAccountIds.BANK_ACCOUNTS_BY_CLIENTS)
                 .all()

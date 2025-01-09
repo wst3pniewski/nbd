@@ -4,7 +4,6 @@ import org.example.model.domain.Transaction;
 
 import org.example.model.domain.accounts.BankAccount;
 import org.example.model.domain.accounts.StandardAccount;
-import org.example.model.repositories.AccountRepository;
 import org.example.model.repositories.TransactionRepository;
 
 import java.math.BigDecimal;
@@ -12,8 +11,8 @@ import java.util.UUID;
 
 public class TransactionManager {
 
-    private TransactionRepository transactionRepository;
-    private AccountManager accountManager;
+    private final TransactionRepository transactionRepository;
+    private final AccountManager accountManager;
 
 
     public TransactionManager() {
@@ -53,7 +52,6 @@ public class TransactionManager {
         ((StandardAccount) sourceAccount).setDebit(debit.add(amount.subtract(balance)));
         destinationAccount.setBalance(destinationAccount.getBalance().add(amount));
         accountManager.update(sourceAccount, destinationAccount);
-//        accountManager.update(destinationAccount);
         transaction = new Transaction(sourceAccount.getId(), destinationAccount.getId(), amount);
         transactionRepository.add(transaction);
 
@@ -89,15 +87,13 @@ public class TransactionManager {
         sourceAccount.setBalance(sourceAccount.getBalance().subtract(balance));
         destinationAccount.setBalance(destinationAccount.getBalance().add(amount));
         accountManager.update(sourceAccount, destinationAccount);
-//        accountManager.update(sourceAccount);
-//        accountManager.update(destinationAccount);
         transaction = new Transaction(sourceAccount.getId(), destinationAccount.getId(), amount);
         transactionRepository.add(transaction);
 
         return transaction;
     }
 
-    public void close(){
+    public void close() {
         transactionRepository.close();
         accountManager.close();
     }

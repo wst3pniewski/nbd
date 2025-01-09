@@ -11,8 +11,8 @@ import java.util.UUID;
 
 public class ClientManager {
 
-    private ClientRepository clientRepository;
-    private AccountRepository accountRepository;
+    private final ClientRepository clientRepository;
+    private final AccountRepository accountRepository;
 
     public ClientManager() {
         this.clientRepository = new ClientRepository();
@@ -45,7 +45,7 @@ public class ClientManager {
         if (client == null) {
             throw new IllegalArgumentException("Client not found");
         }
-        if (accountRepository.countActiveByClientId(clientId) == 0) {
+        if (accountRepository.countAccountsByClientId(clientId) == 0) {
             clientRepository.delete(clientId);
         }
     }

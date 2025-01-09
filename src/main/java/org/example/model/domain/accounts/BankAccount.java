@@ -17,7 +17,6 @@ public class BankAccount {
 
     protected BigDecimal balance;
 
-//    @ClusteringColumn
     @CqlName("client_id")
     protected UUID clientId;
 
@@ -55,7 +54,7 @@ public class BankAccount {
         this.isActive = true;
         this.creationDate = LocalDate.now();
         this.closeDate = null;
-        this.discriminator = "BANKACCOUNT";
+        this.discriminator = "BANK_ACCOUNT";
     }
 
     @PartitionKey
