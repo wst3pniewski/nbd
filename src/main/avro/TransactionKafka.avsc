@@ -1,0 +1,38 @@
+{
+  "type": "record",
+  "name": "TransactionKafka",
+  "namespace": "kafka",
+  "fields": [
+    {
+      "name": "amount",
+      "type": [
+        "null",
+        {
+          "type": "string",
+          "java-class": "java.math.BigDecimal"
+        }
+      ]
+    },
+    {
+      "name": "destinationAccount",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    {
+      "name": "id",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    {
+      "name": "sourceAccount",
+      "type": [
+        "null",
+        "string"
+      ]
+    }
+  ]
+}
