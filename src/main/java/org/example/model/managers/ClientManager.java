@@ -1,7 +1,10 @@
 package org.example.model.managers;
 
+import org.example.model.RedisCache;
 import org.example.model.clients.Client;
 import org.example.model.repositories.AccountRepository;
+import org.example.model.repositories.CachedAccountRepository;
+import org.example.model.repositories.CachedClientRepository;
 import org.example.model.repositories.ClientRepository;
 
 import java.time.LocalDate;
@@ -11,12 +14,12 @@ import java.util.UUID;
 
 public class ClientManager {
 
-    private ClientRepository clientRepository;
-    private AccountRepository accountRepository;
+    private CachedClientRepository clientRepository;
+    private CachedAccountRepository accountRepository;
 
     public ClientManager() {
-        this.clientRepository = new ClientRepository();
-        this.accountRepository = new AccountRepository();
+        this.clientRepository = new CachedClientRepository(new ClientRepository(), new RedisCache());
+        this.accountRepository = new CachedAccountRepository(new RedisCache(), new AccountRepository());
     }
 
     public Client createClient(String firstName, String lastName, LocalDate dateOfBirth, Client.ClientTypes clientType,

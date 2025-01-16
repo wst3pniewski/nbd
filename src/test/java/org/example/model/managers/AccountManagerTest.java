@@ -121,7 +121,7 @@ class AccountManagerTest {
         accountManager.update(bankAccount);
         accountManager.payDebt(bankAccount.getId(), BigDecimal.valueOf(500));
         BankAccount updatedAccount = accountManager.findById(bankAccount.getId());
-        assertEquals(BigDecimal.valueOf(0), ((StandardAccount) updatedAccount).getDebit());
+        assertEquals(BigDecimal.valueOf(0.0), ((StandardAccount) updatedAccount).getDebit());
     }
 
     @Test
@@ -144,7 +144,7 @@ class AccountManagerTest {
         BankAccount bankAccount = accountManager.createStandardAccount(client.getId(), BigDecimal.valueOf(1000));
         accountManager.depositMoney(bankAccount.getId(), BigDecimal.valueOf(500));
         BankAccount updatedAccount = accountManager.findById(bankAccount.getId());
-        assertEquals(BigDecimal.valueOf(500), updatedAccount.getBalance());
+        assertEquals(BigDecimal.valueOf(500.0), updatedAccount.getBalance());
     }
 
     @Test
@@ -156,7 +156,7 @@ class AccountManagerTest {
         accountManager.depositMoney(bankAccount.getId(), BigDecimal.valueOf(500));
         accountManager.withdrawMoney(bankAccount.getId(), BigDecimal.valueOf(500));
         BankAccount updatedAccount = accountManager.findById(bankAccount.getId());
-        assertEquals(BigDecimal.valueOf(0), updatedAccount.getBalance());
+        assertEquals(BigDecimal.valueOf(0.0), updatedAccount.getBalance());
     }
 
     @Test
@@ -182,7 +182,7 @@ class AccountManagerTest {
         clientManager.updateClient(client);
 
         BankAccount updatedAccount = accountManager.findById(bankAccount.getId());
-        assertEquals(updatedAccount.getClient().getClientType(), Client.ClientTypes.BUSINESS);
+        assertEquals( Client.ClientTypes.BUSINESS, updatedAccount.getClient().getClientType());
     }
 
 

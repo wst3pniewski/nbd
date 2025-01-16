@@ -41,14 +41,15 @@ class TransactionManagerTest {
         BankAccount account2 = accountManager.createStandardAccount(client.getId(), BigDecimal.valueOf(1000));
         accountManager.depositMoney(account1.getId(), BigDecimal.valueOf(100));
 
+
         transactionManager.createStandardTransaction(account1.getId(), account2.getId(), BigDecimal.valueOf(1100));
 
         account1 = accountManager.findById(account1.getId());
         account2 = accountManager.findById(account2.getId());
 
-        assertEquals(BigDecimal.valueOf(0), account1.getBalance());
-        assertEquals(BigDecimal.valueOf(1000), ((StandardAccount) account1).getDebit());
-        assertEquals(BigDecimal.valueOf(1100), account2.getBalance());
+        assertEquals(BigDecimal.valueOf(0.0), account1.getBalance());
+        assertEquals(BigDecimal.valueOf(1000.0), ((StandardAccount) account1).getDebit());
+        assertEquals(BigDecimal.valueOf(1100.0), account2.getBalance());
     }
 
     @Test
@@ -66,9 +67,9 @@ class TransactionManagerTest {
         account1 = accountManager.findById(account1.getId());
         account2 = accountManager.findById(account2.getId());
 
-        assertEquals(BigDecimal.valueOf(0), account1.getBalance());
-        assertEquals(BigDecimal.valueOf(0), ((StandardAccount) account1).getDebit());
-        assertEquals(BigDecimal.valueOf(100), account2.getBalance());
+        assertEquals(BigDecimal.valueOf(0.0), account1.getBalance());
+        assertEquals(BigDecimal.valueOf(0.0), ((StandardAccount) account1).getDebit());
+        assertEquals(BigDecimal.valueOf(100.0), account2.getBalance());
     }
 
     @Test
@@ -100,9 +101,9 @@ class TransactionManagerTest {
         account1 = accountManager.findById(account1.getId());
         account2 = accountManager.findById(account2.getId());
 
-        assertEquals(BigDecimal.valueOf(0), account1.getBalance());
-        assertEquals(BigDecimal.valueOf(0), ((StandardAccount) account1).getDebit());
-        assertEquals(BigDecimal.valueOf(100), account2.getBalance());
+        assertEquals(BigDecimal.valueOf(0.0), account1.getBalance());
+        assertEquals(BigDecimal.valueOf(0.0), ((StandardAccount) account1).getDebit());
+        assertEquals(BigDecimal.valueOf(100.0), account2.getBalance());
     }
 
     @Test
@@ -160,8 +161,8 @@ class TransactionManagerTest {
         account1 = accountManager.findById(account1.getId());
         account2 = accountManager.findById(account2.getId());
 
-        assertEquals(BigDecimal.valueOf(0), account1.getBalance());
-        assertEquals(BigDecimal.valueOf(100), account2.getBalance());
+        assertEquals(BigDecimal.valueOf(0.0), account1.getBalance());
+        assertEquals(BigDecimal.valueOf(100.0), account2.getBalance());
     }
 
     @Test
@@ -181,8 +182,8 @@ class TransactionManagerTest {
         account1 = accountManager.findById(account1.getId());
         account2 = accountManager.findById(account2.getId());
 
-        assertEquals(BigDecimal.valueOf(0), account1.getBalance());
-        assertEquals(BigDecimal.valueOf(100), account2.getBalance());
+        assertEquals(BigDecimal.valueOf(0.0), account1.getBalance());
+        assertEquals(BigDecimal.valueOf(100.0), account2.getBalance());
     }
 
     @Test
@@ -202,8 +203,8 @@ class TransactionManagerTest {
         account1 = accountManager.findById(account1.getId());
         account2 = accountManager.findById(account2.getId());
 
-        assertEquals(BigDecimal.valueOf(0), account1.getBalance());
-        assertEquals(BigDecimal.valueOf(100), account2.getBalance());
+        assertEquals(BigDecimal.valueOf(0.0), account1.getBalance());
+        assertEquals(BigDecimal.valueOf(100.0), account2.getBalance());
     }
 
     @Test
@@ -269,8 +270,8 @@ class TransactionManagerTest {
         account1 = accountManager.findById(account1.getId());
         account2 = accountManager.findById(account2.getId());
 
-        assertEquals(BigDecimal.valueOf(0), account1.getBalance());
-        assertEquals(BigDecimal.valueOf(100), account2.getBalance());
+        assertEquals(BigDecimal.valueOf(0.0), account1.getBalance());
+        assertEquals(BigDecimal.valueOf(100.0), account2.getBalance());
     }
 
     @Test

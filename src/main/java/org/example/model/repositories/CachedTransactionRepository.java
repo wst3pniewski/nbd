@@ -2,6 +2,8 @@ package org.example.model.repositories;
 
 import jakarta.json.bind.Jsonb;
 import jakarta.json.bind.JsonbBuilder;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.example.model.Producer;
 import org.example.model.RedisCache;
 import org.example.model.Transaction;
 import org.example.model.mappers.TransactionRedisMapper;
@@ -43,6 +45,11 @@ public class CachedTransactionRepository implements Repository<Transaction> {
                 System.err.println("Failed write to Redis: " + e.getMessage());
             }
         }
+        // Kafka producer
+        String json = jsonb.toJson(TransactionRedisMapper.toRedis(transaction));
+        ProducerRecord<UUID, String> record = new ProducerRecord<>("transactions", transaction.getId(), json);
+        Producer producer = new Producer();
+        producer.getProducer().send(record);
 
         return null;
     }

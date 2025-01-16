@@ -1,9 +1,13 @@
 package org.example.model.managers;
 
+import org.example.model.RedisCache;
 import org.example.model.Transaction;
 import org.example.model.accounts.BankAccount;
 import org.example.model.accounts.StandardAccount;
+import org.example.model.kafka.JavaProducer;
 import org.example.model.repositories.AccountRepository;
+import org.example.model.repositories.CachedAccountRepository;
+import org.example.model.repositories.CachedTransactionRepository;
 import org.example.model.repositories.TransactionRepository;
 
 import java.math.BigDecimal;
@@ -11,13 +15,15 @@ import java.util.UUID;
 
 public class TransactionManager {
 
-    private TransactionRepository transactionRepository;
-    private AccountRepository accountRepository;
+    private CachedTransactionRepository transactionRepository;
+    private CachedAccountRepository accountRepository;
+    private JavaProducer producer;
 
 
     public TransactionManager() {
-        this.transactionRepository = new TransactionRepository();
-        this.accountRepository = new AccountRepository();
+        this.transactionRepository = new CachedTransactionRepository(new RedisCache(), new TransactionRepository());
+        this.accountRepository = new CachedAccountRepository(new RedisCache(), new AccountRepository());
+        this.producer = new JavaProducer();
     }
 
     public Transaction createStandardTransaction(UUID sourceAccountId, UUID destinationAccountId, BigDecimal amount) {
@@ -55,6 +61,8 @@ public class TransactionManager {
         accountRepository.update(destinationAccount);
         transaction = new Transaction(sourceAccount.getId(), destinationAccount.getId(), amount);
         transactionRepository.add(transaction);
+        // Kafka
+        producer.sendTransactionToKafka(transaction);
 
         return transaction;
     }
@@ -91,6 +99,8 @@ public class TransactionManager {
         accountRepository.update(destinationAccount);
         transaction = new Transaction(sourceAccount.getId(), destinationAccount.getId(), amount);
         transactionRepository.add(transaction);
+        // Kafka
+        producer.sendTransactionToKafka(transaction);
 
         return transaction;
     }

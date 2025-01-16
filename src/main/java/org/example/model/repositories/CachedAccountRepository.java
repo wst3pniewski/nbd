@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.example.model.RedisCache;
 import org.example.model.accounts.BankAccount;
+import org.example.model.clients.Client;
 import org.example.model.mappers.BankAccoutRedisMapper;
 import org.example.model.redis.BankAccountRedis;
 import redis.clients.jedis.exceptions.JedisException;
@@ -59,7 +60,7 @@ public class CachedAccountRepository implements Repository<BankAccount> {
     @Override
     public BankAccount findById(UUID id) {
         if (redisCache.isConnected()) {
-            try{
+            try {
                 Object obj = redisCache.jsonGet(hashPrefix + id.toString());
                 if (obj != null) {
                     String json = objectMapper.writeValueAsString(obj);
@@ -90,15 +91,38 @@ public class CachedAccountRepository implements Repository<BankAccount> {
             return null;
         }
         if (redisCache.isConnected()) {
-            try{
+            try {
                 String json = objectMapper.writeValueAsString(BankAccoutRedisMapper.toRedis(bankAccount));
                 redisCache.jsonSet(hashPrefix + bankAccount.getId().toString(), json);
-                return bankAccount;
             } catch (JedisException | JsonProcessingException e) {
                 System.err.println("Failed write to Redis: " + e.getMessage());
             }
         }
         mongoAccountRepository.update(bankAccount);
         return bankAccount;
+    }
+
+    public List<BankAccount> getAccountsByClientId(UUID clientId) {
+        return mongoAccountRepository.getAccountsByClientId(clientId);
+    }
+
+
+    public long countActiveByClientId(UUID clientId) {
+        return mongoAccountRepository.countActiveByClientId(clientId);
+    }
+
+    public boolean updateClient(Client client) {
+        mongoAccountRepository.updateClient(client);
+        mongoAccountRepository.getAccountsByClientId(client.getId()).forEach(account -> {
+            if (redisCache.isConnected()) {
+                try {
+                    String json = objectMapper.writeValueAsString(BankAccoutRedisMapper.toRedis(account));
+                    redisCache.jsonSet(hashPrefix + account.getId().toString(), json);
+                } catch (JedisException | JsonProcessingException e) {
+                    System.err.println("Failed write to Redis: " + e.getMessage());
+                }
+            }
+        });
+        return true;
     }
 }

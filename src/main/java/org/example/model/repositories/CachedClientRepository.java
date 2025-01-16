@@ -98,7 +98,6 @@ public class CachedClientRepository implements Repository<Client> {
             try{
                 String json = jsonb.toJson(ClientRedisMapper.toRedis(client));
                 redisCache.jsonSet(hashPrefix + client.getId().toString(), json);
-                return client;
             } catch (JedisException e) {
                 System.err.println("Failed write to Redis: " + e.getMessage());
             }

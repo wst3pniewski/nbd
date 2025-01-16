@@ -2,13 +2,12 @@ package org.example.model.managers;
 
 
 import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.TransactionBody;
 import org.example.model.MongoDBConnection;
+import org.example.model.RedisCache;
 import org.example.model.accounts.*;
 import org.example.model.clients.Client;
-import org.example.model.repositories.AccountRepository;
-import org.example.model.repositories.ClientRepository;
+import org.example.model.repositories.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -16,14 +15,14 @@ import java.util.List;
 import java.util.UUID;
 
 public class AccountManager {
-    private final AccountRepository accountRepository;
-    private final ClientRepository clientRepository;
+    private final CachedAccountRepository accountRepository;
+    private final CachedClientRepository clientRepository;
     private final MongoClient mongoClient;
 
 
     public AccountManager() {
-        this.accountRepository = new AccountRepository();
-        this.clientRepository = new ClientRepository();
+        this.accountRepository = new CachedAccountRepository(new RedisCache(), new AccountRepository());
+        this.clientRepository = new CachedClientRepository(new ClientRepository(), new RedisCache());
 
         this.mongoClient = MongoDBConnection.createMongoClient();
     }
