@@ -1,23 +1,17 @@
 package org.example.model.repositories;
 
-import jakarta.json.bind.Jsonb;
-import jakarta.json.bind.JsonbBuilder;
-import org.apache.kafka.clients.producer.ProducerRecord;
-import org.example.model.Producer;
 import org.example.model.RedisCache;
 import org.example.model.Transaction;
 import org.example.model.accounts.BankAccount;
 import org.example.model.clients.Client;
 import org.example.model.managers.AccountManager;
 import org.example.model.managers.ClientManager;
-import org.example.model.mappers.TransactionRedisMapper;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
